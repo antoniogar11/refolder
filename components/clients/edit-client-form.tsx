@@ -46,16 +46,21 @@ function SubmitButton() {
 
 type EditClientFormProps = {
   client: Client;
+  onSuccess?: () => void;
 };
 
-export function EditClientForm({ client }: EditClientFormProps) {
+export function EditClientForm({ client, onSuccess }: EditClientFormProps) {
   const router = useRouter();
   const updateAction = updateClientAction.bind(null, client.id);
   const [state, formAction] = useActionState(updateAction, initialClientFormState);
 
   if (state.status === "success") {
-    router.push("/dashboard/clientes");
-    router.refresh();
+    if (onSuccess) {
+      onSuccess();
+    } else {
+      router.push("/dashboard/clientes");
+      router.refresh();
+    }
   }
 
   return (
@@ -193,12 +198,7 @@ export function EditClientForm({ client }: EditClientFormProps) {
       </div>
 
       <FormMessage status={state.status} message={state.message} />
-      <div className="flex gap-2">
-        <Button type="button" variant="outline" className="flex-1" onClick={() => router.back()}>
-          Cancelar
-        </Button>
-        <SubmitButton />
-      </div>
+      <SubmitButton />
     </form>
   );
 }

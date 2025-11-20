@@ -1,10 +1,12 @@
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
 import { LogoutButton } from "@/components/auth/logout-button";
-import { NewClientForm } from "@/components/clients/new-client-form";
+import { NewClientSection } from "@/components/clients/new-client-section";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getClients } from "@/lib/data/clients";
+import { hasWorkerPermission, isCompanyAdmin } from "@/lib/data/companies";
 
 function formatDate(dateString: string) {
   return new Intl.DateTimeFormat("es-ES", { year: "numeric", month: "long", day: "numeric" }).format(
@@ -13,6 +15,13 @@ function formatDate(dateString: string) {
 }
 
 export default async function ClientesPage() {
+  const isAdmin = await isCompanyAdmin();
+  const canViewClients = isAdmin || await hasWorkerPermission("clients:read");
+
+  if (!canViewClients) {
+    redirect("/dashboard");
+  }
+
   const clients = await getClients();
 
   return (
@@ -32,26 +41,12 @@ export default async function ClientesPage() {
       </nav>
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Clientes</h2>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">Base de datos de todos tus clientes</p>
-          </div>
-          <a href="#nuevo-cliente">
-            <Button>Nuevo Cliente</Button>
-          </a>
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Clientes</h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">Base de datos de todos tus clientes</p>
         </div>
 
-        <div
-          id="nuevo-cliente"
-          className="mb-10 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900"
-        >
-          <div className="mb-4">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Añadir nuevo cliente</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Completa el formulario para registrarlo.</p>
-          </div>
-          <NewClientForm />
-        </div>
+        <NewClientSection />
 
         {clients.length === 0 ? (
           <Card>

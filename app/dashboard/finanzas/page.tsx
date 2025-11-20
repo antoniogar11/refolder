@@ -1,17 +1,60 @@
+import { redirect } from "next/navigation";
 import Link from "next/link";
+
+import { LogoutButton } from "@/components/auth/logout-button";
+import { NewTransactionSection } from "@/components/finances/new-transaction-section";
+import { TransactionsList } from "@/components/finances/transactions-list";
+import { FinanceSummarySection } from "@/components/finances/finance-summary-section";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogoutButton } from "@/components/auth/logout-button";
+import { getFinanceTransactions, getFinanceSummary } from "@/lib/data/finances";
+import { getProjects } from "@/lib/data/projects";
+import { getClientsForSelect } from "@/lib/data/projects";
+import { hasWorkerPermission, isCompanyAdmin } from "@/lib/data/companies";
 
-export default function FinanzasPage() {
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
+}
+
+export default async function FinanzasPage() {
+  const isAdmin = await isCompanyAdmin();
+  const canViewFinances = isAdmin || await hasWorkerPermission("finances:read");
+
+  if (!canViewFinances) {
+    redirect("/dashboard");
+  }
+
+  const transactions = await getFinanceTransactions();
+  const summary = await getFinanceSummary();
+  const projects = await getProjects();
+  const clients = await getClientsForSelect();
+
+  // Calcular totales del mes actual
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  const monthlyIncome = transactions
+    .filter(
+      (t) =>
+        t.type === "income" &&
+        new Date(t.transaction_date).getMonth() === currentMonth &&
+        new Date(t.transaction_date).getFullYear() === currentYear,
+    )
+    .reduce((sum, t) => sum + t.amount, 0);
+  const monthlyExpenses = transactions
+    .filter(
+      (t) =>
+        t.type === "expense" &&
+        new Date(t.transaction_date).getMonth() === currentMonth &&
+        new Date(t.transaction_date).getFullYear() === currentYear,
+    )
+    .reduce((sum, t) => sum + t.amount, 0);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <nav className="border-b bg-white dark:bg-gray-800">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-              Gestión de Finanzas
-            </h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Gestión de Finanzas</h1>
             <div className="flex items-center gap-2">
               <Link href="/dashboard">
                 <Button variant="ghost">Dashboard</Button>
@@ -24,26 +67,27 @@ export default function FinanzasPage() {
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Finanzas
-          </h2>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Finanzas</h2>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
             Controla ingresos, gastos y estado financiero de tus proyectos
           </p>
         </div>
 
-        {/* Resumen Financiero */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        {/* Resumen Financiero con Filtros */}
+        <FinanceSummarySection transactions={transactions} projects={projects} />
+
+        {/* Resumen Financiero Simple */}
+        <div className="mb-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="pb-3">
               <CardDescription>Ingresos Totales</CardDescription>
               <CardTitle className="text-3xl font-bold text-green-600 dark:text-green-400">
-                €0
+                {formatCurrency(summary.totalIncome)}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-xs text-gray-600 dark:text-gray-400">
-                Este mes: €0
+                Este mes: {formatCurrency(monthlyIncome)}
               </p>
             </CardContent>
           </Card>
@@ -52,12 +96,12 @@ export default function FinanzasPage() {
             <CardHeader className="pb-3">
               <CardDescription>Gastos Totales</CardDescription>
               <CardTitle className="text-3xl font-bold text-red-600 dark:text-red-400">
-                €0
+                {formatCurrency(summary.totalExpenses)}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-xs text-gray-600 dark:text-gray-400">
-                Este mes: €0
+                Este mes: {formatCurrency(monthlyExpenses)}
               </p>
             </CardContent>
           </Card>
@@ -65,240 +109,56 @@ export default function FinanzasPage() {
           <Card>
             <CardHeader className="pb-3">
               <CardDescription>Balance</CardDescription>
-              <CardTitle className="text-3xl font-bold text-blue-600 dark:text-blue-400">
-                €0
+              <CardTitle
+                className={`text-3xl font-bold ${
+                  summary.balance >= 0
+                    ? "text-blue-600 dark:text-blue-400"
+                    : "text-red-600 dark:text-red-400"
+                }`}
+              >
+                {formatCurrency(summary.balance)}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                Ingresos - Gastos
-              </p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Ingresos - Gastos</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-3">
-              <CardDescription>Pendiente de Cobro</CardDescription>
-              <CardTitle className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">
-                €0
+              <CardDescription>Transacciones</CardDescription>
+              <CardTitle className="text-3xl font-bold text-gray-600 dark:text-gray-400">
+                {transactions.length}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                Facturas pendientes
-              </p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Total registradas</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Acciones Rápidas */}
-        <div className="mb-8">
-          <div className="flex flex-wrap gap-4">
-            <Button>Nuevo Ingreso</Button>
-            <Button variant="outline">Nuevo Gasto</Button>
-            <Button variant="outline">Nueva Factura</Button>
-            <Button variant="outline">Nuevo Pago</Button>
-            <Button variant="outline">Ver Reportes</Button>
-          </div>
-        </div>
-
-        {/* Secciones de Finanzas */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Ingresos</CardTitle>
-              <CardDescription>Registro de ingresos y facturación</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-medium text-sm">Factura #001</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      Cliente: Juan Pérez
-                    </p>
-                  </div>
-                  <span className="font-semibold text-green-600 dark:text-green-400">
-                    €15,000
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-medium text-sm">Factura #002</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      Cliente: María García
-                    </p>
-                  </div>
-                  <span className="font-semibold text-green-600 dark:text-green-400">
-                    €8,500
-                  </span>
-                </div>
-                <div className="pt-2">
-                  <Button variant="outline" className="w-full">
-                    Ver Todos los Ingresos
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Gastos</CardTitle>
-              <CardDescription>Control de gastos y compras</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-medium text-sm">Materiales</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      Proveedor: Materiales S.L.
-                    </p>
-                  </div>
-                  <span className="font-semibold text-red-600 dark:text-red-400">
-                    -€3,200
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-medium text-sm">Mano de Obra</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      Proveedor: Construcciones XYZ
-                    </p>
-                  </div>
-                  <span className="font-semibold text-red-600 dark:text-red-400">
-                    -€2,500
-                  </span>
-                </div>
-                <div className="pt-2">
-                  <Button variant="outline" className="w-full">
-                    Ver Todos los Gastos
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Pagos Pendientes</CardTitle>
-              <CardDescription>Facturas y pagos por recibir</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-medium text-sm">Factura #003</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      Vence: 15/12/2024
-                    </p>
-                  </div>
-                  <span className="font-semibold text-yellow-600 dark:text-yellow-400">
-                    €5,000
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-medium text-sm">Factura #004</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      Vence: 20/12/2024
-                    </p>
-                  </div>
-                  <span className="font-semibold text-yellow-600 dark:text-yellow-400">
-                    €3,500
-                  </span>
-                </div>
-                <div className="pt-2">
-                  <Button variant="outline" className="w-full">
-                    Ver Todos los Pendientes
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Movimientos Recientes */}
-        <Card>
+        {/* Formulario de Nueva Transacción */}
+        <Card className="mb-8 border border-gray-200 dark:border-gray-800">
           <CardHeader>
-            <CardTitle>Movimientos Recientes</CardTitle>
-            <CardDescription>Últimas transacciones registradas</CardDescription>
+            <CardTitle>Nueva Transacción</CardTitle>
+            <CardDescription>Registra un nuevo ingreso o gasto</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center pb-4 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                    <span className="text-green-600 dark:text-green-400 text-sm">+</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">Factura #001 - Cliente: Juan Pérez</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      10/11/2024 - Ingreso
-                    </p>
-                  </div>
-                </div>
-                <span className="font-semibold text-green-600 dark:text-green-400">
-                  +€15,000
-                </span>
-              </div>
+            <NewTransactionSection projects={projects} clients={clients} />
+          </CardContent>
+        </Card>
 
-              <div className="flex justify-between items-center pb-4 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                    <span className="text-red-600 dark:text-red-400 text-sm">-</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">Compra de Materiales - Materiales S.L.</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      08/11/2024 - Gasto
-                    </p>
-                  </div>
-                </div>
-                <span className="font-semibold text-red-600 dark:text-red-400">
-                  -€3,200
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center pb-4 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                    <span className="text-green-600 dark:text-green-400 text-sm">+</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">Factura #002 - Cliente: María García</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      05/11/2024 - Ingreso
-                    </p>
-                  </div>
-                </div>
-                <span className="font-semibold text-green-600 dark:text-green-400">
-                  +€8,500
-                </span>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                    <span className="text-red-600 dark:text-red-400 text-sm">-</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">Mano de Obra - Construcciones XYZ</p>
-                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                      03/11/2024 - Gasto
-                    </p>
-                  </div>
-                </div>
-                <span className="font-semibold text-red-600 dark:text-red-400">
-                  -€2,500
-                </span>
-              </div>
-            </div>
+        {/* Lista de Transacciones */}
+        <Card className="border border-gray-200 dark:border-gray-800">
+          <CardHeader>
+            <CardTitle>Transacciones</CardTitle>
+            <CardDescription>Todas tus transacciones financieras</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <TransactionsList transactions={transactions} />
           </CardContent>
         </Card>
       </main>
     </div>
   );
 }
-

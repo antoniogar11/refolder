@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 
 type DashboardLayoutProps = {
   children: React.ReactNode;
@@ -16,6 +17,11 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
     redirect("/auth/login");
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <MobileBottomNav />
+    </>
+  );
 }
 

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import type { AuthFormState } from "@/lib/auth/types";
+import { getAppUrl } from "@/lib/utils/get-app-url";
 
 type RegisterData = {
   name: string;
@@ -107,7 +108,7 @@ export async function registerAction(_: AuthFormState, formData: FormData): Prom
       data: {
         full_name: validation.data!.name,
       },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/auth/login`,
+      emailRedirectTo: `${getAppUrl()}/auth/login`,
     },
   });
 

@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
+import { KeyboardEvent } from "react";
 
 import { loginAction } from "@/app/auth/actions";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,24 @@ function FormMessage({ state }: { state: AuthFormState }) {
 export function LoginForm() {
   const [state, formAction] = useActionState(loginAction, initialAuthState);
 
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>, nextFieldId: string | null) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (nextFieldId) {
+        const nextField = document.getElementById(nextFieldId);
+        if (nextField) {
+          nextField.focus();
+        }
+      } else {
+        // Si no hay siguiente campo, enviar el formulario
+        const form = e.currentTarget.form;
+        if (form) {
+          form.requestSubmit();
+        }
+      }
+    }
+  };
+
   return (
     <form action={formAction} className="space-y-4" noValidate>
       <div className="space-y-2">
@@ -62,6 +81,7 @@ export function LoginForm() {
           placeholder="tu@email.com"
           className={inputStyles}
           required
+          onKeyDown={(e) => handleKeyDown(e, "password")}
         />
         <FieldError messages={state.errors?.email} />
       </div>
@@ -78,6 +98,7 @@ export function LoginForm() {
           placeholder="••••••••"
           className={inputStyles}
           required
+          onKeyDown={(e) => handleKeyDown(e, null)}
         />
         <FieldError messages={state.errors?.password} />
       </div>

@@ -36,29 +36,26 @@ export default function ProveedoresPage() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle>Materiales S.L.</CardTitle>
-              <CardDescription>Tipo: Material</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 text-sm">
-                <div>
-                  <span className="text-gray-600 dark:text-gray-400">Contacto:</span>
-                  <p className="font-medium">Pedro García</p>
+          <Link href="#">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+              <CardHeader>
+                <CardTitle>Materiales S.L.</CardTitle>
+                <CardDescription>Tipo: Material</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <span className="text-gray-600 dark:text-gray-400">Contacto:</span>
+                    <p className="font-medium">Pedro García</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-600 dark:text-gray-400">Teléfono:</span>
+                    <p className="font-medium">+34 600 789 012</p>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-gray-600 dark:text-gray-400">Teléfono:</span>
-                  <p className="font-medium">+34 600 789 012</p>
-                </div>
-                <div className="pt-4">
-                  <Button variant="outline" className="w-full">
-                    Ver Detalles
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </main>
     </div>

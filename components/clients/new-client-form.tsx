@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect } from "react";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
+import { useRouter } from "next/navigation";
 
 import { createClientAction } from "@/app/dashboard/clientes/actions";
 import { Button } from "@/components/ui/button";
@@ -42,11 +44,31 @@ function SubmitButton() {
   );
 }
 
-export function NewClientForm() {
+type NewClientFormProps = {
+  onSuccess?: () => void;
+};
+
+export function NewClientForm({ onSuccess }: NewClientFormProps) {
+  const router = useRouter();
   const [state, formAction] = useActionState(createClientAction, initialClientFormState);
 
+  useEffect(() => {
+    if (state.status === "success") {
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        router.refresh();
+      }
+      // Resetear el formulario
+      const form = document.getElementById("new-client-form") as HTMLFormElement;
+      if (form) {
+        form.reset();
+      }
+    }
+  }, [state.status, onSuccess, router]);
+
   return (
-    <form action={formAction} className="space-y-4" noValidate>
+    <form id="new-client-form" action={formAction} className="space-y-4" noValidate>
       <div className="space-y-2">
         <label htmlFor="name" className="text-sm font-medium">
           Nombre *

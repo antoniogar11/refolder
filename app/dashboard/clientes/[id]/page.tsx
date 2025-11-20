@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 import { deleteClientAction } from "@/app/dashboard/clientes/actions";
 import { LogoutButton } from "@/components/auth/logout-button";
-import { EditClientForm } from "@/components/clients/edit-client-form";
+import { EditClientSection } from "@/components/clients/edit-client-section";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getClientById } from "@/lib/data/clients";
@@ -43,20 +43,10 @@ export default async function ClientEditPage({ params }: ClientEditPageProps) {
           <p className="mt-2 text-gray-600 dark:text-gray-400">Modifica la información del cliente</p>
         </div>
 
-        <Card className="border border-gray-200 dark:border-gray-800">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>{client.name}</CardTitle>
-                <CardDescription>Modifica los datos del cliente</CardDescription>
-              </div>
-              <DeleteClientButton clientId={client.id} clientName={client.name} />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <EditClientForm client={client} />
-          </CardContent>
-        </Card>
+        <div className="mb-4 flex items-center justify-end">
+          <DeleteClientButton clientId={client.id} clientName={client.name} />
+        </div>
+        <EditClientSection client={client} />
       </main>
     </div>
   );
