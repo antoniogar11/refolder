@@ -169,7 +169,7 @@ export async function updateWorkerPermissionsAction(
   permissionKeys.forEach((key) => {
     const value = formData.get(`permission_${key}`);
     // El valor puede ser "true" (string), "on" (checkbox marcado), o null/undefined (no presente)
-    permissions[key] = value === "true" || value === "on" || value === true;
+    permissions[key] = value === "true" || value === "on" || value === "1";
   });
 
   // Obtener el miembro para asegurar que pertenece a la empresa

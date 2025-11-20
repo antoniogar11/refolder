@@ -1,0 +1,101 @@
+═══════════════════════════════════════════════════════════
+🚀 CÓMO HACER PUSH DESDE GITHUB DESKTOP
+═══════════════════════════════════════════════════════════
+
+¡NO es un "Pull Request"! Lo que necesitas es hacer "Push".
+
+═══════════════════════════════════════════════════════════
+📍 PASOS EN GITHUB DESKTOP:
+═══════════════════════════════════════════════════════════
+
+1. ABRE GitHub Desktop
+   └─> Deberías ver tu proyecto "refolder" en la lista
+
+2. SELECCIONA el proyecto "refolder"
+   └─> Haz click en él para verlo
+
+3. MIRA ARRIBA en la barra de herramientas
+   └─> En la parte superior de la ventana
+
+4. BUSCA UN BOTÓN que dice:
+   ✅ "Push origin" 
+   ✅ "Push to origin"
+   ✅ "Push origin/main"
+   ✅ O un número como "1" con un ícono de flecha hacia arriba ↑
+   
+   └─> Este botón está en la parte superior, a la derecha
+
+5. HAZ CLICK en ese botón
+
+6. ESPERA unos segundos mientras sube
+
+7. ¡LISTO! Debería decir "Successfully pushed" o algo similar
+
+═══════════════════════════════════════════════════════════
+🔍 SI NO VES EL BOTÓN "Push":
+═══════════════════════════════════════════════════════════
+
+Verifica lo siguiente:
+
+A) ¿Está seleccionado el proyecto correcto?
+   └─> Asegúrate de que "refolder" esté seleccionado
+
+B) ¿Ya está actualizado?
+   └─> Ve a: Repository → Pull (o Fetch origin) primero
+   └─> Luego busca el botón Push
+
+C) ¿Está conectado a GitHub?
+   └─> Arriba, en "Repository" → "Repository Settings"
+   └─> Verifica que el "Remote URL" sea:
+       https://github.com/antoniogar11/refolder.git
+
+D) ¿Tienes commits para subir?
+   └─> En la parte inferior, en "History"
+   └─> Busca un commit que diga:
+       "feat: mejoras de diseño profesional, PWA móvil..."
+   └─> Si no está en GitHub, necesita hacer Push
+
+═══════════════════════════════════════════════════════════
+📸 UBICACIÓN DEL BOTÓN (Descripción Visual):
+═══════════════════════════════════════════════════════════
+
+GitHub Desktop tiene esta estructura:
+
+┌─────────────────────────────────────────────────────┐
+│ [Menu] File Edit View Repository Branch Help       │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│  Current repository: refolder                      │
+│  [Branch: main] [Fetch origin] [Push origin] ← AQUÍ│
+│                                                     │
+│  ┌──────────────────────────────────────────────┐ │
+│  │ Changes (archivos modificados)               │ │
+│  └──────────────────────────────────────────────┘ │
+│                                                     │
+│  ┌──────────────────────────────────────────────┐ │
+│  │ History (commits)                            │ │
+│  └──────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────┘
+
+El botón "Push origin" está en la barra superior,
+junto a "Fetch origin" y el nombre de la rama.
+
+═══════════════════════════════════════════════════════════
+✅ VERIFICAR QUE FUNCIONÓ:
+═══════════════════════════════════════════════════════════
+
+Después del push:
+
+1. En GitHub Desktop, en la parte inferior (History)
+   └─> El commit debería aparecer con un ícono de nube ☁️
+       o debería desaparecer de la lista si ya está subido
+
+2. Ve a tu navegador: https://github.com/antoniogar11/refolder
+   └─> Deberías ver un commit nuevo que dice:
+       "feat: mejoras de diseño profesional, PWA móvil..."
+
+═══════════════════════════════════════════════════════════
+
+Si sigues sin ver el botón, dime qué ves exactamente
+en GitHub Desktop y te ayudo a encontrarlo.
+

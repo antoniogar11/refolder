@@ -146,8 +146,8 @@ Genera entre 5 y 15 conceptos dependiendo de la complejidad del trabajo. Los pre
     if (type === "items") {
       const items = text
         .split(/\n+/)
-        .map((line) => line.replace(/^\d+[\.\)]\s*/, "").trim())
-        .filter((line) => line.length > 0);
+        .map((line: string) => line.replace(/^\d+[\.\)]\s*/, "").trim())
+        .filter((line: string) => line.length > 0);
       return NextResponse.json({ result: items });
     }
 

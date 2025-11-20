@@ -1,0 +1,74 @@
+═══════════════════════════════════════════════════════════
+🔧 SOLUCIÓN: No aparece el botón Push en GitHub Desktop
+═══════════════════════════════════════════════════════════
+
+Si no ves el botón "Push" en GitHub Desktop, puede ser porque:
+
+1. El repositorio no está conectado correctamente
+2. Ya está todo actualizado (aunque no debería ser el caso)
+3. Hay un problema de configuración
+
+═══════════════════════════════════════════════════════════
+✅ SOLUCIÓN: Hacer Push desde la Terminal
+═══════════════════════════════════════════════════════════
+
+Como GitHub Desktop no muestra el botón, vamos a hacerlo
+directamente desde la Terminal. Es muy fácil:
+
+PASO 1: Crear un Token de GitHub
+─────────────────────────────────
+1. Abre tu navegador
+2. Ve a: https://github.com/settings/tokens
+3. Click en "Generate new token" → "Generate new token (classic)"
+4. Nombre: "Refolder Push"
+5. Marca la casilla "repo" (todo)
+6. Click en "Generate token" (abajo)
+7. ¡COPIA EL TOKEN! (empieza con ghp_...)
+   └─> Solo lo verás una vez
+
+PASO 2: Hacer Push desde Terminal
+──────────────────────────────────
+1. Abre la Terminal en tu Mac
+   └─> Presiona Cmd + Espacio, escribe "Terminal", Enter
+
+2. Copia y pega estos comandos (uno por uno):
+
+   cd /Users/macdeantonio/Refolder/refolder
+   git push origin main
+
+3. Cuando te pida "Username": 
+   └─> Escribe: antoniogar11
+
+4. Cuando te pida "Password":
+   └─> Pega el TOKEN que copiaste (NO tu contraseña)
+   └─> Presiona Enter
+
+5. Debería decir: "Successfully pushed" o similar
+
+═══════════════════════════════════════════════════════════
+🔍 VERIFICAR QUE FUNCIONÓ
+═══════════════════════════════════════════════════════════
+
+Después del push, verifica:
+
+1. Ve a: https://github.com/antoniogar11/refolder
+2. Deberías ver un commit nuevo que dice:
+   "feat: mejoras de diseño profesional, PWA móvil..."
+
+Si lo ves, ¡PERFECTO! Ya puedes hacer deploy en Vercel.
+
+═══════════════════════════════════════════════════════════
+💡 ALTERNATIVA: Configurar GitHub Desktop
+═══════════════════════════════════════════════════════════
+
+Si prefieres usar GitHub Desktop:
+
+1. En GitHub Desktop, ve a: Repository → Repository Settings
+2. Verifica que el "Remote URL" sea:
+   https://github.com/antoniogar11/refolder.git
+3. Si no es correcto, cámbialo
+4. Cierra y vuelve a abrir GitHub Desktop
+5. Ahora debería aparecer el botón Push
+
+Pero la forma más rápida es usar la Terminal (PASO 2 arriba).
+
