@@ -41,3 +41,4 @@
 - Supabase URL: `https://rnuosfoxruutkmfzwvzr.supabase.co`
 - App URL: `http://localhost:3000` (cambiar a IP local para móvil)
 
+

@@ -31,7 +31,7 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 pb-20 md:pb-8">
       {/* Header mejorado */}
-      <nav className="sticky top-0 z-40 border-b border-gray-200/80 dark:border-gray-800/80 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-gray-900/60">
+      <nav className="sticky top-0 z-30 border-b border-gray-200/80 dark:border-gray-800/80 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-gray-900/60">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-3">
@@ -145,19 +145,19 @@ export default async function DashboardPage() {
             </Card>
           )}
 
-          <Card className="group relative overflow-hidden border-2 border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-all duration-200 hover:shadow-lg">
-            <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 to-transparent dark:from-gray-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+          <Card className="group relative overflow-hidden border-2 border-gray-200 dark:border-gray-800 hover:border-amber-300 dark:hover:border-amber-700 transition-all duration-200 hover:shadow-lg hover:shadow-amber-500/10 dark:hover:shadow-amber-500/20">
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 to-transparent dark:from-amber-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
             <CardHeader className="relative">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-2xl">🏭</span>
-                <CardTitle className="text-lg font-semibold">Proveedores</CardTitle>
+                <span className="text-2xl">📊</span>
+                <CardTitle className="text-lg font-semibold">Estimación de Impuestos</CardTitle>
               </div>
-              <CardDescription className="text-sm">Gestionar proveedores</CardDescription>
+              <CardDescription className="text-sm">Calcula y estima tus impuestos</CardDescription>
             </CardHeader>
             <CardContent className="relative">
-              <Link href="/dashboard/proveedores">
+              <Link href="/dashboard/impuestos">
                 <Button className="w-full touch-target font-medium shadow-sm hover:shadow-md transition-shadow">
-                  Ver Proveedores
+                  Ver Estimación
                 </Button>
               </Link>
             </CardContent>
@@ -284,4 +284,5 @@ export default async function DashboardPage() {
     </div>
   );
 }
+
 

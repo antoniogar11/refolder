@@ -100,3 +100,4 @@ Una vez desplegada, puedes:
 2. Añadirla a la pantalla de inicio (instalar como PWA)
 3. Probar que funciona como app nativa
 
+

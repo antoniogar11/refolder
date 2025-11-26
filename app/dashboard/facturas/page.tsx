@@ -10,10 +10,7 @@ import { getInvoices } from "@/lib/data/invoices";
 import { getProjects } from "@/lib/data/projects";
 import { getClientsForSelect } from "@/lib/data/projects";
 import { hasWorkerPermission, isCompanyAdmin } from "@/lib/data/companies";
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
+import { formatCurrency } from "@/lib/utils/format";
 
 export default async function FacturasPage() {
   const isAdmin = await isCompanyAdmin();
@@ -38,25 +35,15 @@ export default async function FacturasPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 pb-20 md:pb-8">
       {/* Header mejorado */}
-      <nav className="sticky top-0 z-40 border-b border-gray-200/80 dark:border-gray-800/80 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-gray-900/60">
+      <nav className="sticky top-0 z-30 border-b border-gray-200/80 dark:border-gray-800/80 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-gray-900/60 md:ml-64">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-14 sm:h-16 items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
-              <Link href="/dashboard" className="flex items-center gap-2">
-                <div className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/50">
-                  <span className="text-sm sm:text-lg font-bold">R</span>
-                </div>
-              </Link>
               <h1 className="text-base sm:text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                 Facturas
               </h1>
             </div>
             <div className="flex items-center gap-1 sm:gap-2">
-              <Link href="/dashboard">
-                <Button variant="ghost" size="sm" className="hidden sm:flex text-xs sm:text-sm">
-                  Dashboard
-                </Button>
-              </Link>
               <LogoutButton variant="outline" />
             </div>
           </div>

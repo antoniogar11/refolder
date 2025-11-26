@@ -7,6 +7,7 @@ import { KeyboardEvent } from "react";
 import { loginAction } from "@/app/auth/actions";
 import { Button } from "@/components/ui/button";
 import { initialAuthState, type AuthFormState } from "@/lib/auth/types";
+import { GoogleButton } from "@/components/auth/google-button";
 
 const inputStyles =
   "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
@@ -68,11 +69,23 @@ export function LoginForm() {
   };
 
   return (
-    <form action={formAction} className="space-y-4" noValidate>
-      <div className="space-y-2">
-        <label htmlFor="email" className="text-sm font-medium">
-          Email
-        </label>
+    <div className="space-y-4">
+      <GoogleButton />
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">
+            O continúa con email
+          </span>
+        </div>
+      </div>
+      <form action={formAction} className="space-y-4" noValidate>
+        <div className="space-y-2">
+          <label htmlFor="email" className="text-sm font-medium">
+            Email
+          </label>
         <input
           id="email"
           name="email"
@@ -103,9 +116,10 @@ export function LoginForm() {
         <FieldError messages={state.errors?.password} />
       </div>
 
-      <FormMessage state={state} />
-      <SubmitButton>Iniciar Sesión</SubmitButton>
-    </form>
+        <FormMessage state={state} />
+        <SubmitButton>Iniciar Sesión</SubmitButton>
+      </form>
+    </div>
   );
 }
 

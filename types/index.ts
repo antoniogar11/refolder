@@ -60,3 +60,4 @@ export interface Proveedor {
   updated_at: string
 }
 
+

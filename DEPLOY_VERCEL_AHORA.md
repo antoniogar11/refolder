@@ -114,3 +114,4 @@ Tu app ahora está online y accesible desde cualquier dispositivo.
 2. Añádela a la pantalla de inicio (instalar como PWA)
 3. Prueba que funciona como app nativa
 
+

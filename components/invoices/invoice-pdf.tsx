@@ -387,3 +387,4 @@ export function InvoicePDF({ invoice, company }: InvoicePDFProps) {
   );
 }
 
+

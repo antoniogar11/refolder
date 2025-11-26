@@ -176,3 +176,26 @@ export async function logoutAction() {
   redirect("/auth/login");
 }
 
+export async function signInWithGoogle() {
+  const envIssue = ensureEnv();
+  if (envIssue) {
+    throw new Error(envIssue.message);
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${getAppUrl()}/auth/callback`,
+    },
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (data.url) {
+    redirect(data.url);
+  }
+}
+

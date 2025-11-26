@@ -174,3 +174,4 @@ Las políticas RLS (Row Level Security) en Supabase ya están configuradas para 
 - Verifica que la función `assignDefaultRole` se está llamando en el registro
 - Verifica que la tabla `user_roles` existe y tiene las políticas correctas
 
+

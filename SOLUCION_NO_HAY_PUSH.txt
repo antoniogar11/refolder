@@ -72,3 +72,4 @@ Si prefieres usar GitHub Desktop:
 
 Pero la forma más rápida es usar la Terminal (PASO 2 arriba).
 
+

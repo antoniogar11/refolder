@@ -40,3 +40,4 @@ $$;
 -- Si quieres que los usuarios puedan ser encontrados, considera crear una tabla
 -- que se sincronice con auth.users usando triggers
 
+

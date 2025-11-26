@@ -226,3 +226,4 @@ npm start
 **Estado:** En desarrollo activo
 **Prioridad:** Ejecutar scripts SQL pendientes
 
+

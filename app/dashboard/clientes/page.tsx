@@ -8,12 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getClients } from "@/lib/data/clients";
 import { hasWorkerPermission, isCompanyAdmin } from "@/lib/data/companies";
 
-function formatDate(dateString: string) {
-  return new Intl.DateTimeFormat("es-ES", { year: "numeric", month: "long", day: "numeric" }).format(
-    new Date(dateString),
-  );
-}
-
 export default async function ClientesPage() {
   const isAdmin = await isCompanyAdmin();
   const canViewClients = isAdmin || await hasWorkerPermission("clients:read");
@@ -26,14 +20,11 @@ export default async function ClientesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <nav className="border-b bg-white dark:bg-gray-800">
+      <nav className="sticky top-0 z-30 border-b bg-white dark:bg-gray-800 md:ml-64">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">Gestión de Clientes</h1>
             <div className="flex items-center gap-2">
-              <Link href="/dashboard">
-                <Button variant="ghost">Dashboard</Button>
-              </Link>
               <LogoutButton variant="outline" />
             </div>
           </div>
@@ -127,4 +118,5 @@ export default async function ClientesPage() {
     </div>
   );
 }
+
 

@@ -105,3 +105,4 @@ El service worker necesita actualizar la URL base. Se actualiza automáticamente
 ### Problemas con Service Worker
 - Los service workers funcionan solo en HTTPS (que Vercel proporciona automáticamente)
 
+

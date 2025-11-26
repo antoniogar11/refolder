@@ -7,6 +7,7 @@ import { LogoutButton } from "@/components/auth/logout-button";
 import Link from "next/link";
 import { CompanyMembersList } from "@/components/company/company-members-list";
 import { AddMemberForm } from "@/components/company/add-member-form";
+import { EditCompanyForm } from "@/components/company/edit-company-form";
 
 export default async function EmpresaPage() {
   const supabase = await createClient();
@@ -128,9 +129,24 @@ export default async function EmpresaPage() {
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">{company.name}</h2>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Gestiona los administradores y trabajadores de tu empresa
+            Gestiona los datos de tu empresa, administradores y trabajadores
           </p>
         </div>
+
+        {/* Datos de la empresa (solo admins) */}
+        {isAdmin && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Datos de la Empresa</CardTitle>
+              <CardDescription>
+                Estos datos aparecerán en el encabezado de facturas y presupuestos
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <EditCompanyForm company={company} />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Añadir miembro (solo admins) */}
         {isAdmin && (

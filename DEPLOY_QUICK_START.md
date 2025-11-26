@@ -61,3 +61,4 @@ Ambas opciones son **100% gratuitas** y te dan HTTPS automático.
 - ✅ Usa variables de entorno en la plataforma
 - ✅ Las keys quedan seguras en la plataforma
 
+

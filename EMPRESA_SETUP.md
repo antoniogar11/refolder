@@ -159,3 +159,4 @@ Las políticas RLS están configuradas para:
 - Verifica que el campo `permissions` en `company_members` es de tipo JSONB
 - Revisa los logs del servidor para errores
 
+

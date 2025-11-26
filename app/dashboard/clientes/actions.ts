@@ -5,6 +5,14 @@ import { revalidatePath } from "next/cache";
 import type { ClientFormState } from "@/lib/forms/client-form-state";
 import { initialClientFormState } from "@/lib/forms/client-form-state";
 import { createClient } from "@/lib/supabase/server";
+import {
+  isValidEmail,
+  isValidPhone,
+  isValidPostalCode,
+  isNotEmpty,
+  getFormDataValue,
+} from "@/lib/utils/validation";
+import { AppErrors, handleSupabaseError, createErrorResult } from "@/lib/utils/errors";
 
 type ClientPayload = {
   name: string;
@@ -18,32 +26,37 @@ type ClientPayload = {
   notes: string | null;
 };
 
+/**
+ * Valida los datos de un cliente desde FormData
+ * @param formData - FormData con los datos del cliente
+ * @returns Datos validados o errores de validación
+ */
 function validateClient(formData: FormData): { data?: ClientPayload; errors?: Record<string, string[]> } {
   const errors: Record<string, string[]> = {};
 
-  const name = (formData.get("name") as string | null)?.trim() ?? "";
-  const emailRaw = (formData.get("email") as string | null)?.trim() ?? "";
-  const phone = (formData.get("phone") as string | null)?.trim() ?? "";
-  const address = (formData.get("address") as string | null)?.trim() ?? "";
-  const city = (formData.get("city") as string | null)?.trim() ?? "";
-  const province = (formData.get("province") as string | null)?.trim() ?? "";
-  const postalCode = (formData.get("postal_code") as string | null)?.trim() ?? "";
-  const taxId = (formData.get("tax_id") as string | null)?.trim() ?? "";
-  const notes = (formData.get("notes") as string | null)?.trim() ?? "";
+  const name = getFormDataValue(formData, "name");
+  const emailRaw = getFormDataValue(formData, "email");
+  const phone = getFormDataValue(formData, "phone");
+  const address = getFormDataValue(formData, "address");
+  const city = getFormDataValue(formData, "city");
+  const province = getFormDataValue(formData, "province");
+  const postalCode = getFormDataValue(formData, "postal_code");
+  const taxId = getFormDataValue(formData, "tax_id");
+  const notes = getFormDataValue(formData, "notes");
 
-  if (!name) {
+  if (!isNotEmpty(name)) {
     errors.name = ["El nombre es obligatorio."];
   }
 
-  if (emailRaw && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailRaw.toLowerCase())) {
+  if (emailRaw && !isValidEmail(emailRaw)) {
     errors.email = ["Formato de email inválido."];
   }
 
-  if (phone && phone.length < 6) {
+  if (phone && !isValidPhone(phone)) {
     errors.phone = ["El teléfono es demasiado corto."];
   }
 
-  if (postalCode && !/^\d{5}$/.test(postalCode)) {
+  if (postalCode && !isValidPostalCode(postalCode)) {
     errors.postal_code = ["El código postal debe tener 5 dígitos."];
   }
 
@@ -83,10 +96,7 @@ export async function createClientAction(_: ClientFormState, formData: FormData)
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return {
-      status: "error",
-      message: "No estás autenticado. Por favor, inicia sesión.",
-    };
+    return createErrorResult(AppErrors.UNAUTHORIZED.message);
   }
 
   const { error } = await supabase.from("clients").insert({
@@ -96,10 +106,8 @@ export async function createClientAction(_: ClientFormState, formData: FormData)
 
   if (error) {
     console.error("Error creating client", error);
-    return {
-      status: "error",
-      message: `No se pudo crear el cliente: ${error.message}`,
-    };
+    const appError = handleSupabaseError(error);
+    return createErrorResult(`No se pudo crear el cliente: ${appError.message}`);
   }
 
   revalidatePath("/dashboard/clientes");
@@ -131,10 +139,7 @@ export async function updateClientAction(
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return {
-      status: "error",
-      message: "No estás autenticado. Por favor, inicia sesión.",
-    };
+    return createErrorResult(AppErrors.UNAUTHORIZED.message);
   }
 
   const { error } = await supabase
@@ -148,10 +153,8 @@ export async function updateClientAction(
 
   if (error) {
     console.error("Error updating client", error);
-    return {
-      status: "error",
-      message: `No se pudo actualizar el cliente: ${error.message}`,
-    };
+    const appError = handleSupabaseError(error);
+    return createErrorResult(`No se pudo actualizar el cliente: ${appError.message}`);
   }
 
   revalidatePath("/dashboard/clientes");
@@ -172,7 +175,7 @@ export async function deleteClientAction(clientId: string): Promise<{ success: b
   if (!user) {
     return {
       success: false,
-      message: "No estás autenticado. Por favor, inicia sesión.",
+      message: AppErrors.UNAUTHORIZED.message,
     };
   }
 
@@ -180,9 +183,10 @@ export async function deleteClientAction(clientId: string): Promise<{ success: b
 
   if (error) {
     console.error("Error deleting client", error);
+    const appError = handleSupabaseError(error);
     return {
       success: false,
-      message: `No se pudo eliminar el cliente: ${error.message}`,
+      message: `No se pudo eliminar el cliente: ${appError.message}`,
     };
   }
 

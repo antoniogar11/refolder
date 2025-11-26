@@ -5,6 +5,15 @@ import { revalidatePath } from "next/cache";
 import type { ProjectFormState } from "@/lib/forms/project-form-state";
 import { initialProjectFormState } from "@/lib/forms/project-form-state";
 import { createClient } from "@/lib/supabase/server";
+import {
+  isNotEmpty,
+  isValidNumber,
+  isDateAfter,
+  isInList,
+  getFormDataValue,
+  getFormDataNumber,
+} from "@/lib/utils/validation";
+import { AppErrors, handleSupabaseError, createErrorResult } from "@/lib/utils/errors";
 
 type ProjectPayload = {
   client_id: string | null;
@@ -18,43 +27,45 @@ type ProjectPayload = {
   notes: string | null;
 };
 
+const VALID_STATUSES = ["planning", "in_progress", "completed", "cancelled"] as const;
+
+/**
+ * Valida los datos de un proyecto desde FormData
+ * @param formData - FormData con los datos del proyecto
+ * @returns Datos validados o errores de validación
+ */
 function validateProject(formData: FormData): { data?: ProjectPayload; errors?: Record<string, string[]> } {
   const errors: Record<string, string[]> = {};
 
-  const name = (formData.get("name") as string | null)?.trim() ?? "";
-  const clientId = (formData.get("client_id") as string | null)?.trim() ?? "";
-  const description = (formData.get("description") as string | null)?.trim() ?? "";
-  const status = (formData.get("status") as string | null)?.trim() ?? "";
-  const startDate = (formData.get("start_date") as string | null)?.trim() ?? "";
-  const endDate = (formData.get("end_date") as string | null)?.trim() ?? "";
-  const budgetRaw = (formData.get("budget") as string | null)?.trim() ?? "";
-  const address = (formData.get("address") as string | null)?.trim() ?? "";
-  const notes = (formData.get("notes") as string | null)?.trim() ?? "";
+  const name = getFormDataValue(formData, "name");
+  const clientId = getFormDataValue(formData, "client_id");
+  const description = getFormDataValue(formData, "description");
+  const status = getFormDataValue(formData, "status");
+  const startDate = getFormDataValue(formData, "start_date");
+  const endDate = getFormDataValue(formData, "end_date");
+  const budgetRaw = getFormDataValue(formData, "budget");
+  const address = getFormDataValue(formData, "address");
+  const notes = getFormDataValue(formData, "notes");
 
-  if (!name) {
+  if (!isNotEmpty(name)) {
     errors.name = ["El nombre es obligatorio."];
   }
 
-  if (status && !["planning", "in_progress", "completed", "cancelled"].includes(status)) {
+  if (status && !isInList(status, VALID_STATUSES)) {
     errors.status = ["Estado inválido."];
   }
 
   let budget: number | null = null;
   if (budgetRaw) {
-    const budgetNum = parseFloat(budgetRaw);
-    if (isNaN(budgetNum) || budgetNum < 0) {
+    if (!isValidNumber(budgetRaw, 0)) {
       errors.budget = ["El presupuesto debe ser un número válido mayor o igual a 0."];
     } else {
-      budget = budgetNum;
+      budget = getFormDataNumber(formData, "budget", null);
     }
   }
 
-  if (startDate && endDate) {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    if (end < start) {
-      errors.end_date = ["La fecha de finalización debe ser posterior a la fecha de inicio."];
-    }
+  if (startDate && endDate && !isDateAfter(endDate, startDate)) {
+    errors.end_date = ["La fecha de finalización debe ser posterior a la fecha de inicio."];
   }
 
   if (Object.keys(errors).length > 0) {
@@ -129,10 +140,8 @@ export async function createProjectAction(_: ProjectFormState, formData: FormDat
 
   if (error) {
     console.error("Error creating project", error);
-    return {
-      status: "error",
-      message: `No se pudo crear la obra: ${error.message}`,
-    };
+    const appError = handleSupabaseError(error);
+    return createErrorResult(`No se pudo crear la obra: ${appError.message}`);
   }
 
   revalidatePath("/dashboard/obras");
@@ -151,11 +160,7 @@ export async function updateProjectAction(
   const validation = validateProject(formData);
 
   if (validation.errors) {
-    return {
-      status: "error",
-      message: "Revisa los campos.",
-      errors: validation.errors,
-    };
+    return createErrorResult("Revisa los campos.", validation.errors);
   }
 
   const supabase = await createClient();
@@ -164,10 +169,7 @@ export async function updateProjectAction(
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return {
-      status: "error",
-      message: "No estás autenticado. Por favor, inicia sesión.",
-    };
+    return createErrorResult(AppErrors.UNAUTHORIZED.message);
   }
 
   // Preparar los datos para actualizar
@@ -196,10 +198,8 @@ export async function updateProjectAction(
 
   if (error) {
     console.error("Error updating project", error);
-    return {
-      status: "error",
-      message: `No se pudo actualizar la obra: ${error.message}`,
-    };
+    const appError = handleSupabaseError(error);
+    return createErrorResult(`No se pudo actualizar la obra: ${appError.message}`);
   }
 
   revalidatePath("/dashboard/obras");

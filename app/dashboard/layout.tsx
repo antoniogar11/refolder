@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
+import { DashboardSidebarServer } from "@/components/layout/dashboard-sidebar-server";
 
 type DashboardLayoutProps = {
   children: React.ReactNode;
@@ -18,10 +19,13 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   }
 
   return (
-    <>
-      {children}
-      <MobileBottomNav />
-    </>
+    <div className="flex min-h-screen">
+      <DashboardSidebarServer />
+      <div className="flex-1 flex flex-col">
+        {children}
+        <MobileBottomNav />
+      </div>
+    </div>
   );
 }
 

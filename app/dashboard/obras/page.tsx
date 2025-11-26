@@ -7,18 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getProjects, getClientsForSelect } from "@/lib/data/projects";
 import { hasWorkerPermission, isCompanyAdmin } from "@/lib/data/companies";
-
-function formatDate(dateString: string | null) {
-  if (!dateString) return "-";
-  return new Intl.DateTimeFormat("es-ES", { year: "numeric", month: "long", day: "numeric" }).format(
-    new Date(dateString),
-  );
-}
-
-function formatCurrency(amount: number | null) {
-  if (amount === null) return "-";
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
+import { formatDate, formatCurrency } from "@/lib/utils/format";
 
 function getStatusLabel(status: string) {
   const labels: Record<string, { text: string; color: string }> = {
@@ -43,14 +32,11 @@ export default async function ObrasPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <nav className="border-b bg-white dark:bg-gray-800">
+      <nav className="sticky top-0 z-30 border-b bg-white dark:bg-gray-800 md:ml-64">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">Gestión de Obras</h1>
             <div className="flex items-center gap-2">
-              <Link href="/dashboard">
-                <Button variant="ghost">Dashboard</Button>
-              </Link>
               <LogoutButton variant="outline" />
             </div>
           </div>
@@ -136,3 +122,4 @@ export default async function ObrasPage() {
     </div>
   );
 }
+

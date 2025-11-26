@@ -22,6 +22,11 @@ export type ProjectWithClient = Project & {
   } | null;
 };
 
+/**
+ * Obtiene todos los proyectos del usuario actual con sus clientes asociados
+ * @returns Array de proyectos con información del cliente (si existe)
+ * @remarks Esta función optimiza las queries evitando N+1 al obtener todos los clientes en una sola query
+ */
 export async function getProjects(): Promise<ProjectWithClient[]> {
   try {
     const supabase = await createClient();
@@ -122,6 +127,11 @@ export async function getProjects(): Promise<ProjectWithClient[]> {
   }
 }
 
+/**
+ * Obtiene un proyecto por su ID con su cliente asociado
+ * @param id - ID del proyecto
+ * @returns Proyecto con información del cliente o null si no existe o no tiene permisos
+ */
 export async function getProjectById(id: string): Promise<ProjectWithClient | null> {
   const supabase = await createClient();
   const {
@@ -184,6 +194,10 @@ export async function getProjectById(id: string): Promise<ProjectWithClient | nu
   };
 }
 
+/**
+ * Obtiene la lista de clientes para usar en selectores/dropdowns
+ * @returns Array de clientes con id y name, ordenados alfabéticamente
+ */
 export async function getClientsForSelect() {
   const supabase = await createClient();
   const {

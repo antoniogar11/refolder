@@ -235,3 +235,112 @@ export async function updateWorkerPermissionsAction(
     message: "Permisos actualizados correctamente",
   };
 }
+
+/**
+ * Actualiza los datos de la empresa
+ */
+export async function updateCompanyAction(
+  _prevState: { status: "idle" | "success" | "error"; message?: string; errors?: Record<string, string[]> },
+  formData: FormData
+): Promise<{ status: "idle" | "success" | "error"; message?: string; errors?: Record<string, string[]> }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return {
+      status: "error" as const,
+      message: "Usuario no autenticado",
+    };
+  }
+
+  const admin = await isCompanyAdmin();
+  if (!admin) {
+    return {
+      status: "error" as const,
+      message: "No tienes permisos para actualizar los datos de la empresa",
+    };
+  }
+
+  const companyId = formData.get("companyId") as string;
+  if (!companyId) {
+    return {
+      status: "error" as const,
+      message: "ID de empresa no proporcionado",
+    };
+  }
+
+  // Verificar que la empresa pertenece al usuario
+  const company = await getUserCompany();
+  if (!company || company.id !== companyId) {
+    return {
+      status: "error" as const,
+      message: "No tienes permisos para actualizar esta empresa",
+    };
+  }
+
+  const errors: Record<string, string[]> = {};
+
+  const name = (formData.get("name") as string | null)?.trim() ?? "";
+  if (!name) {
+    errors.name = ["El nombre de la empresa es obligatorio."];
+  }
+
+  const email = (formData.get("email") as string | null)?.trim() ?? "";
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errors.email = ["Formato de email inválido."];
+  }
+
+  if (Object.keys(errors).length > 0) {
+    return {
+      status: "error" as const,
+      message: "Revisa el formulario.",
+      errors,
+    };
+  }
+
+  // Preparar datos para actualizar
+  const updateData: {
+    name: string;
+    address?: string | null;
+    city?: string | null;
+    province?: string | null;
+    postal_code?: string | null;
+    phone?: string | null;
+    email?: string | null;
+    tax_id?: string | null;
+    logo_url?: string | null;
+    updated_at: string;
+  } = {
+    name,
+    address: (formData.get("address") as string | null)?.trim() || null,
+    city: (formData.get("city") as string | null)?.trim() || null,
+    province: (formData.get("province") as string | null)?.trim() || null,
+    postal_code: (formData.get("postal_code") as string | null)?.trim() || null,
+    phone: (formData.get("phone") as string | null)?.trim() || null,
+    email: email || null,
+    tax_id: (formData.get("tax_id") as string | null)?.trim() || null,
+    logo_url: (formData.get("logo_url") as string | null)?.trim() || null,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { error } = await supabase
+    .from("companies")
+    .update(updateData)
+    .eq("id", companyId);
+
+  if (error) {
+    console.error("Error updating company:", error);
+    return {
+      status: "error" as const,
+      message: error.message || "Error al actualizar los datos de la empresa",
+    };
+  }
+
+  revalidatePath("/dashboard/empresa");
+  return {
+    status: "success" as const,
+    message: "Datos de la empresa actualizados correctamente",
+  };
+}

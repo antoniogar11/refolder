@@ -4,6 +4,14 @@ export type Company = {
   id: string;
   name: string;
   owner_id: string;
+  address?: string | null;
+  city?: string | null;
+  province?: string | null;
+  postal_code?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  tax_id?: string | null; // CIF o NIF
+  logo_url?: string | null;
   created_at: string;
   updated_at: string | null;
 };
@@ -28,6 +36,8 @@ export type CompanyMemberWithUser = CompanyMember & {
 
 /**
  * Obtiene la empresa del usuario actual
+ * @returns La empresa del usuario (como dueño o miembro) o null si no tiene empresa
+ * @remarks Verifica primero si el usuario es dueño, luego si es miembro
  */
 export async function getUserCompany(): Promise<Company | null> {
   const supabase = await createClient();
@@ -73,7 +83,10 @@ export async function getUserCompany(): Promise<Company | null> {
 }
 
 /**
- * Crea una nueva empresa para el usuario
+ * Crea una nueva empresa para el usuario actual
+ * @param name - Nombre de la empresa
+ * @returns Objeto con la empresa creada o error si falla
+ * @throws Si el usuario ya tiene una empresa o no está autenticado
  */
 export async function createCompany(name: string): Promise<{ company: Company | null; error: string | null }> {
   const supabase = await createClient();
@@ -108,7 +121,8 @@ export async function createCompany(name: string): Promise<{ company: Company | 
 }
 
 /**
- * Verifica si el usuario es admin de su empresa
+ * Verifica si el usuario actual es administrador de su empresa
+ * @returns true si es dueño o tiene rol de admin, false en caso contrario
  */
 export async function isCompanyAdmin(): Promise<boolean> {
   const supabase = await createClient();
@@ -193,7 +207,9 @@ export async function getCurrentMember(): Promise<CompanyMember | null> {
 
 /**
  * Verifica si el usuario actual tiene un permiso específico
- * Los admins y dueños tienen todos los permisos implícitamente
+ * @param permission - Permiso a verificar (ej: "projects:read", "clients:write")
+ * @returns true si tiene el permiso, false en caso contrario
+ * @remarks Los admins y dueños tienen todos los permisos implícitamente
  */
 export async function hasWorkerPermission(permission: string): Promise<boolean> {
   const member = await getCurrentMember();

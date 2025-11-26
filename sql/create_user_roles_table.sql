@@ -86,3 +86,4 @@ $$ LANGUAGE sql SECURITY DEFINER;
 -- SELECT id, 'admin' FROM auth.users ORDER BY created_at LIMIT 1
 -- ON CONFLICT (user_id) DO NOTHING;
 
+

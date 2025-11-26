@@ -10,10 +10,7 @@ import { getEstimates } from "@/lib/data/estimates";
 import { getProjects } from "@/lib/data/projects";
 import { getClientsForSelect } from "@/lib/data/projects";
 import { hasWorkerPermission, isCompanyAdmin } from "@/lib/data/companies";
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
+import { formatCurrency } from "@/lib/utils/format";
 
 export default async function PresupuestosPage() {
   const isAdmin = await isCompanyAdmin();
@@ -119,4 +116,5 @@ export default async function PresupuestosPage() {
     </div>
   );
 }
+
 
