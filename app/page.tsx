@@ -1,9 +1,26 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 export default function Home() {
+  const [submitted, setSubmitted] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const data = new FormData(form);
+    await fetch(form.action, {
+      method: "POST",
+      body: data,
+      headers: { Accept: "application/json" },
+    });
+    setSubmitted(true);
+  }
+
   return (
-    <div className="min-h-screen bg-white text-gray-900" style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif" }}>
+    <div className="min-h-screen bg-white text-gray-900">
 
       {/* NAV */}
       <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 z-50">
@@ -11,18 +28,11 @@ export default function Home() {
           <Link href="/" className="text-xl font-extrabold text-[#1B5E7B] no-underline">
             Re<span className="text-[#E8913A]">folder</span>
           </Link>
-          <div className="flex items-center gap-3">
-            <Link href="/auth/login">
-              <Button variant="ghost" size="sm" className="text-sm font-medium text-gray-600 hover:text-gray-900">
-                Iniciar Sesi&oacute;n
-              </Button>
-            </Link>
-            <Link href="#registro">
-              <Button size="sm" className="bg-[#E8913A] hover:bg-[#D07A2B] text-white text-sm font-semibold px-5 rounded-lg">
-                Quiero acceso anticipado
-              </Button>
-            </Link>
-          </div>
+          <Link href="#registro">
+            <Button size="sm" className="bg-[#E8913A] hover:bg-[#D07A2B] text-white text-sm font-semibold px-5 rounded-lg">
+              Reservar mi plaza gratis
+            </Button>
+          </Link>
         </div>
       </nav>
 
@@ -289,61 +299,79 @@ export default function Home() {
             Estamos ultimando la app. D&eacute;janos tu email y ser&aacute;s de los primeros en probarla. Los 100 primeros tendr&aacute;n 1 mes PRO completamente gratis.
           </p>
           <div className="bg-white rounded-xl p-9 max-w-[500px] mx-auto shadow-2xl">
-            <form action="https://formspree.io/f/TU_ID_FORMSPREE" method="POST">
-              <label className="block text-sm font-semibold text-gray-900 mb-1.5 text-left" htmlFor="email">Tu email profesional *</label>
-              <input
-                type="email" id="email" name="email" placeholder="tu@email.com" required
-                className="block w-full px-3.5 py-3 border border-gray-200 rounded-lg text-sm mb-4 focus:outline-none focus:border-[#1B5E7B] focus:ring-2 focus:ring-[#1B5E7B]/10"
-              />
+            {!submitted ? (
+              <>
+                <form action="https://formspree.io/f/TU_ID_FORMSPREE" method="POST" onSubmit={handleSubmit}>
+                  <label className="block text-sm font-semibold text-gray-900 mb-1.5 text-left" htmlFor="email">Tu email profesional *</label>
+                  <input
+                    type="email" id="email" name="email" placeholder="tu@email.com" required
+                    className="block w-full px-3.5 py-3 border border-gray-200 rounded-lg text-sm mb-4 focus:outline-none focus:border-[#1B5E7B] focus:ring-2 focus:ring-[#1B5E7B]/10"
+                  />
 
-              <label className="block text-sm font-semibold text-gray-900 mb-1.5 text-left" htmlFor="tipo">&iquest;A qu&eacute; te dedicas? *</label>
-              <select
-                id="tipo" name="tipo" required
-                className="block w-full px-3.5 py-3 border border-gray-200 rounded-lg text-sm mb-4 focus:outline-none focus:border-[#1B5E7B] focus:ring-2 focus:ring-[#1B5E7B]/10 bg-white"
-              >
-                <option value="" disabled>Selecciona una opci&oacute;n</option>
-                <option value="autonomo">Aut&oacute;nomo de reformas / construcci&oacute;n</option>
-                <option value="empresa_peq">Empresa de reformas (1–5 empleados)</option>
-                <option value="empresa_med">Empresa de construcci&oacute;n (6–20 empleados)</option>
-                <option value="arquitecto">Arquitecto / aparejador</option>
-                <option value="otro">Otro</option>
-              </select>
+                  <label className="block text-sm font-semibold text-gray-900 mb-1.5 text-left" htmlFor="tipo">¿A qué te dedicas? *</label>
+                  <select
+                    id="tipo" name="tipo" required
+                    className="block w-full px-3.5 py-3 border border-gray-200 rounded-lg text-sm mb-4 focus:outline-none focus:border-[#1B5E7B] focus:ring-2 focus:ring-[#1B5E7B]/10 bg-white"
+                  >
+                    <option value="" disabled>Selecciona una opción</option>
+                    <option value="autonomo">Autónomo de reformas / construcción</option>
+                    <option value="empresa_peq">Empresa de reformas (1–5 empleados)</option>
+                    <option value="empresa_med">Empresa de construcción (6–20 empleados)</option>
+                    <option value="arquitecto">Arquitecto / aparejador</option>
+                    <option value="otro">Otro</option>
+                  </select>
 
-              <label className="block text-sm font-semibold text-gray-900 mb-1.5 text-left" htmlFor="provincia">Provincia (opcional)</label>
-              <select
-                id="provincia" name="provincia"
-                className="block w-full px-3.5 py-3 border border-gray-200 rounded-lg text-sm mb-4 focus:outline-none focus:border-[#1B5E7B] focus:ring-2 focus:ring-[#1B5E7B]/10 bg-white"
-              >
-                <option value="">Selecciona provincia</option>
-                <option>Álava</option><option>Albacete</option><option>Alicante</option>
-                <option>Almería</option><option>Asturias</option><option>Ávila</option>
-                <option>Badajoz</option><option>Barcelona</option><option>Burgos</option>
-                <option>Cáceres</option><option>Cádiz</option><option>Cantabria</option>
-                <option>Castellón</option><option>Ciudad Real</option><option>Córdoba</option>
-                <option>A Coruña</option><option>Cuenca</option><option>Girona</option>
-                <option>Granada</option><option>Guadalajara</option><option>Guipúzcoa</option>
-                <option>Huelva</option><option>Huesca</option><option>Illes Balears</option>
-                <option>Jaén</option><option>La Rioja</option><option>Las Palmas</option>
-                <option>León</option><option>Lleida</option><option>Lugo</option>
-                <option>Madrid</option><option>Málaga</option><option>Murcia</option>
-                <option>Navarra</option><option>Ourense</option><option>Palencia</option>
-                <option>Pontevedra</option><option>Salamanca</option><option>S.C. Tenerife</option>
-                <option>Segovia</option><option>Sevilla</option><option>Soria</option>
-                <option>Tarragona</option><option>Teruel</option><option>Toledo</option>
-                <option>Valencia</option><option>Valladolid</option><option>Vizcaya</option>
-                <option>Zamora</option><option>Zaragoza</option>
-              </select>
+                  <label className="block text-sm font-semibold text-gray-900 mb-1.5 text-left" htmlFor="provincia">Provincia (opcional)</label>
+                  <select
+                    id="provincia" name="provincia"
+                    className="block w-full px-3.5 py-3 border border-gray-200 rounded-lg text-sm mb-4 focus:outline-none focus:border-[#1B5E7B] focus:ring-2 focus:ring-[#1B5E7B]/10 bg-white"
+                  >
+                    <option value="">Selecciona provincia</option>
+                    <option>Álava</option><option>Albacete</option><option>Alicante</option>
+                    <option>Almería</option><option>Asturias</option><option>Ávila</option>
+                    <option>Badajoz</option><option>Barcelona</option><option>Burgos</option>
+                    <option>Cáceres</option><option>Cádiz</option><option>Cantabria</option>
+                    <option>Castellón</option><option>Ciudad Real</option><option>Córdoba</option>
+                    <option>A Coruña</option><option>Cuenca</option><option>Girona</option>
+                    <option>Granada</option><option>Guadalajara</option><option>Guipúzcoa</option>
+                    <option>Huelva</option><option>Huesca</option><option>Illes Balears</option>
+                    <option>Jaén</option><option>La Rioja</option><option>Las Palmas</option>
+                    <option>León</option><option>Lleida</option><option>Lugo</option>
+                    <option>Madrid</option><option>Málaga</option><option>Murcia</option>
+                    <option>Navarra</option><option>Ourense</option><option>Palencia</option>
+                    <option>Pontevedra</option><option>Salamanca</option><option>S.C. Tenerife</option>
+                    <option>Segovia</option><option>Sevilla</option><option>Soria</option>
+                    <option>Tarragona</option><option>Teruel</option><option>Toledo</option>
+                    <option>Valencia</option><option>Valladolid</option><option>Vizcaya</option>
+                    <option>Zamora</option><option>Zaragoza</option>
+                  </select>
 
-              <button
-                type="submit"
-                className="block w-full py-3.5 bg-[#E8913A] text-white font-bold text-base rounded-lg hover:bg-[#D07A2B] transition-colors cursor-pointer"
-              >
-                Reservar mi plaza gratis →
-              </button>
-            </form>
-            <p className="mt-3 text-xs text-gray-500 text-center">
-              Solo usamos tu email para avisarte del lanzamiento. Sin spam. Puedes darte de baja en cualquier momento. Cumplimos con el RGPD.
-            </p>
+                  <button
+                    type="submit"
+                    className="block w-full py-3.5 bg-[#E8913A] text-white font-bold text-base rounded-lg hover:bg-[#D07A2B] transition-colors cursor-pointer"
+                  >
+                    Reservar mi plaza gratis →
+                  </button>
+                </form>
+                <p className="mt-3 text-xs text-gray-500 text-center">
+                  Solo usamos tu email para avisarte del lanzamiento. Sin spam. Puedes darte de baja en cualquier momento. Cumplimos con el RGPD.
+                </p>
+              </>
+            ) : (
+              <div className="text-center py-6">
+                <div className="text-5xl mb-4">🎉</div>
+                <p className="text-xl font-bold text-gray-900 mb-2">¡Plaza reservada!</p>
+                <p className="text-gray-500 text-sm mb-6">
+                  Estarás entre los primeros en probar Refolder. Te avisaremos por email cuando esté lista.
+                </p>
+                <p className="text-gray-500 text-sm">
+                  ¿Puedes ayudarnos con 2 minutos más?{" "}
+                  <a href="https://forms.gle/TU_ENCUESTA" target="_blank" rel="noopener noreferrer" className="text-[#1B5E7B] font-semibold underline hover:text-[#134A62]">
+                    Responde esta encuesta rápida
+                  </a>
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </section>
