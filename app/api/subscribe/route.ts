@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
 
 export async function POST(request: Request) {
   try {
@@ -9,34 +9,35 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Email es obligatorio" }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
 
-    // Comprobar si ya existe
-    const { data: existing } = await supabase
-      .from("leads")
-      .select("id")
-      .eq("email", email)
-      .single();
-
-    if (existing) {
-      return NextResponse.json({ success: true, already_subscribed: true });
-    }
-
-    // Insertar nuevo lead
-    const { error } = await supabase.from("leads").insert({
-      email,
-      tipo: tipo || null,
-      provincia: provincia || null,
-    });
+    // Upsert: si ya existe el email, simplemente actualiza
+    const { error } = await supabase.from("leads").upsert(
+      {
+        email,
+        tipo: tipo || null,
+        provincia: provincia || null,
+      },
+      { onConflict: "email" }
+    );
 
     if (error) {
-      console.error("Error al insertar lead:", error);
-      return NextResponse.json({ error: "Error al registrar" }, { status: 500 });
+      console.error("Error Supabase:", error);
+      return NextResponse.json(
+        { error: "Error al registrar", detail: error.message },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error en /api/subscribe:", error);
-    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+  } catch (err) {
+    console.error("Error en /api/subscribe:", err);
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    );
   }
 }
