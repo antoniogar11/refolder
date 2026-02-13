@@ -44,10 +44,10 @@ export default function Home() {
           </span>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight max-w-[750px] mx-auto mb-5">
             Deja de perder horas con Excel.{" "}
-            <span className="text-[#1B5E7B]">Genera presupuestos de reforma con IA en 2&nbsp;minutos.</span>
+            <span className="text-[#1B5E7B]">Genera presupuestos de reforma e instalaciones con IA en 2&nbsp;minutos.</span>
           </h1>
           <p className="text-lg md:text-xl text-gray-500 max-w-[620px] mx-auto mb-8 leading-relaxed">
-            Describe la reforma en tus propias palabras, la inteligencia artificial genera el presupuesto desglosado con precios reales y t&uacute; lo exportas como PDF profesional con tu logo. As&iacute; de f&aacute;cil.
+            Describe el trabajo en tus propias palabras (reforma, instalación eléctrica, fontanería, climatización...), la IA genera el presupuesto desglosado con precios reales y tú lo exportas como PDF profesional con tu logo.
           </p>
           <Link href="#registro">
             <Button className="bg-[#E8913A] hover:bg-[#D07A2B] text-white font-bold text-lg px-9 py-6 rounded-xl shadow-lg shadow-orange-200 hover:-translate-y-0.5 transition-all">
@@ -64,8 +64,8 @@ export default function Home() {
       <div className="border-t border-b border-gray-200 py-7">
         <div className="max-w-[1100px] mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-5 text-center">
           <div>
-            <div className="text-3xl font-extrabold text-[#1B5E7B]">234.000</div>
-            <div className="text-sm text-gray-500 mt-0.5">Aut&oacute;nomos de construcci&oacute;n en Espa&ntilde;a</div>
+            <div className="text-3xl font-extrabold text-[#1B5E7B]">60%</div>
+            <div className="text-sm text-gray-500 mt-0.5">Menos tiempo haciendo presupuestos con IA</div>
           </div>
           <div>
             <div className="text-3xl font-extrabold text-[#1B5E7B]">2&ndash;4 horas</div>
@@ -112,7 +112,7 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { step: 1, title: "Describe la reforma", desc: "Escribe lo que necesitas como se lo dirías a un compañero: \"reforma baño 6 m², cambio sanitarios, alicatado completo y mampara\". Sin formularios complicados." },
+              { step: 1, title: "Describe el trabajo", desc: "Escribe lo que necesitas como se lo dirías a un compañero: \"reforma baño 6 m²\", \"instalación eléctrica piso 90 m²\" o \"cambio caldera y radiadores\". Sin formularios complicados." },
               { step: 2, title: "La IA genera el presupuesto", desc: "En segundos tienes un presupuesto desglosado con partidas, cantidades, precios unitarios y totales. Con precios de referencia actualizados de tu zona." },
               { step: 3, title: "Revisa, ajusta y envía", desc: "Modifica lo que quieras, añade tu logo y datos fiscales, y descárgalo como PDF profesional. Listo para enviar al cliente en el momento." },
             ].map((item) => (
@@ -138,7 +138,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {[
               { icon: "⚡", title: "Recupera 3 horas por cada presupuesto", desc: "Lo que antes te llevaba una tarde entera, ahora lo resuelves en lo que dura un café. Más tiempo en obra, menos en el ordenador." },
-              { icon: "🎯", title: "Presupuestos que cierran más obras", desc: "PDF profesional con tu logo, desglose por capítulos y aspecto de empresa consolidada. Tus clientes lo notarán." },
+              { icon: "🎯", title: "Presupuestos que cierran más trabajos", desc: "PDF profesional con tu logo, desglose por capítulos y aspecto de empresa consolidada. Tus clientes lo notarán." },
               { icon: "📈", title: "Precios de referencia siempre actualizados", desc: "Base de datos con precios de materiales y mano de obra por zona geográfica. Deja de buscar precios por internet a última hora." },
               { icon: "💼", title: "Todo organizado en un solo sitio", desc: "Presupuestos, clientes, versiones y estados (enviado, aceptado, rechazado). Sin Excel, sin Word, sin carpetas con 20 archivos." },
             ].map((item, i) => (
@@ -168,7 +168,7 @@ export default function Home() {
               <h3 className="text-lg font-bold text-green-700 flex items-center gap-2 mb-4">✅ Pensada para ti si&hellip;</h3>
               <ul className="space-y-3">
                 {[
-                  "Eres autónomo o tienes una pequeña empresa de reformas",
+                  "Eres autónomo o tienes una pequeña empresa de reformas, fontanería, electricidad, climatización o pintura",
                   "Haces presupuestos en Excel, Word o copiando de anteriores",
                   "Pierdes tiempo y a veces clientes por tardar en responder",
                   "Quieres dar una imagen más profesional sin complicarte",
@@ -255,7 +255,7 @@ export default function Home() {
               </span>
               <div className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Pro</div>
               <div className="text-4xl font-extrabold mb-1">19,90€ <span className="text-base font-normal text-gray-500">/mes</span></div>
-              <div className="text-sm text-gray-500 mb-5 min-h-[40px]">Todo lo que necesita un aut&oacute;nomo de reformas</div>
+              <div className="text-sm text-gray-500 mb-5 min-h-[40px]">Todo lo que necesita un autónomo o instalador</div>
               <ul className="text-left space-y-2 mb-6">
                 {["Presupuestos ilimitados", "IA generativa (50 usos/mes)", "Base de precios completa por zona", "PDF profesional con tu logo", "Historial y gestión de clientes"].map((f, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-gray-600">
@@ -272,7 +272,7 @@ export default function Home() {
             <div className="bg-white border border-gray-200 rounded-xl p-8 text-center hover:shadow-lg transition-shadow">
               <div className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Business</div>
               <div className="text-4xl font-extrabold mb-1">39,90€ <span className="text-base font-normal text-gray-500">/mes</span></div>
-              <div className="text-sm text-gray-500 mb-5 min-h-[40px]">Para peque&ntilde;as empresas de reformas</div>
+              <div className="text-sm text-gray-500 mb-5 min-h-[40px]">Para pequeñas empresas de reformas e instalaciones</div>
               <ul className="text-left space-y-2 mb-6">
                 {["Todo lo de PRO incluido", "IA sin límite de usos", "Hasta 3 usuarios", "Plantillas avanzadas por tipo de obra", "Comparador de márgenes"].map((f, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-gray-600">
@@ -314,8 +314,12 @@ export default function Home() {
                     className="block w-full px-3.5 py-3 border border-gray-200 rounded-lg text-sm mb-4 focus:outline-none focus:border-[#1B5E7B] focus:ring-2 focus:ring-[#1B5E7B]/10 bg-white"
                   >
                     <option value="" disabled>Selecciona una opción</option>
-                    <option value="autonomo">Autónomo de reformas / construcción</option>
-                    <option value="empresa_peq">Empresa de reformas (1–5 empleados)</option>
+                    <option value="reformas">Autónomo de reformas / construcción</option>
+                    <option value="fontaneria">Fontanero / instalador de gas</option>
+                    <option value="electricidad">Electricista</option>
+                    <option value="climatizacion">Climatización / calefacción</option>
+                    <option value="pintura">Pintor / decorador</option>
+                    <option value="empresa_peq">Empresa de reformas o instalaciones (1–5 empleados)</option>
                     <option value="empresa_med">Empresa de construcción (6–20 empleados)</option>
                     <option value="arquitecto">Arquitecto / aparejador</option>
                     <option value="otro">Otro</option>
@@ -380,7 +384,7 @@ export default function Home() {
       <footer className="bg-[#1A1A2E] text-white/60 text-center py-8 text-sm">
         <div className="max-w-[1100px] mx-auto px-6">
           <p><strong className="text-white/85">Refolder</strong> © 2026</p>
-          <p className="mt-1.5">Hecha en Espa&ntilde;a para profesionales de la construcci&oacute;n y reformas.</p>
+          <p className="mt-1.5">Hecha en España para profesionales de la construcción, reformas e instalaciones.</p>
           <p className="mt-2 text-xs opacity-60">Pol&iacute;tica de privacidad &nbsp;|&nbsp; Aviso legal &nbsp;|&nbsp; Pol&iacute;tica de cookies</p>
         </div>
       </footer>

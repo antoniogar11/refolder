@@ -8,8 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Refolder — Presupuestos de reforma con IA en 2 minutos",
-  description: "Describe tu reforma y la IA genera el presupuesto desglosado con precios reales. Exporta un PDF profesional con tu logo. Para autónomos y empresas de construcción en España.",
+  title: "Refolder — Presupuestos de reforma e instalaciones con IA en 2 minutos",
+  description: "Describe tu reforma o instalación y la IA genera el presupuesto desglosado con precios reales. Para autónomos de reformas, fontanería, electricidad, climatización y empresas de construcción en España.",
 };
 
 export default function RootLayout({
