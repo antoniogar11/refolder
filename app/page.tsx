@@ -6,8 +6,11 @@ import { useState } from "react";
 
 export default function Home() {
   const [submitted, setSubmitted] = useState(false);
+  const [surveyDone, setSurveyDone] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [surveyLoading, setSurveyLoading] = useState(false);
   const [error, setError] = useState("");
+  const [userEmail, setUserEmail] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -16,13 +19,14 @@ export default function Home() {
 
     const form = e.currentTarget;
     const formData = new FormData(form);
+    const email = formData.get("email") as string;
 
     try {
       const res = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: formData.get("email"),
+          email,
           tipo: formData.get("tipo"),
           provincia: formData.get("provincia"),
         }),
@@ -32,11 +36,40 @@ export default function Home() {
         throw new Error("Error al registrar");
       }
 
+      setUserEmail(email);
       setSubmitted(true);
     } catch {
       setError("Ha ocurrido un error. Inténtalo de nuevo.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleSurvey(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setSurveyLoading(true);
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    try {
+      await fetch("/api/survey", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: userEmail,
+          presupuestos_mes: formData.get("presupuestos_mes"),
+          herramienta_actual: formData.get("herramienta_actual"),
+          tiempo_presupuesto: formData.get("tiempo_presupuesto"),
+          mayor_frustracion: formData.get("mayor_frustracion"),
+          pagaria: formData.get("pagaria"),
+        }),
+      });
+      setSurveyDone(true);
+    } catch {
+      setSurveyDone(true);
+    } finally {
+      setSurveyLoading(false);
     }
   }
 
@@ -386,18 +419,69 @@ export default function Home() {
                   Solo usamos tu email para avisarte del lanzamiento. Sin spam. Puedes darte de baja en cualquier momento. Cumplimos con el RGPD.
                 </p>
               </>
+            ) : !surveyDone ? (
+              <div className="text-left py-4">
+                <div className="text-center mb-5">
+                  <div className="text-4xl mb-2">🎉</div>
+                  <p className="text-lg font-bold text-gray-900">¡Plaza reservada!</p>
+                  <p className="text-gray-500 text-sm mt-1">¿Nos ayudas con 4 preguntas rápidas? (1 minuto)</p>
+                </div>
+                <form onSubmit={handleSurvey}>
+                  <label className="block text-sm font-semibold text-gray-900 mb-1.5" htmlFor="presupuestos_mes">¿Cuántos presupuestos haces al mes? *</label>
+                  <select id="presupuestos_mes" name="presupuestos_mes" required className="block w-full px-3.5 py-3 border border-gray-200 rounded-lg text-sm mb-4 focus:outline-none focus:border-[#1B5E7B] focus:ring-2 focus:ring-[#1B5E7B]/10 bg-white">
+                    <option value="" disabled selected>Selecciona</option>
+                    <option value="1-3">1–3</option>
+                    <option value="4-10">4–10</option>
+                    <option value="11-20">11–20</option>
+                    <option value="20+">Más de 20</option>
+                  </select>
+
+                  <label className="block text-sm font-semibold text-gray-900 mb-1.5" htmlFor="herramienta_actual">¿Qué usas ahora para hacerlos? *</label>
+                  <select id="herramienta_actual" name="herramienta_actual" required className="block w-full px-3.5 py-3 border border-gray-200 rounded-lg text-sm mb-4 focus:outline-none focus:border-[#1B5E7B] focus:ring-2 focus:ring-[#1B5E7B]/10 bg-white">
+                    <option value="" disabled selected>Selecciona</option>
+                    <option value="excel">Excel / Google Sheets</option>
+                    <option value="word">Word / Google Docs</option>
+                    <option value="papel">Papel / a mano</option>
+                    <option value="software">Software específico (Presto, etc.)</option>
+                    <option value="otro">Otro</option>
+                  </select>
+
+                  <label className="block text-sm font-semibold text-gray-900 mb-1.5" htmlFor="tiempo_presupuesto">¿Cuánto tardas de media en hacer uno? *</label>
+                  <select id="tiempo_presupuesto" name="tiempo_presupuesto" required className="block w-full px-3.5 py-3 border border-gray-200 rounded-lg text-sm mb-4 focus:outline-none focus:border-[#1B5E7B] focus:ring-2 focus:ring-[#1B5E7B]/10 bg-white">
+                    <option value="" disabled selected>Selecciona</option>
+                    <option value="menos_30min">Menos de 30 minutos</option>
+                    <option value="30min_1h">30 min – 1 hora</option>
+                    <option value="1h_3h">1 – 3 horas</option>
+                    <option value="mas_3h">Más de 3 horas</option>
+                  </select>
+
+                  <label className="block text-sm font-semibold text-gray-900 mb-1.5" htmlFor="pagaria">¿Pagarías 19,90 €/mes por hacer presupuestos en 2 min? *</label>
+                  <select id="pagaria" name="pagaria" required className="block w-full px-3.5 py-3 border border-gray-200 rounded-lg text-sm mb-4 focus:outline-none focus:border-[#1B5E7B] focus:ring-2 focus:ring-[#1B5E7B]/10 bg-white">
+                    <option value="" disabled selected>Selecciona</option>
+                    <option value="si">Sí, sin duda</option>
+                    <option value="depende">Depende de cómo funcione</option>
+                    <option value="menos">Solo si fuera más barato</option>
+                    <option value="no">No pagaría</option>
+                  </select>
+
+                  <button
+                    type="submit"
+                    disabled={surveyLoading}
+                    className="block w-full py-3.5 bg-[#1B5E7B] text-white font-bold text-base rounded-lg hover:bg-[#134A62] transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {surveyLoading ? "Enviando..." : "Enviar respuestas"}
+                  </button>
+                </form>
+                <button onClick={() => setSurveyDone(true)} className="block w-full mt-2 text-sm text-gray-400 hover:text-gray-600 transition-colors cursor-pointer">
+                  Saltar encuesta
+                </button>
+              </div>
             ) : (
               <div className="text-center py-6">
-                <div className="text-5xl mb-4">🎉</div>
-                <p className="text-xl font-bold text-gray-900 mb-2">¡Plaza reservada!</p>
-                <p className="text-gray-500 text-sm mb-6">
-                  Estarás entre los primeros en probar Refolder. Te avisaremos por email cuando esté lista.
-                </p>
+                <div className="text-5xl mb-4">🚀</div>
+                <p className="text-xl font-bold text-gray-900 mb-2">¡Gracias!</p>
                 <p className="text-gray-500 text-sm">
-                  ¿Puedes ayudarnos con 2 minutos más?{" "}
-                  <a href="https://forms.gle/TU_ENCUESTA" target="_blank" rel="noopener noreferrer" className="text-[#1B5E7B] font-semibold underline hover:text-[#134A62]">
-                    Responde esta encuesta rápida
-                  </a>
+                  Tu plaza está reservada. Te avisaremos por email cuando Refolder esté lista.
                 </p>
               </div>
             )}
