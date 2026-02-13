@@ -6,17 +6,38 @@ import { useState } from "react";
 
 export default function Home() {
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setLoading(true);
+    setError("");
+
     const form = e.currentTarget;
-    const data = new FormData(form);
-    await fetch(form.action, {
-      method: "POST",
-      body: data,
-      headers: { Accept: "application/json" },
-    });
-    setSubmitted(true);
+    const formData = new FormData(form);
+
+    try {
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.get("email"),
+          tipo: formData.get("tipo"),
+          provincia: formData.get("provincia"),
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Error al registrar");
+      }
+
+      setSubmitted(true);
+    } catch {
+      setError("Ha ocurrido un error. Inténtalo de nuevo.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -301,7 +322,7 @@ export default function Home() {
           <div className="bg-white rounded-xl p-9 max-w-[500px] mx-auto shadow-2xl">
             {!submitted ? (
               <>
-                <form action="https://formspree.io/f/TU_ID_FORMSPREE" method="POST" onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit}>
                   <label className="block text-sm font-semibold text-gray-900 mb-1.5 text-left" htmlFor="email">Tu email profesional *</label>
                   <input
                     type="email" id="email" name="email" placeholder="tu@email.com" required
@@ -352,11 +373,15 @@ export default function Home() {
 
                   <button
                     type="submit"
-                    className="block w-full py-3.5 bg-[#E8913A] text-white font-bold text-base rounded-lg hover:bg-[#D07A2B] transition-colors cursor-pointer"
+                    disabled={loading}
+                    className="block w-full py-3.5 bg-[#E8913A] text-white font-bold text-base rounded-lg hover:bg-[#D07A2B] transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    Reservar mi plaza gratis →
+                    {loading ? "Registrando..." : "Reservar mi plaza gratis →"}
                   </button>
                 </form>
+                {error && (
+                  <p className="mt-3 text-sm text-red-600 text-center font-medium">{error}</p>
+                )}
                 <p className="mt-3 text-xs text-gray-500 text-center">
                   Solo usamos tu email para avisarte del lanzamiento. Sin spam. Puedes darte de baja en cualquier momento. Cumplimos con el RGPD.
                 </p>
