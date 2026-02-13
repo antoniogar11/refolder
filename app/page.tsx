@@ -96,7 +96,7 @@ export default function Home() {
           <span className="inline-block bg-[#FFF3E6] text-[#E8913A] font-semibold text-sm px-4 py-1.5 rounded-full mb-6">
             Acceso anticipado &mdash; Plazas limitadas
           </span>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight max-w-[750px] mx-auto mb-5">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight max-w-[750px] mx-auto mb-5">
             Deja de perder horas con Excel.{" "}
             <span className="text-[#1B5E7B]">Genera presupuestos de reforma e instalaciones con IA en 2&nbsp;minutos.</span>
           </h1>
