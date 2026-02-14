@@ -94,3 +94,26 @@ export async function getAllProjects(): Promise<Pick<Project, "id" | "name">[]> 
 
   return data ?? [];
 }
+
+export async function getProjectsByClientId(clientId: string): Promise<Project[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*, client:clients(id, name)")
+    .eq("user_id", user.id)
+    .eq("client_id", clientId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching projects by client", error);
+    return [];
+  }
+
+  return (data as Project[]) ?? [];
+}

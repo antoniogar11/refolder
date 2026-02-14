@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Users, Building2, FileText, Truck, BarChart3 } from "lucide-react";
+import { Users, Building2, FileText, CircleDollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getDashboardStats } from "@/lib/data/dashboard";
@@ -67,7 +67,7 @@ export default async function DashboardPage() {
             <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
               Presupuestos Aceptados
             </CardTitle>
-            <BarChart3 className="h-4 w-4 text-gray-400" />
+            <CircleDollarSign className="h-4 w-4 text-gray-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -123,7 +123,8 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        {/* Proveedores y Finanzas ocultos temporalmente - módulos no prioritarios para MVP */}
+        {/* <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Truck className="h-5 w-5" />
@@ -151,7 +152,7 @@ export default async function DashboardPage() {
               <Button className="w-full">Ver Finanzas</Button>
             </Link>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
 
       <div className="mt-8">
@@ -169,9 +170,9 @@ export default async function DashboardPage() {
             <Link href="/dashboard/presupuestos">
               <Button variant="outline">Crear Presupuesto</Button>
             </Link>
-            <Link href="/dashboard/proveedores">
+            {/* <Link href="/dashboard/proveedores">
               <Button variant="outline">Nuevo Proveedor</Button>
-            </Link>
+            </Link> */}
           </CardContent>
         </Card>
       </div>

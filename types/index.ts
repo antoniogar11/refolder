@@ -65,9 +65,24 @@ export type Estimate = {
   total_amount: number;
   status: EstimateStatus;
   valid_until: string | null;
+  notes: string | null;
   created_at: string;
   updated_at: string;
   project?: Pick<Project, "id" | "name"> & {
     client?: Pick<Client, "id" | "name">;
   };
+  items?: EstimateItem[];
+};
+
+export type EstimateItem = {
+  id: string;
+  estimate_id: string;
+  categoria: string;
+  descripcion: string;
+  unidad: string;
+  cantidad: number;
+  precio_unitario: number;
+  subtotal: number;
+  orden: number;
+  created_at: string;
 };

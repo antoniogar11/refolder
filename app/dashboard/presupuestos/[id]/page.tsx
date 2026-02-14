@@ -1,63 +1,89 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
-import { deleteEstimateAction } from "@/app/dashboard/presupuestos/actions";
-import { EstimateForm } from "@/components/estimates/estimate-form";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getEstimateById } from "@/lib/data/estimates";
-import { getAllProjects } from "@/lib/data/projects";
-import { DeleteEntityButton } from "@/components/shared/delete-entity-button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/dashboard/status-badge";
+import { DeleteEntityButton } from "@/components/shared/delete-entity-button";
+import { getEstimateById } from "@/lib/data/estimates";
+import { getEstimateItems } from "@/lib/data/estimate-items";
+import { deleteEstimateAction } from "@/app/dashboard/presupuestos/actions";
+import { EstimateItemsEditor } from "@/components/estimates/estimate-items-editor";
+import { EstimateStatusSelect } from "@/components/estimates/estimate-status-select";
+import { ExportPDFButton } from "@/components/estimates/export-pdf-button";
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
 }
 
-type EstimateEditPageProps = {
+type EstimateDetailPageProps = {
   params: Promise<{ id: string }>;
 };
 
-export default async function EstimateEditPage({ params }: EstimateEditPageProps) {
+export default async function EstimateDetailPage({ params }: EstimateDetailPageProps) {
   const { id } = await params;
-  const [estimate, projects] = await Promise.all([
+  const [estimate, items] = await Promise.all([
     getEstimateById(id),
-    getAllProjects(),
+    getEstimateItems(id),
   ]);
 
   if (!estimate) {
     redirect("/dashboard/presupuestos");
   }
 
+  const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
+  const iva = Math.round(subtotal * 0.21 * 100) / 100;
+  const total = Math.round((subtotal + iva) * 100) / 100;
+
   return (
-    <div className="max-w-4xl">
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Editar Presupuesto</h2>
-        <p className="mt-1 text-gray-600 dark:text-gray-400">Modifica la informacion del presupuesto</p>
+    <div className="max-w-5xl">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+            {estimate.name}
+          </h2>
+          <p className="mt-1 text-gray-600 dark:text-gray-400">
+            Obra:{" "}
+            {estimate.project ? (
+              <Link
+                href={`/dashboard/obras/${estimate.project.id}`}
+                className="hover:text-blue-600 underline"
+              >
+                {estimate.project.name}
+              </Link>
+            ) : (
+              "Sin asignar"
+            )}
+            {estimate.project?.client && (
+              <>
+                {" "}· Cliente:{" "}
+                <Link
+                  href={`/dashboard/clientes/${estimate.project.client.id}`}
+                  className="hover:text-blue-600 underline"
+                >
+                  {estimate.project.client.name}
+                </Link>
+              </>
+            )}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <ExportPDFButton estimate={estimate} items={items} />
+          <EstimateStatusSelect estimateId={estimate.id} currentStatus={estimate.status} />
+          <DeleteEntityButton
+            entityId={estimate.id}
+            entityName={estimate.name}
+            redirectPath="/dashboard/presupuestos"
+            onDelete={deleteEstimateAction}
+          />
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                {estimate.name}
-                <StatusBadge type="estimate" status={estimate.status} />
-              </CardTitle>
-              <CardDescription>
-                Obra: {estimate.project?.name || "Sin asignar"} | Importe: {formatCurrency(estimate.total_amount)}
-              </CardDescription>
-            </div>
-            <DeleteEntityButton
-              entityId={estimate.id}
-              entityName={estimate.name}
-              redirectPath="/dashboard/presupuestos"
-              onDelete={deleteEstimateAction}
-            />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <EstimateForm estimate={estimate} projects={projects} />
-        </CardContent>
-      </Card>
+      <EstimateItemsEditor
+        estimateId={estimate.id}
+        initialItems={items}
+        estimateTotal={estimate.total_amount}
+      />
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Building2, FileText, Truck, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Users, Building2, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -10,8 +10,9 @@ const navItems = [
   { href: "/dashboard/clientes", label: "Clientes", icon: Users },
   { href: "/dashboard/obras", label: "Obras", icon: Building2 },
   { href: "/dashboard/presupuestos", label: "Presupuestos", icon: FileText },
-  { href: "/dashboard/proveedores", label: "Proveedores", icon: Truck },
-  { href: "/dashboard/finanzas", label: "Finanzas", icon: BarChart3 },
+  // Ocultos temporalmente - módulos no prioritarios para MVP
+  // { href: "/dashboard/proveedores", label: "Proveedores", icon: Truck },
+  // { href: "/dashboard/finanzas", label: "Finanzas", icon: BarChart3 },
 ];
 
 export function Sidebar() {

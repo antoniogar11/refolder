@@ -110,3 +110,173 @@ export async function deleteEstimateAction(
   revalidatePath("/dashboard/presupuestos");
   return { success: true, message: "Presupuesto eliminado correctamente." };
 }
+
+export async function createEstimateWithItemsAction(
+  projectId: string,
+  name: string,
+  description: string,
+  items: { categoria: string; descripcion: string; unidad: string; cantidad: number; precio_unitario: number; subtotal: number; orden: number }[],
+  totalAmount: number,
+): Promise<{ success: boolean; message: string; estimateId?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { success: false, message: "No estás autenticado." };
+  }
+
+  // Create estimate header
+  const { data: estimate, error: estimateError } = await supabase
+    .from("estimates")
+    .insert({
+      user_id: user.id,
+      project_id: projectId,
+      name,
+      description,
+      total_amount: totalAmount,
+      status: "draft",
+    })
+    .select("id")
+    .single();
+
+  if (estimateError || !estimate) {
+    console.error("Error creating estimate", estimateError);
+    return { success: false, message: `No se pudo crear el presupuesto: ${estimateError?.message}` };
+  }
+
+  // Create items
+  if (items.length > 0) {
+    const rows = items.map((item, index) => ({
+      estimate_id: estimate.id,
+      categoria: item.categoria,
+      descripcion: item.descripcion,
+      unidad: item.unidad,
+      cantidad: item.cantidad,
+      precio_unitario: item.precio_unitario,
+      subtotal: item.subtotal,
+      orden: item.orden ?? index,
+    }));
+
+    const { error: itemsError } = await supabase.from("estimate_items").insert(rows);
+    if (itemsError) {
+      console.error("Error creating estimate items", itemsError);
+      // Delete the estimate if items failed
+      await supabase.from("estimates").delete().eq("id", estimate.id);
+      return { success: false, message: "Error al guardar las partidas del presupuesto." };
+    }
+  }
+
+  revalidatePath("/dashboard/presupuestos");
+  revalidatePath(`/dashboard/obras/${projectId}`);
+  return { success: true, message: "Presupuesto creado correctamente.", estimateId: estimate.id };
+}
+
+export async function updateEstimateItemAction(
+  itemId: string,
+  data: { cantidad?: number; precio_unitario?: number; descripcion?: string; categoria?: string; unidad?: string },
+): Promise<{ success: boolean; message: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No estás autenticado." };
+
+  const subtotal = (data.cantidad ?? 0) * (data.precio_unitario ?? 0);
+  const updateData = { ...data, subtotal: Math.round(subtotal * 100) / 100 };
+
+  const { error } = await supabase
+    .from("estimate_items")
+    .update(updateData)
+    .eq("id", itemId);
+
+  if (error) {
+    console.error("Error updating estimate item", error);
+    return { success: false, message: error.message };
+  }
+
+  return { success: true, message: "Partida actualizada." };
+}
+
+export async function addEstimateItemAction(
+  estimateId: string,
+  item: { categoria: string; descripcion: string; unidad: string; cantidad: number; precio_unitario: number; orden: number },
+): Promise<{ success: boolean; message: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No estás autenticado." };
+
+  const subtotal = Math.round(item.cantidad * item.precio_unitario * 100) / 100;
+
+  const { error } = await supabase.from("estimate_items").insert({
+    estimate_id: estimateId,
+    ...item,
+    subtotal,
+  });
+
+  if (error) {
+    console.error("Error adding estimate item", error);
+    return { success: false, message: error.message };
+  }
+
+  revalidatePath(`/dashboard/presupuestos/${estimateId}`);
+  return { success: true, message: "Partida añadida." };
+}
+
+export async function deleteEstimateItemAction(
+  itemId: string,
+  estimateId: string,
+): Promise<{ success: boolean; message: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No estás autenticado." };
+
+  const { error } = await supabase.from("estimate_items").delete().eq("id", itemId);
+
+  if (error) {
+    console.error("Error deleting estimate item", error);
+    return { success: false, message: error.message };
+  }
+
+  revalidatePath(`/dashboard/presupuestos/${estimateId}`);
+  return { success: true, message: "Partida eliminada." };
+}
+
+export async function updateEstimateStatusAction(
+  estimateId: string,
+  status: string,
+): Promise<{ success: boolean; message: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No estás autenticado." };
+
+  const { error } = await supabase
+    .from("estimates")
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq("id", estimateId)
+    .eq("user_id", user.id);
+
+  if (error) {
+    console.error("Error updating estimate status", error);
+    return { success: false, message: error.message };
+  }
+
+  revalidatePath("/dashboard/presupuestos");
+  revalidatePath(`/dashboard/presupuestos/${estimateId}`);
+  return { success: true, message: "Estado actualizado." };
+}
+
+export async function updateEstimateTotalAction(
+  estimateId: string,
+  totalAmount: number,
+): Promise<{ success: boolean; message: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No estás autenticado." };
+
+  const { error } = await supabase
+    .from("estimates")
+    .update({ total_amount: totalAmount, updated_at: new Date().toISOString() })
+    .eq("id", estimateId)
+    .eq("user_id", user.id);
+
+  if (error) return { success: false, message: error.message };
+  return { success: true, message: "Total actualizado." };
+}

@@ -1,15 +1,20 @@
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { NewProjectForm } from "@/components/projects/new-project-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { SearchInput } from "@/components/dashboard/search-input";
 import { Pagination } from "@/components/dashboard/pagination";
 import { StatusBadge } from "@/components/dashboard/status-badge";
-import { ProjectForm } from "@/components/projects/project-form";
 import { getProjects } from "@/lib/data/projects";
 import { getAllClients } from "@/lib/data/clients";
 
@@ -19,14 +24,14 @@ function formatCurrency(amount: number | null) {
 }
 
 type ObrasPageProps = {
-  searchParams: Promise<{ q?: string; status?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; page?: string }>;
 };
 
 export default async function ObrasPage({ searchParams }: ObrasPageProps) {
   const params = await searchParams;
   const page = Number(params.page) || 1;
   const [{ projects, total }, clients] = await Promise.all([
-    getProjects({ query: params.q, status: params.status, page }),
+    getProjects({ query: params.q, page }),
     getAllClients(),
   ]);
   const totalPages = Math.ceil(total / 20);
@@ -50,10 +55,14 @@ export default async function ObrasPage({ searchParams }: ObrasPageProps) {
         className="mb-10 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900"
       >
         <div className="mb-4">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Crear nueva obra</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Completa el formulario para crear una obra.</p>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Crear nueva obra
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Completa el formulario para crear una obra.
+          </p>
         </div>
-        <ProjectForm clients={clients} />
+        <NewProjectForm clients={clients} />
       </div>
 
       <Suspense>
@@ -63,7 +72,9 @@ export default async function ObrasPage({ searchParams }: ObrasPageProps) {
       {projects.length === 0 ? (
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>{params.q || params.status ? "Sin resultados" : "No tienes obras todavía"}</CardTitle>
+            <CardTitle>
+              {params.q ? "Sin resultados" : "No tienes obras todavía"}
+            </CardTitle>
             <CardDescription>
               {params.q
                 ? `No se encontraron obras para "${params.q}".`

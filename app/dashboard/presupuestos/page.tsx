@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -9,9 +8,7 @@ import {
 import { SearchInput } from "@/components/dashboard/search-input";
 import { Pagination } from "@/components/dashboard/pagination";
 import { StatusBadge } from "@/components/dashboard/status-badge";
-import { EstimateForm } from "@/components/estimates/estimate-form";
 import { getEstimates } from "@/lib/data/estimates";
-import { getAllProjects } from "@/lib/data/projects";
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
@@ -24,10 +21,7 @@ type PresupuestosPageProps = {
 export default async function PresupuestosPage({ searchParams }: PresupuestosPageProps) {
   const params = await searchParams;
   const page = Number(params.page) || 1;
-  const [{ estimates, total }, projects] = await Promise.all([
-    getEstimates({ query: params.q, status: params.status, page }),
-    getAllProjects(),
-  ]);
+  const { estimates, total } = await getEstimates({ query: params.q, status: params.status, page });
   const totalPages = Math.ceil(total / 20);
 
   return (
@@ -39,20 +33,9 @@ export default async function PresupuestosPage({ searchParams }: PresupuestosPag
             {total} presupuesto{total !== 1 ? "s" : ""} registrado{total !== 1 ? "s" : ""}
           </p>
         </div>
-        <a href="#nuevo-presupuesto">
-          <Button>Nuevo Presupuesto</Button>
-        </a>
-      </div>
-
-      <div
-        id="nuevo-presupuesto"
-        className="mb-10 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900"
-      >
-        <div className="mb-4">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Crear nuevo presupuesto</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Completa el formulario para crear un presupuesto.</p>
-        </div>
-        <EstimateForm projects={projects} />
+        <p className="text-sm text-gray-500">
+          Para crear un presupuesto, ve a una obra y haz clic en &quot;Generar presupuesto&quot;
+        </p>
       </div>
 
       <Suspense>
@@ -62,11 +45,11 @@ export default async function PresupuestosPage({ searchParams }: PresupuestosPag
       {estimates.length === 0 ? (
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>{params.q || params.status ? "Sin resultados" : "No tienes presupuestos todavia"}</CardTitle>
+            <CardTitle>{params.q || params.status ? "Sin resultados" : "No tienes presupuestos todavía"}</CardTitle>
             <CardDescription>
               {params.q
                 ? `No se encontraron presupuestos para "${params.q}".`
-                : "Crea tu primer presupuesto para empezar."}
+                : "Ve a una obra para generar tu primer presupuesto con IA."}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -79,9 +62,9 @@ export default async function PresupuestosPage({ searchParams }: PresupuestosPag
                   <TableHead>Nombre</TableHead>
                   <TableHead>Obra</TableHead>
                   <TableHead>Cliente</TableHead>
-                  <TableHead>Importe</TableHead>
+                  <TableHead className="text-right">Total</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead>Valido hasta</TableHead>
+                  <TableHead>Fecha</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -101,14 +84,14 @@ export default async function PresupuestosPage({ searchParams }: PresupuestosPag
                     <TableCell className="text-gray-600 dark:text-gray-400">
                       {estimate.project?.client?.name || "-"}
                     </TableCell>
-                    <TableCell className="font-medium">
+                    <TableCell className="text-right font-medium">
                       {formatCurrency(estimate.total_amount)}
                     </TableCell>
                     <TableCell>
                       <StatusBadge type="estimate" status={estimate.status} />
                     </TableCell>
                     <TableCell className="text-gray-600 dark:text-gray-400">
-                      {estimate.valid_until || "-"}
+                      {new Date(estimate.created_at).toLocaleDateString("es-ES")}
                     </TableCell>
                   </TableRow>
                 ))}
