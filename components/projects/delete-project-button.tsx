@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteProjectAction } from "@/app/dashboard/obras/actions";
+import { deleteProjectAction } from "@/app/dashboard/proyectos/actions";
 import { DeleteEntityButton } from "@/components/shared/delete-entity-button";
 
 type DeleteProjectButtonProps = {
@@ -13,7 +13,7 @@ export function DeleteProjectButton({ projectId, projectName }: DeleteProjectBut
     <DeleteEntityButton
       entityId={projectId}
       entityName={projectName}
-      redirectPath="/dashboard/obras"
+      redirectPath="/dashboard/proyectos"
       onDelete={deleteProjectAction}
     />
   );

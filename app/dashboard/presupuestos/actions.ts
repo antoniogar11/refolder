@@ -112,7 +112,8 @@ export async function deleteEstimateAction(
 }
 
 export async function createEstimateWithItemsAction(
-  projectId: string,
+  projectId: string | null,
+  clientId: string | null,
   name: string,
   description: string,
   items: { categoria: string; descripcion: string; unidad: string; cantidad: number; precio_unitario: number; subtotal: number; orden: number }[],
@@ -125,17 +126,24 @@ export async function createEstimateWithItemsAction(
     return { success: false, message: "No estás autenticado." };
   }
 
+  // Build insert data
+  const insertData: Record<string, unknown> = {
+    user_id: user.id,
+    name,
+    description,
+    total_amount: totalAmount,
+    status: "draft",
+    client_id: clientId,
+  };
+
+  if (projectId) {
+    insertData.project_id = projectId;
+  }
+
   // Create estimate header
   const { data: estimate, error: estimateError } = await supabase
     .from("estimates")
-    .insert({
-      user_id: user.id,
-      project_id: projectId,
-      name,
-      description,
-      total_amount: totalAmount,
-      status: "draft",
-    })
+    .insert(insertData)
     .select("id")
     .single();
 
@@ -167,7 +175,9 @@ export async function createEstimateWithItemsAction(
   }
 
   revalidatePath("/dashboard/presupuestos");
-  revalidatePath(`/dashboard/obras/${projectId}`);
+  if (projectId) {
+    revalidatePath(`/dashboard/proyectos/${projectId}`);
+  }
   return { success: true, message: "Presupuesto creado correctamente.", estimateId: estimate.id };
 }
 

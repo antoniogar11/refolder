@@ -21,7 +21,7 @@ export default async function DashboardPage() {
           Panel de Control
         </h2>
         <p className="mt-2 text-slate-500 dark:text-slate-400">
-          Gestiona tus obras, clientes y presupuestos desde aquí
+          Gestiona tus proyectos, clientes y presupuestos desde aquí
         </p>
       </div>
 
@@ -43,7 +43,7 @@ export default async function DashboardPage() {
         <Card className="border-t-4 border-t-emerald-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              Obras Activas
+              Proyectos Activos
             </CardTitle>
             <div className="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center">
               <Building2 className="h-4 w-4 text-emerald-600" />
@@ -90,13 +90,13 @@ export default async function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Building2 className="h-5 w-5" />
-              Obras
+              Proyectos
             </CardTitle>
             <CardDescription>Gestionar proyectos</CardDescription>
           </CardHeader>
           <CardContent>
-            <Link href="/dashboard/obras">
-              <Button className="w-full">Ver Obras</Button>
+            <Link href="/dashboard/proyectos">
+              <Button className="w-full">Ver Proyectos</Button>
             </Link>
           </CardContent>
         </Card>
@@ -169,8 +169,8 @@ export default async function DashboardPage() {
             <CardTitle>Acciones Rápidas</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
-            <Link href="/dashboard/obras">
-              <Button variant="outline">Nueva Obra</Button>
+            <Link href="/dashboard/proyectos">
+              <Button variant="outline">Nuevo Proyecto</Button>
             </Link>
             <Link href="/dashboard/clientes">
               <Button variant="outline">Nuevo Cliente</Button>

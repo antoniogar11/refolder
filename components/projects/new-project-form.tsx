@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 
-import { createProjectAction } from "@/app/dashboard/obras/actions";
+import { createProjectAction } from "@/app/dashboard/proyectos/actions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,7 +20,7 @@ export function NewProjectForm({ clients }: NewProjectFormProps) {
   return (
     <form action={formAction} className="space-y-4" noValidate>
       <div className="space-y-2">
-        <Label htmlFor="name">Nombre de la obra *</Label>
+        <Label htmlFor="name">Nombre del proyecto *</Label>
         <Input id="name" name="name" type="text" required placeholder="Ej. Reforma integral piso" />
         <FieldError messages={state.errors?.name} />
       </div>
@@ -60,7 +60,7 @@ export function NewProjectForm({ clients }: NewProjectFormProps) {
 
       <div className="space-y-2">
         <Label htmlFor="description">Descripción</Label>
-        <Textarea id="description" name="description" placeholder="Detalles de la obra" />
+        <Textarea id="description" name="description" placeholder="Detalles del proyecto" />
       </div>
 
       <div className="space-y-2">
@@ -86,7 +86,7 @@ export function NewProjectForm({ clients }: NewProjectFormProps) {
       </div>
 
       <FormMessage status={state.status} message={state.message} />
-      <SubmitButton label="Crear Obra" />
+      <SubmitButton label="Crear Proyecto" />
     </form>
   );
 }

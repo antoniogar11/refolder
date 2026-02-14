@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dashboard/clientes", label: "Clientes", icon: Users },
-  { href: "/dashboard/obras", label: "Obras", icon: Building2 },
+  { href: "/dashboard/proyectos", label: "Proyectos", icon: Building2 },
   { href: "/dashboard/presupuestos", label: "Presupuestos", icon: FileText },
   // Ocultos temporalmente - módulos no prioritarios para MVP
   // { href: "/dashboard/proveedores", label: "Proveedores", icon: Truck },

@@ -23,7 +23,7 @@ export async function getEstimates(
 
   let queryBuilder = supabase
     .from("estimates")
-    .select("*, project:projects(id, name, client:clients(id, name))", {
+    .select("*, project:projects(id, name, client:clients(id, name)), client:clients!estimates_client_id_fkey(id, name)", {
       count: "exact",
     })
     .eq("user_id", user.id);
@@ -67,7 +67,7 @@ export async function getEstimateById(id: string): Promise<Estimate | null> {
 
   const { data, error } = await supabase
     .from("estimates")
-    .select("*, project:projects(id, name, client:clients(id, name))")
+    .select("*, project:projects(id, name, client:clients(id, name)), client:clients!estimates_client_id_fkey(id, name)")
     .eq("id", id)
     .eq("user_id", user.id)
     .single();
@@ -78,4 +78,22 @@ export async function getEstimateById(id: string): Promise<Estimate | null> {
   }
 
   return data as Estimate;
+}
+
+export async function getAllEstimates(): Promise<Pick<Estimate, "id" | "name" | "total_amount">[]> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from("estimates")
+    .select("id, name, total_amount")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching all estimates", error);
+    return [];
+  }
+  return data ?? [];
 }

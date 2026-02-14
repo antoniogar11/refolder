@@ -75,8 +75,8 @@ export default function Home() {
                 <div className="h-12 w-12 rounded-lg bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center mb-3">
                   <Building2 className="h-6 w-6 text-amber-600 dark:text-amber-400" />
                 </div>
-                <CardTitle className="text-lg">Control de Obras</CardTitle>
-                <CardDescription className="text-sm">Organiza tus proyectos por cliente, estado y presupuesto. Todo conectado.</CardDescription>
+                <CardTitle className="text-lg">Control de Proyectos</CardTitle>
+                <CardDescription className="text-sm">Gestiona tus proyectos, controla costes reales vs presupuestados y mantén el margen.</CardDescription>
               </CardHeader>
             </Card>
 
@@ -119,8 +119,8 @@ export default function Home() {
               <div className="mx-auto h-12 w-12 rounded-full bg-slate-900 text-white flex items-center justify-center text-xl font-bold mb-4">
                 2
               </div>
-              <h3 className="font-semibold text-slate-900 dark:text-white mb-2">Crea la obra</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Define el proyecto: ubicación, tipo de trabajo, presupuesto estimado</p>
+              <h3 className="font-semibold text-slate-900 dark:text-white mb-2">Describe el trabajo</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Indica el tipo de obra, dimensiones y detalles del trabajo a realizar</p>
             </div>
             <div className="text-center">
               <div className="mx-auto h-12 w-12 rounded-full bg-slate-900 text-white flex items-center justify-center text-xl font-bold mb-4">
@@ -169,7 +169,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />
-                  <span>Gestión de obras</span>
+                  <span>Gestión de proyectos</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Check className="h-4 w-4 text-emerald-500 flex-shrink-0" />

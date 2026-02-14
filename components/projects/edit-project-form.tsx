@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { useRouter } from "next/navigation";
 
-import { updateProjectAction } from "@/app/dashboard/obras/actions";
+import { updateProjectAction } from "@/app/dashboard/proyectos/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,14 +25,14 @@ export function EditProjectForm({ project, clients }: EditProjectFormProps) {
   const [state, formAction] = useActionState(updateAction, initialFormState);
 
   if (state.status === "success") {
-    router.push("/dashboard/obras");
+    router.push("/dashboard/proyectos");
     router.refresh();
   }
 
   return (
     <form action={formAction} className="space-y-4" noValidate>
       <div className="space-y-2">
-        <Label htmlFor="name">Nombre de la obra *</Label>
+        <Label htmlFor="name">Nombre del proyecto *</Label>
         <Input
           id="name"
           name="name"
@@ -82,7 +82,7 @@ export function EditProjectForm({ project, clients }: EditProjectFormProps) {
         <Textarea
           id="description"
           name="description"
-          placeholder="Detalles de la obra"
+          placeholder="Detalles del proyecto"
           defaultValue={project.description || ""}
         />
       </div>

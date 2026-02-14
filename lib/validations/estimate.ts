@@ -2,7 +2,8 @@ import { z } from "zod";
 
 export const estimateSchema = z.object({
   name: z.string().min(1, "El nombre es obligatorio."),
-  project_id: z.string().min(1, "Selecciona una obra."),
+  project_id: z.string().transform((v) => v || null).nullable().optional(),
+  client_id: z.string().transform((v) => v || null).nullable().optional(),
   description: z
     .string()
     .transform((v) => v || null),

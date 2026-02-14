@@ -23,11 +23,11 @@ function formatCurrency(amount: number | null) {
   return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
 }
 
-type ObrasPageProps = {
+type ProyectosPageProps = {
   searchParams: Promise<{ q?: string; page?: string }>;
 };
 
-export default async function ObrasPage({ searchParams }: ObrasPageProps) {
+export default async function ProyectosPage({ searchParams }: ProyectosPageProps) {
   const params = await searchParams;
   const page = Number(params.page) || 1;
   const [{ projects, total }, clients] = await Promise.all([
@@ -40,45 +40,45 @@ export default async function ObrasPage({ searchParams }: ObrasPageProps) {
     <div>
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Obras</h2>
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Proyectos</h2>
           <p className="mt-1 text-slate-500 dark:text-slate-400">
-            {total} obra{total !== 1 ? "s" : ""} registrada{total !== 1 ? "s" : ""}
+            {total} proyecto{total !== 1 ? "s" : ""} registrado{total !== 1 ? "s" : ""}
           </p>
         </div>
-        <a href="#nueva-obra">
-          <Button>Nueva Obra</Button>
+        <a href="#nuevo-proyecto">
+          <Button>Nuevo Proyecto</Button>
         </a>
       </div>
 
       <div
-        id="nueva-obra"
+        id="nuevo-proyecto"
         className="mb-10 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="mb-4">
           <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
-            Crear nueva obra
+            Crear nuevo proyecto
           </h3>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Completa el formulario para crear una obra.
+            Completa el formulario para crear un proyecto.
           </p>
         </div>
         <NewProjectForm clients={clients} />
       </div>
 
       <Suspense>
-        <SearchInput placeholder="Buscar obras..." />
+        <SearchInput placeholder="Buscar proyectos..." />
       </Suspense>
 
       {projects.length === 0 ? (
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>
-              {params.q ? "Sin resultados" : "No tienes obras todavía"}
+              {params.q ? "Sin resultados" : "No tienes proyectos todavía"}
             </CardTitle>
             <CardDescription>
               {params.q
-                ? `No se encontraron obras para "${params.q}".`
-                : "Crea tu primera obra para empezar."}
+                ? `No se encontraron proyectos para "${params.q}".`
+                : "Crea tu primer proyecto para empezar."}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -100,7 +100,7 @@ export default async function ObrasPage({ searchParams }: ObrasPageProps) {
                   <TableRow key={project.id}>
                     <TableCell>
                       <Link
-                        href={`/dashboard/obras/${project.id}`}
+                        href={`/dashboard/proyectos/${project.id}`}
                         className="font-medium text-slate-900 dark:text-white hover:text-amber-600 dark:hover:text-amber-400"
                       >
                         {project.name}

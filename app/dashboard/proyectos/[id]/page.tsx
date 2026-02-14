@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 
-import { deleteProjectAction } from "@/app/dashboard/obras/actions";
+import { deleteProjectAction } from "@/app/dashboard/proyectos/actions";
 import { EditProjectForm } from "@/components/projects/edit-project-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -32,17 +32,17 @@ export default async function ProjectEditPage({ params }: ProjectEditPageProps) 
   ]);
 
   if (!project) {
-    redirect("/dashboard/obras");
+    redirect("/dashboard/proyectos");
   }
 
   return (
     <div className="max-w-5xl">
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
-          Editar Obra
+          Editar Proyecto
         </h2>
         <p className="mt-1 text-slate-500 dark:text-slate-400">
-          Modifica la información de la obra
+          Modifica la información del proyecto
         </p>
       </div>
 
@@ -71,7 +71,7 @@ export default async function ProjectEditPage({ params }: ProjectEditPageProps) 
             <DeleteEntityButton
               entityId={project.id}
               entityName={project.name}
-              redirectPath="/dashboard/obras"
+              redirectPath="/dashboard/proyectos"
               onDelete={deleteProjectAction}
             />
           </div>
@@ -81,7 +81,7 @@ export default async function ProjectEditPage({ params }: ProjectEditPageProps) 
         </CardContent>
       </Card>
 
-      {/* Presupuestos de esta obra */}
+      {/* Presupuestos de este proyecto */}
       <Card className="mt-6">
         <CardHeader>
           <CardTitle>Presupuestos ({estimates.length})</CardTitle>
@@ -89,7 +89,7 @@ export default async function ProjectEditPage({ params }: ProjectEditPageProps) 
         <CardContent>
           {estimates.length === 0 ? (
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              Esta obra no tiene presupuestos. Genera uno con IA a continuación.
+              Este proyecto no tiene presupuestos. Genera uno con IA a continuación.
             </p>
           ) : (
             <Table>

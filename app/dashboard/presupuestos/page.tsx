@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { Plus } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -33,9 +35,12 @@ export default async function PresupuestosPage({ searchParams }: PresupuestosPag
             {total} presupuesto{total !== 1 ? "s" : ""} registrado{total !== 1 ? "s" : ""}
           </p>
         </div>
-        <p className="text-sm text-slate-500">
-          Para crear un presupuesto, ve a una obra y haz clic en &quot;Generar presupuesto&quot;
-        </p>
+        <Link href="/dashboard/presupuestos/nuevo">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Nuevo Presupuesto
+          </Button>
+        </Link>
       </div>
 
       <Suspense>
@@ -49,7 +54,7 @@ export default async function PresupuestosPage({ searchParams }: PresupuestosPag
             <CardDescription>
               {params.q
                 ? `No se encontraron presupuestos para "${params.q}".`
-                : "Ve a una obra para generar tu primer presupuesto con IA."}
+                : "Crea tu primer presupuesto con IA."}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -60,7 +65,7 @@ export default async function PresupuestosPage({ searchParams }: PresupuestosPag
               <TableHeader>
                 <TableRow>
                   <TableHead>Nombre</TableHead>
-                  <TableHead>Obra</TableHead>
+                  <TableHead>Proyecto</TableHead>
                   <TableHead>Cliente</TableHead>
                   <TableHead className="text-right">Total</TableHead>
                   <TableHead>Estado</TableHead>
@@ -82,7 +87,7 @@ export default async function PresupuestosPage({ searchParams }: PresupuestosPag
                       {estimate.project?.name || "-"}
                     </TableCell>
                     <TableCell className="text-slate-500 dark:text-slate-400">
-                      {estimate.project?.client?.name || "-"}
+                      {estimate.client?.name || estimate.project?.client?.name || "-"}
                     </TableCell>
                     <TableCell className="text-right font-medium">
                       {formatCurrency(estimate.total_amount)}

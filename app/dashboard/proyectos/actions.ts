@@ -41,11 +41,11 @@ export async function createProjectAction(
 
   if (error) {
     console.error("Error creating project", error);
-    return { status: "error", message: `No se pudo crear la obra: ${error.message}` };
+    return { status: "error", message: `No se pudo crear el proyecto: ${error.message}` };
   }
 
-  revalidatePath("/dashboard/obras");
-  return { status: "success", message: "Obra creada correctamente." };
+  revalidatePath("/dashboard/proyectos");
+  return { status: "success", message: "Proyecto creado correctamente." };
 }
 
 export async function updateProjectAction(
@@ -76,12 +76,12 @@ export async function updateProjectAction(
 
   if (error) {
     console.error("Error updating project", error);
-    return { status: "error", message: `No se pudo actualizar la obra: ${error.message}` };
+    return { status: "error", message: `No se pudo actualizar el proyecto: ${error.message}` };
   }
 
-  revalidatePath("/dashboard/obras");
-  revalidatePath(`/dashboard/obras/${projectId}`);
-  return { status: "success", message: "Obra actualizada correctamente." };
+  revalidatePath("/dashboard/proyectos");
+  revalidatePath(`/dashboard/proyectos/${projectId}`);
+  return { status: "success", message: "Proyecto actualizado correctamente." };
 }
 
 export async function deleteProjectAction(
@@ -104,9 +104,9 @@ export async function deleteProjectAction(
 
   if (error) {
     console.error("Error deleting project", error);
-    return { success: false, message: `No se pudo eliminar la obra: ${error.message}` };
+    return { success: false, message: `No se pudo eliminar el proyecto: ${error.message}` };
   }
 
-  revalidatePath("/dashboard/obras");
-  return { success: true, message: "Obra eliminada correctamente." };
+  revalidatePath("/dashboard/proyectos");
+  return { success: true, message: "Proyecto eliminado correctamente." };
 }

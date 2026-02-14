@@ -43,10 +43,10 @@ export default async function EstimateDetailPage({ params }: EstimateDetailPageP
             {estimate.name}
           </h2>
           <p className="mt-1 text-slate-500 dark:text-slate-400">
-            Obra:{" "}
+            Proyecto:{" "}
             {estimate.project ? (
               <Link
-                href={`/dashboard/obras/${estimate.project.id}`}
+                href={`/dashboard/proyectos/${estimate.project.id}`}
                 className="hover:text-amber-600 underline"
               >
                 {estimate.project.name}
@@ -54,14 +54,14 @@ export default async function EstimateDetailPage({ params }: EstimateDetailPageP
             ) : (
               "Sin asignar"
             )}
-            {estimate.project?.client && (
+            {(estimate.client || estimate.project?.client) && (
               <>
                 {" "}&middot; Cliente:{" "}
                 <Link
-                  href={`/dashboard/clientes/${estimate.project.client.id}`}
+                  href={`/dashboard/clientes/${(estimate.client || estimate.project?.client)?.id}`}
                   className="hover:text-amber-600 underline"
                 >
-                  {estimate.project.client.name}
+                  {(estimate.client || estimate.project?.client)?.name}
                 </Link>
               </>
             )}

@@ -36,28 +36,32 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { project_id, descripcion, tipo_obra } = body;
+    const { project_id, descripcion, tipo_obra, client_name } = body;
 
-    if (!project_id || !descripcion) {
+    if (!descripcion) {
       return NextResponse.json(
-        { error: "Faltan campos obligatorios: project_id y descripcion" },
+        { error: "Falta el campo obligatorio: descripcion" },
         { status: 400 }
       );
     }
 
-    // Verify the project belongs to the user
-    const { data: project, error: projectError } = await supabase
-      .from("projects")
-      .select("id, name, address")
-      .eq("id", project_id)
-      .eq("user_id", user.id)
-      .single();
+    // Optionally fetch the project if project_id is provided
+    let project: { id: string; name: string; address: string } | null = null;
+    if (project_id) {
+      const { data: projectData, error: projectError } = await supabase
+        .from("projects")
+        .select("id, name, address")
+        .eq("id", project_id)
+        .eq("user_id", user.id)
+        .single();
 
-    if (projectError || !project) {
-      return NextResponse.json({ error: "Obra no encontrada" }, { status: 404 });
+      if (projectError || !projectData) {
+        return NextResponse.json({ error: "Obra no encontrada" }, { status: 404 });
+      }
+      project = projectData;
     }
 
-    const systemPrompt = `Eres un experto presupuestador de obras y reformas en España. Tu trabajo es generar presupuestos detallados y profesionales con precios realistas del mercado español actual (2024-2025).
+    const systemPrompt = `Eres un experto presupuestador de obras y reformas en España. Tu trabajo es generar presupuestos detallados y profesionales con precios realistas del mercado español actual (2025-2026).
 
 REGLAS:
 - Los precios deben ser realistas para el mercado español
@@ -85,16 +89,24 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta:
   "total": 1210.00
 }`;
 
-    const userMessage = `Genera un presupuesto detallado para el siguiente trabajo:
+    let userMessage = `Genera un presupuesto detallado para el siguiente trabajo:\n\n`;
 
-Obra: ${project.name}
-${project.address ? `Dirección: ${project.address}` : ""}
-${tipo_obra ? `Tipo de obra: ${tipo_obra}` : ""}
+    if (project) {
+      userMessage += `Obra: ${project.name}\n`;
+      if (project.address) {
+        userMessage += `Dirección: ${project.address}\n`;
+      }
+    }
 
-Descripción del trabajo:
-${descripcion}
+    if (client_name) {
+      userMessage += `Cliente: ${client_name}\n`;
+    }
 
-Genera todas las partidas necesarias con precios realistas del mercado español.`;
+    if (tipo_obra) {
+      userMessage += `Tipo de obra: ${tipo_obra}\n`;
+    }
+
+    userMessage += `\nDescripción del trabajo:\n${descripcion}\n\nGenera todas las partidas necesarias con precios realistas del mercado español.`;
 
     const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",

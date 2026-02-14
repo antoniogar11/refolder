@@ -23,17 +23,17 @@ type Partida = {
   orden: number;
 };
 
-type GenerateEstimateFormProps = {
-  projectId: string;
-  projectName: string;
+type NewEstimateFormProps = {
+  clients: { id: string; name: string }[];
 };
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
 }
 
-export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimateFormProps) {
+export function NewEstimateForm({ clients }: NewEstimateFormProps) {
   const router = useRouter();
+  const [clientId, setClientId] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [tipoObra, setTipoObra] = useState("");
   const [nombrePresupuesto, setNombrePresupuesto] = useState("");
@@ -41,6 +41,8 @@ export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimat
   const [isSaving, setIsSaving] = useState(false);
   const [partidas, setPartidas] = useState<Partida[]>([]);
   const [totals, setTotals] = useState({ subtotal: 0, iva: 0, total: 0 });
+
+  const selectedClientName = clients.find(c => c.id === clientId)?.name;
 
   async function handleGenerate() {
     if (!descripcion.trim()) {
@@ -56,9 +58,9 @@ export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimat
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          project_id: projectId,
           descripcion: descripcion.trim(),
           tipo_obra: tipoObra || undefined,
+          client_name: selectedClientName || undefined,
         }),
       });
 
@@ -73,13 +75,14 @@ export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimat
       setTotals({ subtotal: data.subtotal, iva: data.iva, total: data.total });
 
       if (!nombrePresupuesto) {
-        setNombrePresupuesto(`Presupuesto - ${projectName}`);
+        const tipoLabel = tipoObra ? tipoObra.replace(/_/g, " ") : "Presupuesto";
+        setNombrePresupuesto(`${tipoLabel.charAt(0).toUpperCase() + tipoLabel.slice(1)}${selectedClientName ? ` - ${selectedClientName}` : ""}`);
       }
 
       toast.success(`Se generaron ${data.partidas.length} partidas.`);
     } catch (error) {
       console.error("Generate error:", error);
-      toast.error("Error de conexión. Inténtalo de nuevo.");
+      toast.error("Error de conexion. Intentalo de nuevo.");
     } finally {
       setIsGenerating(false);
     }
@@ -91,13 +94,13 @@ export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimat
       return;
     }
 
-    const name = nombrePresupuesto.trim() || `Presupuesto - ${projectName}`;
+    const name = nombrePresupuesto.trim() || "Presupuesto sin nombre";
     setIsSaving(true);
 
     try {
       const result = await createEstimateWithItemsAction(
-        projectId,
         null,
+        clientId || null,
         name,
         descripcion,
         partidas,
@@ -127,18 +130,33 @@ export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimat
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="nombre_presupuesto">Nombre del presupuesto</Label>
-            <Input
-              id="nombre_presupuesto"
-              value={nombrePresupuesto}
-              onChange={(e) => setNombrePresupuesto(e.target.value)}
-              placeholder={`Presupuesto - ${projectName}`}
-            />
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="nombre_presupuesto">Nombre del presupuesto</Label>
+              <Input
+                id="nombre_presupuesto"
+                value={nombrePresupuesto}
+                onChange={(e) => setNombrePresupuesto(e.target.value)}
+                placeholder="Se genera automaticamente"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="client_id">Cliente (opcional)</Label>
+              <NativeSelect
+                id="client_id"
+                value={clientId}
+                onChange={(e) => setClientId(e.target.value)}
+              >
+                <option value="">Sin cliente</option>
+                {clients.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </NativeSelect>
+            </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="tipo_obra">Tipo de obra (opcional)</Label>
+            <Label htmlFor="tipo_obra">Tipo de trabajo</Label>
             <NativeSelect
               id="tipo_obra"
               value={tipoObra}
@@ -146,25 +164,25 @@ export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimat
             >
               <option value="">Sin especificar</option>
               <option value="reforma_integral">Reforma integral</option>
-              <option value="reforma_bano">Reforma de baño</option>
+              <option value="reforma_bano">Reforma de bano</option>
               <option value="reforma_cocina">Reforma de cocina</option>
               <option value="pintura">Pintura</option>
-              <option value="fontaneria">Fontanería</option>
+              <option value="fontaneria">Fontaneria</option>
               <option value="electricidad">Electricidad</option>
-              <option value="albanileria">Albañilería</option>
-              <option value="carpinteria">Carpintería</option>
+              <option value="albanileria">Albanileria</option>
+              <option value="carpinteria">Carpinteria</option>
               <option value="obra_nueva">Obra nueva</option>
               <option value="otro">Otro</option>
             </NativeSelect>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="descripcion">Descripción del trabajo *</Label>
+            <Label htmlFor="descripcion">Descripcion del trabajo *</Label>
             <Textarea
               id="descripcion"
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
-              placeholder="Describe detalladamente el trabajo a realizar. Ejemplo: Reforma completa de baño de 6m², cambio de plato de ducha, alicatado completo, instalación de mueble de baño y espejo, nueva grifería..."
+              placeholder="Describe detalladamente el trabajo a realizar. Ejemplo: Reforma completa de bano de 6m2, cambio de plato de ducha, alicatado completo, instalacion de mueble de bano y espejo, nueva griferia..."
               rows={5}
             />
           </div>
@@ -200,8 +218,8 @@ export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimat
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Categoría</TableHead>
-                    <TableHead>Descripción</TableHead>
+                    <TableHead>Categoria</TableHead>
+                    <TableHead>Descripcion</TableHead>
                     <TableHead className="text-right">Ud.</TableHead>
                     <TableHead className="text-right">Cant.</TableHead>
                     <TableHead className="text-right">P. Unit.</TableHead>

@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Refolder - Gestión de Obras y Reformas",
-  description: "SaaS de gestión integral para obras y reformas",
+  title: "Refolder - Presupuestos con IA para Obras y Reformas",
+  description: "SaaS de presupuestos profesionales con IA para el sector de la construcción",
 };
 
 export default function RootLayout({

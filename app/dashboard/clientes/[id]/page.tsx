@@ -64,20 +64,20 @@ export default async function ClientEditPage({ params }: ClientEditPageProps) {
         </CardContent>
       </Card>
 
-      {/* Obras de este cliente */}
+      {/* Proyectos de este cliente */}
       <Card className="mt-6">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Obras de este cliente ({projects.length})</CardTitle>
-            <Link href="/dashboard/obras">
-              <Button size="sm">Nueva Obra</Button>
+            <CardTitle>Proyectos de este cliente ({projects.length})</CardTitle>
+            <Link href="/dashboard/proyectos">
+              <Button size="sm">Nuevo Proyecto</Button>
             </Link>
           </div>
         </CardHeader>
         <CardContent>
           {projects.length === 0 ? (
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              Este cliente no tiene obras registradas.
+              Este cliente no tiene proyectos registrados.
             </p>
           ) : (
             <Table>
@@ -94,7 +94,7 @@ export default async function ClientEditPage({ params }: ClientEditPageProps) {
                   <TableRow key={project.id}>
                     <TableCell>
                       <Link
-                        href={`/dashboard/obras/${project.id}`}
+                        href={`/dashboard/proyectos/${project.id}`}
                         className="font-medium text-slate-900 dark:text-white hover:text-amber-600"
                       >
                         {project.name}

@@ -49,6 +49,7 @@ export type Project = {
   estimated_end_date: string | null;
   end_date: string | null;
   total_budget: number | null;
+  estimate_id: string | null;
   created_at: string;
   updated_at: string;
   client?: Pick<Client, "id" | "name">;
@@ -59,7 +60,8 @@ export type EstimateStatus = "draft" | "sent" | "accepted" | "rejected";
 export type Estimate = {
   id: string;
   user_id: string;
-  project_id: string;
+  project_id: string | null;
+  client_id: string | null;
   name: string;
   description: string | null;
   total_amount: number;
@@ -71,6 +73,7 @@ export type Estimate = {
   project?: Pick<Project, "id" | "name"> & {
     client?: Pick<Client, "id" | "name">;
   };
+  client?: Pick<Client, "id" | "name">;
   items?: EstimateItem[];
 };
 
@@ -84,5 +87,19 @@ export type EstimateItem = {
   precio_unitario: number;
   subtotal: number;
   orden: number;
+  created_at: string;
+};
+
+export type CostCategory = "material" | "mano_de_obra" | "subcontrata" | "transporte" | "otros";
+
+export type ProjectCost = {
+  id: string;
+  project_id: string;
+  user_id: string;
+  descripcion: string;
+  categoria: CostCategory;
+  importe: number;
+  fecha: string;
+  notas: string | null;
   created_at: string;
 };
