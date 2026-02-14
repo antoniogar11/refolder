@@ -1,211 +1,137 @@
 "use client";
 
-import { useEffect } from "react";
 import { useActionState } from "react";
-import { useFormStatus } from "react-dom";
 import { useRouter } from "next/navigation";
 
 import { updateProjectAction } from "@/app/dashboard/obras/actions";
 import { Button } from "@/components/ui/button";
-import { initialProjectFormState, type ProjectFormState } from "@/lib/forms/project-form-state";
-import type { ProjectWithClient } from "@/lib/data/projects";
-
-const inputClasses =
-  "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
-
-const textareaClasses =
-  "flex min-h-[96px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
-
-const selectClasses =
-  "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
-
-function FieldError({ messages }: { messages?: string[] }) {
-  if (!messages?.length) return null;
-  return (
-    <p className="text-sm text-red-600 dark:text-red-400" role="alert">
-      {messages.join(" ")}
-    </p>
-  );
-}
-
-function FormMessage({ status, message }: { status: "idle" | "success" | "error"; message?: string }) {
-  if (!message || status === "idle") return null;
-
-  const styles =
-    status === "error"
-      ? "text-sm text-red-600 dark:text-red-400"
-      : "text-sm text-green-600 dark:text-green-400";
-
-  return <p className={styles}>{message}</p>;
-}
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" className="w-full" disabled={pending}>
-      {pending ? "Guardando..." : "Guardar Cambios"}
-    </Button>
-  );
-}
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { FieldError, FormMessage, SubmitButton } from "@/components/shared/entity-form";
+import type { FormState } from "@/lib/forms/form-state";
+import { initialFormState } from "@/lib/forms/form-state";
+import type { Project } from "@/types";
 
 type EditProjectFormProps = {
-  project: ProjectWithClient;
-  clients: Array<{ id: string; name: string }>;
-  onSuccess?: () => void;
+  project: Project;
+  clients: { id: string; name: string }[];
 };
 
-export function EditProjectForm({ project, clients, onSuccess }: EditProjectFormProps) {
+export function EditProjectForm({ project, clients }: EditProjectFormProps) {
   const router = useRouter();
   const updateAction = updateProjectAction.bind(null, project.id);
-  const [state, formAction] = useActionState(updateAction, initialProjectFormState);
+  const [state, formAction] = useActionState(updateAction, initialFormState);
 
-  // Mover la lógica de éxito a useEffect para evitar actualizar estado durante el render
-  useEffect(() => {
-    if (state.status === "success") {
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        router.push("/dashboard/obras");
-        router.refresh();
-      }
-    }
-  }, [state.status, onSuccess, router]);
-
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return "";
-    return dateString.split("T")[0];
-  };
+  if (state.status === "success") {
+    router.push("/dashboard/obras");
+    router.refresh();
+  }
 
   return (
     <form action={formAction} className="space-y-4" noValidate>
       <div className="space-y-2">
-        <label htmlFor="name" className="text-sm font-medium">
-          Nombre de la Obra *
-        </label>
-        <input
+        <Label htmlFor="name">Nombre de la obra *</Label>
+        <Input
           id="name"
           name="name"
           type="text"
           required
-          className={inputClasses}
-          placeholder="Ej. Reforma de cocina"
+          placeholder="Ej. Reforma integral piso"
           defaultValue={project.name}
         />
         <FieldError messages={state.errors?.name} />
       </div>
 
-      <div className="space-y-2">
-        <label htmlFor="client_id" className="text-sm font-medium">
-          Cliente
-        </label>
-        <select id="client_id" name="client_id" className={selectClasses} defaultValue={project.client_id || ""}>
-          <option value="">Seleccionar cliente (opcional)</option>
-          {clients.map((client) => (
-            <option key={client.id} value={client.id}>
-              {client.name}
-            </option>
-          ))}
-        </select>
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label htmlFor="client_id">Cliente *</Label>
+          <select
+            id="client_id"
+            name="client_id"
+            required
+            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            defaultValue={project.client_id}
+          >
+            <option value="">Seleccionar cliente...</option>
+            {clients.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+          <FieldError messages={state.errors?.client_id} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="status">Estado</Label>
+          <select
+            id="status"
+            name="status"
+            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+            defaultValue={project.status}
+          >
+            <option value="planning">Planificación</option>
+            <option value="in_progress">En Curso</option>
+            <option value="paused">Pausada</option>
+            <option value="completed">Finalizada</option>
+            <option value="cancelled">Cancelada</option>
+          </select>
+          <FieldError messages={state.errors?.status} />
+        </div>
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="description" className="text-sm font-medium">
-          Descripción
-        </label>
-        <textarea
+        <Label htmlFor="description">Descripción</Label>
+        <Textarea
           id="description"
           name="description"
-          className={textareaClasses}
-          placeholder="Descripción del proyecto..."
+          placeholder="Detalles de la obra"
           defaultValue={project.description || ""}
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <label htmlFor="status" className="text-sm font-medium">
-            Estado *
-          </label>
-          <select id="status" name="status" required className={selectClasses} defaultValue={project.status}>
-            <option value="planning">Planificación</option>
-            <option value="in_progress">En Curso</option>
-            <option value="completed">Completado</option>
-            <option value="cancelled">Cancelado</option>
-          </select>
-          <FieldError messages={state.errors?.status} />
-        </div>
-        <div className="space-y-2">
-          <label htmlFor="budget" className="text-sm font-medium">
-            Presupuesto (€)
-          </label>
-          <input
-            id="budget"
-            name="budget"
-            type="number"
-            step="0.01"
-            min="0"
-            className={inputClasses}
-            placeholder="0.00"
-            defaultValue={project.budget || ""}
-          />
-          <FieldError messages={state.errors?.budget} />
-        </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <label htmlFor="start_date" className="text-sm font-medium">
-            Fecha de Inicio
-          </label>
-          <input
-            id="start_date"
-            name="start_date"
-            type="date"
-            className={inputClasses}
-            defaultValue={formatDate(project.start_date)}
-          />
-          <FieldError messages={state.errors?.start_date} />
-        </div>
-        <div className="space-y-2">
-          <label htmlFor="end_date" className="text-sm font-medium">
-            Fecha de Finalización
-          </label>
-          <input
-            id="end_date"
-            name="end_date"
-            type="date"
-            className={inputClasses}
-            defaultValue={formatDate(project.end_date)}
-          />
-          <FieldError messages={state.errors?.end_date} />
-        </div>
-      </div>
-
       <div className="space-y-2">
-        <label htmlFor="address" className="text-sm font-medium">
-          Dirección de la Obra
-        </label>
-        <input
+        <Label htmlFor="address">Dirección *</Label>
+        <Input
           id="address"
           name="address"
           type="text"
-          className={inputClasses}
-          placeholder="Calle y número"
-          defaultValue={project.address || ""}
+          required
+          placeholder="Calle, número, piso"
+          defaultValue={project.address}
         />
+        <FieldError messages={state.errors?.address} />
       </div>
 
-      <div className="space-y-2">
-        <label htmlFor="notes" className="text-sm font-medium">
-          Notas
-        </label>
-        <textarea
-          id="notes"
-          name="notes"
-          className={textareaClasses}
-          placeholder="Información adicional sobre el proyecto..."
-          defaultValue={project.notes || ""}
-        />
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="space-y-2">
+          <Label htmlFor="start_date">Fecha de inicio</Label>
+          <Input
+            id="start_date"
+            name="start_date"
+            type="date"
+            defaultValue={project.start_date || ""}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="estimated_end_date">Fecha fin prevista</Label>
+          <Input
+            id="estimated_end_date"
+            name="estimated_end_date"
+            type="date"
+            defaultValue={project.estimated_end_date || ""}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="total_budget">Presupuesto total</Label>
+          <Input
+            id="total_budget"
+            name="total_budget"
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            defaultValue={project.total_budget?.toString() || ""}
+          />
+          <FieldError messages={state.errors?.total_budget} />
+        </div>
       </div>
 
       <FormMessage status={state.status} message={state.message} />
@@ -213,9 +139,8 @@ export function EditProjectForm({ project, clients, onSuccess }: EditProjectForm
         <Button type="button" variant="outline" className="flex-1" onClick={() => router.back()}>
           Cancelar
         </Button>
-        <SubmitButton />
+        <SubmitButton label="Guardar Cambios" />
       </div>
     </form>
   );
 }
-

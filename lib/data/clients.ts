@@ -1,32 +1,50 @@
 import { createClient } from "@/lib/supabase/server";
+import type { Client } from "@/types";
 
-export type Client = {
-  id: string;
-  name: string;
-  email: string | null;
-  phone: string | null;
-  address: string | null;
-  city: string | null;
-  province: string | null;
-  postal_code: string | null;
-  tax_id: string | null;
-  notes: string | null;
-  created_at: string;
+export type { Client };
+
+const PAGE_SIZE = 20;
+
+type GetClientsParams = {
+  query?: string;
+  page?: number;
 };
 
-export async function getClients(): Promise<Client[]> {
+export async function getClients(
+  params: GetClientsParams = {},
+): Promise<{ clients: Client[]; total: number }> {
+  const { query, page = 1 } = params;
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { clients: [], total: 0 };
+
+  let queryBuilder = supabase
     .from("clients")
-    .select("id, name, email, phone, address, city, province, postal_code, tax_id, notes, created_at")
-    .order("created_at", { ascending: false });
+    .select("*", { count: "exact" })
+    .eq("user_id", user.id);
+
+  if (query) {
+    queryBuilder = queryBuilder.or(
+      `name.ilike.%${query}%,email.ilike.%${query}%,phone.ilike.%${query}%,city.ilike.%${query}%,tax_id.ilike.%${query}%`,
+    );
+  }
+
+  const from = (page - 1) * PAGE_SIZE;
+  const to = from + PAGE_SIZE - 1;
+
+  const { data, error, count } = await queryBuilder
+    .order("created_at", { ascending: false })
+    .range(from, to);
 
   if (error) {
     console.error("Error fetching clients", error);
-    return [];
+    return { clients: [], total: 0 };
   }
 
-  return data ?? [];
+  return { clients: data ?? [], total: count ?? 0 };
 }
 
 export async function getClientById(id: string): Promise<Client | null> {
@@ -35,13 +53,11 @@ export async function getClientById(id: string): Promise<Client | null> {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   const { data, error } = await supabase
     .from("clients")
-    .select("id, name, email, phone, address, city, province, postal_code, tax_id, notes, created_at")
+    .select("*")
     .eq("id", id)
     .eq("user_id", user.id)
     .single();
@@ -54,3 +70,24 @@ export async function getClientById(id: string): Promise<Client | null> {
   return data;
 }
 
+export async function getAllClients(): Promise<Pick<Client, "id" | "name">[]> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return [];
+
+  const { data, error } = await supabase
+    .from("clients")
+    .select("id, name")
+    .eq("user_id", user.id)
+    .order("name");
+
+  if (error) {
+    console.error("Error fetching clients", error);
+    return [];
+  }
+
+  return data ?? [];
+}

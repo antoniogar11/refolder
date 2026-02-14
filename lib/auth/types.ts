@@ -1,10 +1,5 @@
-export type AuthFormState = {
-  status: "idle" | "success" | "error";
-  message?: string;
-  errors?: Record<string, string[]>;
-};
+import type { FormState } from "@/lib/forms/form-state";
+import { initialFormState } from "@/lib/forms/form-state";
 
-export const initialAuthState: AuthFormState = {
-  status: "idle",
-};
-
+export type AuthFormState = FormState;
+export const initialAuthState = initialFormState;

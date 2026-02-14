@@ -1,125 +1,131 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
+import { Suspense } from "react";
 
-import { LogoutButton } from "@/components/auth/logout-button";
-import { NewProjectSection } from "@/components/projects/new-project-section";
+import { NewProjectForm } from "@/components/projects/new-project-form";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getProjects, getClientsForSelect } from "@/lib/data/projects";
-import { hasWorkerPermission, isCompanyAdmin } from "@/lib/data/companies";
-import { formatDate, formatCurrency } from "@/lib/utils/format";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { SearchInput } from "@/components/dashboard/search-input";
+import { Pagination } from "@/components/dashboard/pagination";
+import { StatusBadge } from "@/components/dashboard/status-badge";
+import { getProjects } from "@/lib/data/projects";
+import { getAllClients } from "@/lib/data/clients";
 
-function getStatusLabel(status: string) {
-  const labels: Record<string, { text: string; color: string }> = {
-    planning: { text: "Planificación", color: "text-blue-600 dark:text-blue-400" },
-    in_progress: { text: "En Curso", color: "text-green-600 dark:text-green-400" },
-    completed: { text: "Completado", color: "text-gray-600 dark:text-gray-400" },
-    cancelled: { text: "Cancelado", color: "text-red-600 dark:text-red-400" },
-  };
-  return labels[status] || { text: status, color: "" };
+function formatCurrency(amount: number | null) {
+  if (!amount) return "-";
+  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
 }
 
-export default async function ObrasPage() {
-  const isAdmin = await isCompanyAdmin();
-  const canViewProjects = isAdmin || await hasWorkerPermission("projects:read");
+type ObrasPageProps = {
+  searchParams: Promise<{ q?: string; page?: string }>;
+};
 
-  if (!canViewProjects) {
-    redirect("/dashboard");
-  }
-
-  const projects = await getProjects();
-  const clients = await getClientsForSelect();
+export default async function ObrasPage({ searchParams }: ObrasPageProps) {
+  const params = await searchParams;
+  const page = Number(params.page) || 1;
+  const [{ projects, total }, clients] = await Promise.all([
+    getProjects({ query: params.q, page }),
+    getAllClients(),
+  ]);
+  const totalPages = Math.ceil(total / 20);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <nav className="sticky top-0 z-30 border-b bg-white dark:bg-gray-800 md:ml-64">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Gestión de Obras</h1>
-            <div className="flex items-center gap-2">
-              <LogoutButton variant="outline" />
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8">
+    <div>
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Obras</h2>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Gestiona todos tus proyectos de obras y reformas
+          <p className="mt-1 text-gray-600 dark:text-gray-400">
+            {total} obra{total !== 1 ? "s" : ""} registrada{total !== 1 ? "s" : ""}
           </p>
         </div>
+        <a href="#nueva-obra">
+          <Button>Nueva Obra</Button>
+        </a>
+      </div>
 
-        <NewProjectSection clients={clients} />
+      <div
+        id="nueva-obra"
+        className="mb-10 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900"
+      >
+        <div className="mb-4">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Crear nueva obra
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Completa el formulario para crear una obra.
+          </p>
+        </div>
+        <NewProjectForm clients={clients} />
+      </div>
 
-        {projects.length === 0 ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>No tienes obras todavía</CardTitle>
-              <CardDescription>Registra tu primera obra para comenzar a gestionar tus proyectos.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Usa el formulario superior para añadir tu primera obra.
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {projects.map((project) => {
-              const statusInfo = getStatusLabel(project.status);
-              return (
-                <Link key={project.id} href={`/dashboard/obras/${project.id}`}>
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <CardTitle className="text-lg">{project.name}</CardTitle>
-                          <CardDescription>
-                            {project.client ? `Cliente: ${project.client.name}` : "Sin cliente asignado"}
-                          </CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600 dark:text-gray-400">Estado:</span>
-                          <span className={`font-semibold ${statusInfo.color}`}>{statusInfo.text}</span>
-                        </div>
-                        {project.budget !== null && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-600 dark:text-gray-400">Presupuesto:</span>
-                            <span className="font-semibold">{formatCurrency(project.budget)}</span>
-                          </div>
-                        )}
-                        {project.start_date && (
-                          <div className="flex justify-between">
-                            <span className="text-gray-600 dark:text-gray-400">Inicio:</span>
-                            <span className="text-gray-900 dark:text-white">{formatDate(project.start_date)}</span>
-                          </div>
-                        )}
-                        {project.address && (
-                          <div className="pt-2">
-                            <span className="text-gray-600 dark:text-gray-400">📍 {project.address}</span>
-                          </div>
-                        )}
-                        <div className="pt-4">
-                          <Button variant="outline" className="w-full">
-                            Ver Detalles
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
+      <Suspense>
+        <SearchInput placeholder="Buscar obras..." />
+      </Suspense>
+
+      {projects.length === 0 ? (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>
+              {params.q ? "Sin resultados" : "No tienes obras todavía"}
+            </CardTitle>
+            <CardDescription>
+              {params.q
+                ? `No se encontraron obras para "${params.q}".`
+                : "Crea tu primera obra para empezar."}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      ) : (
+        <>
+          <div className="mt-6 overflow-hidden rounded-lg border bg-white dark:bg-gray-900">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Presupuesto</TableHead>
+                  <TableHead>Inicio</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {projects.map((project) => (
+                  <TableRow key={project.id}>
+                    <TableCell>
+                      <Link
+                        href={`/dashboard/obras/${project.id}`}
+                        className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+                      >
+                        {project.name}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="text-gray-600 dark:text-gray-400">
+                      {project.client?.name || "-"}
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge type="project" status={project.status} />
+                    </TableCell>
+                    <TableCell className="text-gray-600 dark:text-gray-400">
+                      {formatCurrency(project.total_budget)}
+                    </TableCell>
+                    <TableCell className="text-gray-600 dark:text-gray-400">
+                      {project.start_date || "-"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
-        )}
-      </main>
+          <Pagination currentPage={page} totalPages={totalPages} />
+        </>
+      )}
     </div>
   );
 }
-

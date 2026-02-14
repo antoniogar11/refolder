@@ -1,12 +1,20 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
-import { LogoutButton } from "@/components/auth/logout-button";
-import { EstimateView } from "@/components/estimates/estimate-view";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { StatusBadge } from "@/components/dashboard/status-badge";
+import { DeleteEntityButton } from "@/components/shared/delete-entity-button";
 import { getEstimateById } from "@/lib/data/estimates";
-import { getProjects } from "@/lib/data/projects";
-import { getClientsForSelect } from "@/lib/data/projects";
+import { getEstimateItems } from "@/lib/data/estimate-items";
+import { deleteEstimateAction } from "@/app/dashboard/presupuestos/actions";
+import { EstimateItemsEditor } from "@/components/estimates/estimate-items-editor";
+import { EstimateStatusSelect } from "@/components/estimates/estimate-status-select";
+import { ExportPDFButton } from "@/components/estimates/export-pdf-button";
+
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
+}
 
 type EstimateDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -14,37 +22,68 @@ type EstimateDetailPageProps = {
 
 export default async function EstimateDetailPage({ params }: EstimateDetailPageProps) {
   const { id } = await params;
-  const estimate = await getEstimateById(id);
+  const [estimate, items] = await Promise.all([
+    getEstimateById(id),
+    getEstimateItems(id),
+  ]);
 
   if (!estimate) {
     redirect("/dashboard/presupuestos");
   }
 
-  const projects = await getProjects();
-  const clients = await getClientsForSelect();
+  const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
+  const iva = Math.round(subtotal * 0.21 * 100) / 100;
+  const total = Math.round((subtotal + iva) * 100) / 100;
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <nav className="border-b bg-white dark:bg-gray-800">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-              Presupuesto: {estimate.estimate_number}
-            </h1>
-            <div className="flex items-center gap-2">
-              <Link href="/dashboard/presupuestos">
-                <Button variant="ghost">Volver a Presupuestos</Button>
+    <div className="max-w-5xl">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+            {estimate.name}
+          </h2>
+          <p className="mt-1 text-gray-600 dark:text-gray-400">
+            Obra:{" "}
+            {estimate.project ? (
+              <Link
+                href={`/dashboard/obras/${estimate.project.id}`}
+                className="hover:text-blue-600 underline"
+              >
+                {estimate.project.name}
               </Link>
-              <LogoutButton variant="outline" />
-            </div>
-          </div>
+            ) : (
+              "Sin asignar"
+            )}
+            {estimate.project?.client && (
+              <>
+                {" "}· Cliente:{" "}
+                <Link
+                  href={`/dashboard/clientes/${estimate.project.client.id}`}
+                  className="hover:text-blue-600 underline"
+                >
+                  {estimate.project.client.name}
+                </Link>
+              </>
+            )}
+          </p>
         </div>
-      </nav>
+        <div className="flex items-center gap-2">
+          <ExportPDFButton estimate={estimate} items={items} />
+          <EstimateStatusSelect estimateId={estimate.id} currentStatus={estimate.status} />
+          <DeleteEntityButton
+            entityId={estimate.id}
+            entityName={estimate.name}
+            redirectPath="/dashboard/presupuestos"
+            onDelete={deleteEstimateAction}
+          />
+        </div>
+      </div>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <EstimateView estimate={estimate} projects={projects} clients={clients} />
-      </main>
+      <EstimateItemsEditor
+        estimateId={estimate.id}
+        initialItems={items}
+        estimateTotal={estimate.total_amount}
+      />
     </div>
   );
 }
-

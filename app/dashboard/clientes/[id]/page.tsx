@@ -1,13 +1,22 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 import { deleteClientAction } from "@/app/dashboard/clientes/actions";
-import { LogoutButton } from "@/components/auth/logout-button";
-import { EditClientSection } from "@/components/clients/edit-client-section";
+import { EditClientForm } from "@/components/clients/edit-client-form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { StatusBadge } from "@/components/dashboard/status-badge";
 import { getClientById } from "@/lib/data/clients";
-import { DeleteClientButton } from "@/components/clients/delete-client-button";
+import { getProjectsByClientId } from "@/lib/data/projects";
+import { DeleteEntityButton } from "@/components/shared/delete-entity-button";
 
 type ClientEditPageProps = {
   params: Promise<{ id: string }>;
@@ -15,40 +24,103 @@ type ClientEditPageProps = {
 
 export default async function ClientEditPage({ params }: ClientEditPageProps) {
   const { id } = await params;
-  const client = await getClientById(id);
+  const [client, projects] = await Promise.all([
+    getClientById(id),
+    getProjectsByClientId(id),
+  ]);
 
   if (!client) {
     redirect("/dashboard/clientes");
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <nav className="border-b bg-white dark:bg-gray-800">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Editar Cliente</h1>
-            <div className="flex items-center gap-2">
-              <Link href="/dashboard/clientes">
-                <Button variant="ghost">Volver a Clientes</Button>
-              </Link>
-              <LogoutButton variant="outline" />
+    <div className="max-w-5xl">
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+          Editar Cliente
+        </h2>
+        <p className="mt-1 text-gray-600 dark:text-gray-400">
+          Modifica la información del cliente
+        </p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>{client.name}</CardTitle>
+              <CardDescription>Modifica los datos del cliente</CardDescription>
             </div>
+            <DeleteEntityButton
+              entityId={client.id}
+              entityName={client.name}
+              redirectPath="/dashboard/clientes"
+              onDelete={deleteClientAction}
+            />
           </div>
-        </div>
-      </nav>
+        </CardHeader>
+        <CardContent>
+          <EditClientForm client={client} />
+        </CardContent>
+      </Card>
 
-      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Editar Cliente</h2>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">Modifica la información del cliente</p>
-        </div>
-
-        <div className="mb-4 flex items-center justify-end">
-          <DeleteClientButton clientId={client.id} clientName={client.name} />
-        </div>
-        <EditClientSection client={client} />
-      </main>
+      {/* Obras de este cliente */}
+      <Card className="mt-6">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Obras de este cliente ({projects.length})</CardTitle>
+            <Link href="/dashboard/obras">
+              <Button size="sm">Nueva Obra</Button>
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {projects.length === 0 ? (
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Este cliente no tiene obras registradas.
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Presupuesto</TableHead>
+                  <TableHead>Inicio</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {projects.map((project) => (
+                  <TableRow key={project.id}>
+                    <TableCell>
+                      <Link
+                        href={`/dashboard/obras/${project.id}`}
+                        className="font-medium text-gray-900 dark:text-white hover:text-blue-600"
+                      >
+                        {project.name}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      <StatusBadge type="project" status={project.status} />
+                    </TableCell>
+                    <TableCell className="text-gray-600 dark:text-gray-400">
+                      {project.total_budget
+                        ? new Intl.NumberFormat("es-ES", {
+                            style: "currency",
+                            currency: "EUR",
+                          }).format(project.total_budget)
+                        : "-"}
+                    </TableCell>
+                    <TableCell className="text-gray-600 dark:text-gray-400">
+                      {project.start_date || "-"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
-
