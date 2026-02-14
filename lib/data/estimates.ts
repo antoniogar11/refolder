@@ -23,7 +23,7 @@ export async function getEstimates(
 
   let queryBuilder = supabase
     .from("estimates")
-    .select("*, project:projects(id, name, client:clients(id, name)), client:clients!estimates_client_id_fkey(id, name)", {
+    .select("*, project:projects!estimates_project_id_fkey(id, name, client:clients(id, name)), client:clients!estimates_client_id_fkey(id, name)", {
       count: "exact",
     })
     .eq("user_id", user.id);
@@ -67,7 +67,7 @@ export async function getEstimateById(id: string): Promise<Estimate | null> {
 
   const { data, error } = await supabase
     .from("estimates")
-    .select("*, project:projects(id, name, client:clients(id, name)), client:clients!estimates_client_id_fkey(id, name)")
+    .select("*, project:projects!estimates_project_id_fkey(id, name, client:clients(id, name)), client:clients!estimates_client_id_fkey(id, name)")
     .eq("id", id)
     .eq("user_id", user.id)
     .single();
