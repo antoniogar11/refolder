@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 type Partida = {
   categoria: string;
@@ -28,10 +28,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autenticado" }, { status: 401 });
     }
 
-    if (!ANTHROPIC_API_KEY) {
-      console.error("ANTHROPIC_API_KEY is not set in environment variables");
+    if (!GEMINI_API_KEY) {
+      console.error("GEMINI_API_KEY is not set in environment variables");
       return NextResponse.json(
-        { error: "API key de IA no configurada. Añade ANTHROPIC_API_KEY en las variables de entorno de Vercel." },
+        { error: "API key de IA no configurada. Añade GEMINI_API_KEY en las variables de entorno de Vercel." },
         { status: 500 }
       );
     }
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       project = projectData;
     }
 
-    const systemPrompt = `Eres un experto presupuestador de obras y reformas en España. Tu trabajo es generar presupuestos detallados y profesionales con precios realistas del mercado español actual (2025-2026).
+    const systemInstruction = `Eres un experto presupuestador de obras y reformas en España. Tu trabajo es generar presupuestos detallados y profesionales con precios realistas del mercado español actual (2025-2026).
 
 REGLAS:
 - Los precios deben ser realistas para el mercado español
@@ -73,7 +73,7 @@ REGLAS:
 - Calcula el subtotal general, IVA al 21%, y total
 - Sé exhaustivo: incluye preparación, materiales, mano de obra, limpieza final
 
-Responde ÚNICAMENTE con un JSON válido con esta estructura exacta:
+Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin markdown, sin texto adicional):
 {
   "partidas": [
     {
@@ -107,33 +107,46 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta:
       userMessage += `Tipo de obra: ${tipo_obra}\n`;
     }
 
-    userMessage += `\nDescripción del trabajo:\n${descripcion}\n\nGenera todas las partidas necesarias con precios realistas del mercado español.`;
+    userMessage += `\nDescripción del trabajo:\n${descripcion}\n\nGenera todas las partidas necesarias con precios realistas del mercado español. Responde SOLO con el JSON, sin texto adicional.`;
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    // Call Google Gemini API
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    const response = await fetch(geminiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 4096,
-        system: systemPrompt,
-        messages: [{ role: "user", content: userMessage }],
+        system_instruction: {
+          parts: [{ text: systemInstruction }],
+        },
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: userMessage }],
+          },
+        ],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 8192,
+          responseMimeType: "application/json",
+        },
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Anthropic API error:", response.status, errorText);
+      console.error("Gemini API error:", response.status, errorText);
 
       let userError = "Error al generar el presupuesto con IA. Inténtalo de nuevo.";
-      if (response.status === 401) {
-        userError = "La API key de Anthropic no es válida. Verifica ANTHROPIC_API_KEY en las variables de entorno.";
+      if (response.status === 400) {
+        userError = "Error en la solicitud a la IA. Verifica la descripción e inténtalo de nuevo.";
+      } else if (response.status === 403) {
+        userError = "La API key de Gemini no es válida o no tiene permisos. Verifica GEMINI_API_KEY en las variables de entorno.";
       } else if (response.status === 429) {
         userError = "Se superó el límite de uso de la IA. Espera unos minutos e inténtalo de nuevo.";
-      } else if (response.status === 529 || response.status === 503) {
+      } else if (response.status === 503) {
         userError = "El servicio de IA está temporalmente sobrecargado. Inténtalo de nuevo en unos minutos.";
       }
 
@@ -144,9 +157,10 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta:
     }
 
     const aiResult = await response.json();
-    const textContent = aiResult.content?.[0]?.text;
+    const textContent = aiResult.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!textContent) {
+      console.error("Gemini returned no content:", JSON.stringify(aiResult));
       return NextResponse.json(
         { error: "La IA no devolvió contenido válido." },
         { status: 502 }
