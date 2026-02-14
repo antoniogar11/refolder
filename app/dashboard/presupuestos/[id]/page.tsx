@@ -39,15 +39,15 @@ export default async function EstimateDetailPage({ params }: EstimateDetailPageP
     <div className="max-w-5xl">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
             {estimate.name}
           </h2>
-          <p className="mt-1 text-gray-600 dark:text-gray-400">
+          <p className="mt-1 text-slate-500 dark:text-slate-400">
             Obra:{" "}
             {estimate.project ? (
               <Link
                 href={`/dashboard/obras/${estimate.project.id}`}
-                className="hover:text-blue-600 underline"
+                className="hover:text-amber-600 underline"
               >
                 {estimate.project.name}
               </Link>
@@ -56,10 +56,10 @@ export default async function EstimateDetailPage({ params }: EstimateDetailPageP
             )}
             {estimate.project?.client && (
               <>
-                {" "}· Cliente:{" "}
+                {" "}&middot; Cliente:{" "}
                 <Link
                   href={`/dashboard/clientes/${estimate.project.client.id}`}
-                  className="hover:text-blue-600 underline"
+                  className="hover:text-amber-600 underline"
                 >
                   {estimate.project.client.name}
                 </Link>

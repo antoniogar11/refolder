@@ -32,7 +32,7 @@ export function generateEstimatePDF(data: EstimateData) {
   // Header - Company info
   doc.setFontSize(24);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(37, 99, 235); // blue-600
+  doc.setTextColor(15, 23, 42); // slate-900
   doc.text("Refolder", margin, 30);
 
   doc.setFontSize(9);
@@ -44,6 +44,7 @@ export function generateEstimatePDF(data: EstimateData) {
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(50, 50, 50);
+  doc.setTextColor(30, 41, 59); // slate-800
   doc.text(`PRESUPUESTO`, pageWidth - margin, 25, { align: "right" });
 
   doc.setFontSize(9);
@@ -150,7 +151,7 @@ export function generateEstimatePDF(data: EstimateData) {
     margin: { left: margin, right: margin },
     theme: "striped",
     headStyles: {
-      fillColor: [37, 99, 235],
+      fillColor: [30, 41, 59],
       textColor: [255, 255, 255],
       fontSize: 8,
       fontStyle: "bold",
@@ -195,13 +196,13 @@ export function generateEstimatePDF(data: EstimateData) {
     align: "right",
   });
 
-  doc.setDrawColor(37, 99, 235);
+  doc.setDrawColor(217, 119, 6); // amber-600
   doc.setLineWidth(0.5);
   doc.line(totalsX - 5, finalY + 11, pageWidth - margin, finalY + 11);
 
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(37, 99, 235);
+  doc.setTextColor(217, 119, 6); // amber-600
   doc.text("TOTAL:", totalsX, finalY + 19);
   doc.text(`${data.total.toFixed(2)} €`, pageWidth - margin, finalY + 19, {
     align: "right",

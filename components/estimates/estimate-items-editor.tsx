@@ -113,7 +113,7 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal }:
       </CardHeader>
       <CardContent>
         {items.length === 0 ? (
-          <p className="text-gray-600 dark:text-gray-400 text-sm text-center py-8">
+          <p className="text-slate-600 dark:text-slate-400 text-sm text-center py-8">
             No hay partidas. Añade una manualmente o genera con IA desde la obra.
           </p>
         ) : (
@@ -180,7 +180,7 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal }:
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDeleteItem(item.id)}
-                        className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                        className="h-8 w-8 p-0 text-rose-500 hover:text-rose-700"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -193,13 +193,13 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal }:
         )}
 
         <div className="mt-4 space-y-2 text-right">
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            Subtotal: <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(subtotal)}</span>
+          <div className="text-sm text-slate-600 dark:text-slate-400">
+            Subtotal: <span className="font-medium text-slate-900 dark:text-white">{formatCurrency(subtotal)}</span>
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            IVA (21%): <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(iva)}</span>
+          <div className="text-sm text-slate-600 dark:text-slate-400">
+            IVA (21%): <span className="font-medium text-slate-900 dark:text-white">{formatCurrency(iva)}</span>
           </div>
-          <div className="text-lg font-bold text-gray-900 dark:text-white">
+          <div className="text-lg font-bold text-slate-900 dark:text-white">
             Total: {formatCurrency(total)}
           </div>
           {Math.abs(total - estimateTotal) > 0.01 && (

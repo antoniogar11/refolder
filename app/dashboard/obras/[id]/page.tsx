@@ -38,10 +38,10 @@ export default async function ProjectEditPage({ params }: ProjectEditPageProps) 
   return (
     <div className="max-w-5xl">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
           Editar Obra
         </h2>
-        <p className="mt-1 text-gray-600 dark:text-gray-400">
+        <p className="mt-1 text-slate-500 dark:text-slate-400">
           Modifica la información de la obra
         </p>
       </div>
@@ -59,7 +59,7 @@ export default async function ProjectEditPage({ params }: ProjectEditPageProps) 
                 {project.client ? (
                   <Link
                     href={`/dashboard/clientes/${project.client.id}`}
-                    className="hover:text-blue-600 underline"
+                    className="hover:text-amber-600 underline"
                   >
                     {project.client.name}
                   </Link>
@@ -88,7 +88,7 @@ export default async function ProjectEditPage({ params }: ProjectEditPageProps) 
         </CardHeader>
         <CardContent>
           {estimates.length === 0 ? (
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               Esta obra no tiene presupuestos. Genera uno con IA a continuación.
             </p>
           ) : (
@@ -107,7 +107,7 @@ export default async function ProjectEditPage({ params }: ProjectEditPageProps) 
                     <TableCell>
                       <Link
                         href={`/dashboard/presupuestos/${estimate.id}`}
-                        className="font-medium text-gray-900 dark:text-white hover:text-blue-600"
+                        className="font-medium text-slate-900 dark:text-white hover:text-amber-600"
                       >
                         {estimate.name}
                       </Link>
@@ -121,7 +121,7 @@ export default async function ProjectEditPage({ params }: ProjectEditPageProps) 
                     <TableCell>
                       <StatusBadge type="estimate" status={estimate.status} />
                     </TableCell>
-                    <TableCell className="text-gray-600 dark:text-gray-400">
+                    <TableCell className="text-slate-500 dark:text-slate-400">
                       {new Date(estimate.created_at).toLocaleDateString("es-ES")}
                     </TableCell>
                   </TableRow>

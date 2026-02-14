@@ -40,8 +40,8 @@ export default async function ObrasPage({ searchParams }: ObrasPageProps) {
     <div>
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Obras</h2>
-          <p className="mt-1 text-gray-600 dark:text-gray-400">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Obras</h2>
+          <p className="mt-1 text-slate-500 dark:text-slate-400">
             {total} obra{total !== 1 ? "s" : ""} registrada{total !== 1 ? "s" : ""}
           </p>
         </div>
@@ -52,13 +52,13 @@ export default async function ObrasPage({ searchParams }: ObrasPageProps) {
 
       <div
         id="nueva-obra"
-        className="mb-10 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900"
+        className="mb-10 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="mb-4">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
             Crear nueva obra
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Completa el formulario para crear una obra.
           </p>
         </div>
@@ -84,7 +84,7 @@ export default async function ObrasPage({ searchParams }: ObrasPageProps) {
         </Card>
       ) : (
         <>
-          <div className="mt-6 overflow-hidden rounded-lg border bg-white dark:bg-gray-900">
+          <div className="mt-6 overflow-hidden rounded-lg border bg-white dark:bg-slate-900">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -101,21 +101,21 @@ export default async function ObrasPage({ searchParams }: ObrasPageProps) {
                     <TableCell>
                       <Link
                         href={`/dashboard/obras/${project.id}`}
-                        className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+                        className="font-medium text-slate-900 dark:text-white hover:text-amber-600 dark:hover:text-amber-400"
                       >
                         {project.name}
                       </Link>
                     </TableCell>
-                    <TableCell className="text-gray-600 dark:text-gray-400">
+                    <TableCell className="text-slate-500 dark:text-slate-400">
                       {project.client?.name || "-"}
                     </TableCell>
                     <TableCell>
                       <StatusBadge type="project" status={project.status} />
                     </TableCell>
-                    <TableCell className="text-gray-600 dark:text-gray-400">
+                    <TableCell className="text-slate-500 dark:text-slate-400">
                       {formatCurrency(project.total_budget)}
                     </TableCell>
-                    <TableCell className="text-gray-600 dark:text-gray-400">
+                    <TableCell className="text-slate-500 dark:text-slate-400">
                       {project.start_date || "-"}
                     </TableCell>
                   </TableRow>

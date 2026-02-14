@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { NativeSelect } from "@/components/ui/native-select";
 import { toast } from "sonner";
 import { createEstimateWithItemsAction } from "@/app/dashboard/presupuestos/actions";
 import { Loader2, Sparkles, Save } from "lucide-react";
@@ -120,7 +121,7 @@ export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimat
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-blue-600" />
+            <Sparkles className="h-5 w-5 text-amber-500" />
             Generar Presupuesto con IA
           </CardTitle>
         </CardHeader>
@@ -137,11 +138,10 @@ export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimat
 
           <div className="space-y-2">
             <Label htmlFor="tipo_obra">Tipo de obra (opcional)</Label>
-            <select
+            <NativeSelect
               id="tipo_obra"
               value={tipoObra}
               onChange={(e) => setTipoObra(e.target.value)}
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
               <option value="">Sin especificar</option>
               <option value="reforma_integral">Reforma integral</option>
@@ -154,7 +154,7 @@ export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimat
               <option value="carpinteria">Carpintería</option>
               <option value="obra_nueva">Obra nueva</option>
               <option value="otro">Otro</option>
-            </select>
+            </NativeSelect>
           </div>
 
           <div className="space-y-2">
@@ -171,7 +171,7 @@ export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimat
           <Button
             onClick={handleGenerate}
             disabled={isGenerating || !descripcion.trim()}
-            className="w-full"
+            className="w-full bg-amber-500 hover:bg-amber-600 text-white"
             size="lg"
           >
             {isGenerating ? (
@@ -223,13 +223,13 @@ export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimat
             </div>
 
             <div className="mt-4 space-y-2 text-right">
-              <div className="text-sm text-gray-600">
-                Subtotal: <span className="font-medium text-gray-900">{formatCurrency(totals.subtotal)}</span>
+              <div className="text-sm text-slate-600">
+                Subtotal: <span className="font-medium text-slate-900">{formatCurrency(totals.subtotal)}</span>
               </div>
-              <div className="text-sm text-gray-600">
-                IVA (21%): <span className="font-medium text-gray-900">{formatCurrency(totals.iva)}</span>
+              <div className="text-sm text-slate-600">
+                IVA (21%): <span className="font-medium text-slate-900">{formatCurrency(totals.iva)}</span>
               </div>
-              <div className="text-lg font-bold text-gray-900">
+              <div className="text-lg font-bold text-slate-900">
                 Total: {formatCurrency(totals.total)}
               </div>
             </div>

@@ -28,12 +28,12 @@ export default async function PresupuestosPage({ searchParams }: PresupuestosPag
     <div>
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Presupuestos</h2>
-          <p className="mt-1 text-gray-600 dark:text-gray-400">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Presupuestos</h2>
+          <p className="mt-1 text-slate-500 dark:text-slate-400">
             {total} presupuesto{total !== 1 ? "s" : ""} registrado{total !== 1 ? "s" : ""}
           </p>
         </div>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-slate-500">
           Para crear un presupuesto, ve a una obra y haz clic en &quot;Generar presupuesto&quot;
         </p>
       </div>
@@ -55,7 +55,7 @@ export default async function PresupuestosPage({ searchParams }: PresupuestosPag
         </Card>
       ) : (
         <>
-          <div className="mt-6 overflow-hidden rounded-lg border bg-white dark:bg-gray-900">
+          <div className="mt-6 overflow-hidden rounded-lg border bg-white dark:bg-slate-900">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -73,15 +73,15 @@ export default async function PresupuestosPage({ searchParams }: PresupuestosPag
                     <TableCell>
                       <Link
                         href={`/dashboard/presupuestos/${estimate.id}`}
-                        className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+                        className="font-medium text-slate-900 dark:text-white hover:text-amber-600 dark:hover:text-amber-400"
                       >
                         {estimate.name}
                       </Link>
                     </TableCell>
-                    <TableCell className="text-gray-600 dark:text-gray-400">
+                    <TableCell className="text-slate-500 dark:text-slate-400">
                       {estimate.project?.name || "-"}
                     </TableCell>
-                    <TableCell className="text-gray-600 dark:text-gray-400">
+                    <TableCell className="text-slate-500 dark:text-slate-400">
                       {estimate.project?.client?.name || "-"}
                     </TableCell>
                     <TableCell className="text-right font-medium">
@@ -90,7 +90,7 @@ export default async function PresupuestosPage({ searchParams }: PresupuestosPag
                     <TableCell>
                       <StatusBadge type="estimate" status={estimate.status} />
                     </TableCell>
-                    <TableCell className="text-gray-600 dark:text-gray-400">
+                    <TableCell className="text-slate-500 dark:text-slate-400">
                       {new Date(estimate.created_at).toLocaleDateString("es-ES")}
                     </TableCell>
                   </TableRow>

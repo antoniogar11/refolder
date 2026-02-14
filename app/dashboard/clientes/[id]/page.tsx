@@ -36,10 +36,10 @@ export default async function ClientEditPage({ params }: ClientEditPageProps) {
   return (
     <div className="max-w-5xl">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
           Editar Cliente
         </h2>
-        <p className="mt-1 text-gray-600 dark:text-gray-400">
+        <p className="mt-1 text-slate-500 dark:text-slate-400">
           Modifica la información del cliente
         </p>
       </div>
@@ -76,7 +76,7 @@ export default async function ClientEditPage({ params }: ClientEditPageProps) {
         </CardHeader>
         <CardContent>
           {projects.length === 0 ? (
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               Este cliente no tiene obras registradas.
             </p>
           ) : (
@@ -95,7 +95,7 @@ export default async function ClientEditPage({ params }: ClientEditPageProps) {
                     <TableCell>
                       <Link
                         href={`/dashboard/obras/${project.id}`}
-                        className="font-medium text-gray-900 dark:text-white hover:text-blue-600"
+                        className="font-medium text-slate-900 dark:text-white hover:text-amber-600"
                       >
                         {project.name}
                       </Link>
@@ -103,7 +103,7 @@ export default async function ClientEditPage({ params }: ClientEditPageProps) {
                     <TableCell>
                       <StatusBadge type="project" status={project.status} />
                     </TableCell>
-                    <TableCell className="text-gray-600 dark:text-gray-400">
+                    <TableCell className="text-slate-500 dark:text-slate-400">
                       {project.total_budget
                         ? new Intl.NumberFormat("es-ES", {
                             style: "currency",
@@ -111,7 +111,7 @@ export default async function ClientEditPage({ params }: ClientEditPageProps) {
                           }).format(project.total_budget)
                         : "-"}
                     </TableCell>
-                    <TableCell className="text-gray-600 dark:text-gray-400">
+                    <TableCell className="text-slate-500 dark:text-slate-400">
                       {project.start_date || "-"}
                     </TableCell>
                   </TableRow>

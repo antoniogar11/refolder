@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect } from "@/components/ui/native-select";
 import { FieldError, FormMessage, SubmitButton } from "@/components/shared/entity-form";
 import type { FormState } from "@/lib/forms/form-state";
 import { initialFormState } from "@/lib/forms/form-state";
@@ -46,26 +47,24 @@ export function EditProjectForm({ project, clients }: EditProjectFormProps) {
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="client_id">Cliente *</Label>
-          <select
+          <NativeSelect
             id="client_id"
             name="client_id"
             required
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             defaultValue={project.client_id}
           >
             <option value="">Seleccionar cliente...</option>
             {clients.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
-          </select>
+          </NativeSelect>
           <FieldError messages={state.errors?.client_id} />
         </div>
         <div className="space-y-2">
           <Label htmlFor="status">Estado</Label>
-          <select
+          <NativeSelect
             id="status"
             name="status"
-            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
             defaultValue={project.status}
           >
             <option value="planning">Planificación</option>
@@ -73,7 +72,7 @@ export function EditProjectForm({ project, clients }: EditProjectFormProps) {
             <option value="paused">Pausada</option>
             <option value="completed">Finalizada</option>
             <option value="cancelled">Cancelada</option>
-          </select>
+          </NativeSelect>
           <FieldError messages={state.errors?.status} />
         </div>
       </div>

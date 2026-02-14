@@ -30,8 +30,8 @@ export default async function ClientesPage({ searchParams }: ClientesPageProps) 
     <div>
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Clientes</h2>
-          <p className="mt-1 text-gray-600 dark:text-gray-400">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Clientes</h2>
+          <p className="mt-1 text-slate-500 dark:text-slate-400">
             {total} cliente{total !== 1 ? "s" : ""} registrado{total !== 1 ? "s" : ""}
           </p>
         </div>
@@ -42,13 +42,13 @@ export default async function ClientesPage({ searchParams }: ClientesPageProps) 
 
       <div
         id="nuevo-cliente"
-        className="mb-10 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900"
+        className="mb-10 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
       >
         <div className="mb-4">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
             Añadir nuevo cliente
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             Completa el formulario para registrarlo.
           </p>
         </div>
@@ -74,7 +74,7 @@ export default async function ClientesPage({ searchParams }: ClientesPageProps) 
         </Card>
       ) : (
         <>
-          <div className="mt-6 overflow-hidden rounded-lg border bg-white dark:bg-gray-900">
+          <div className="mt-6 overflow-hidden rounded-lg border bg-white dark:bg-slate-900">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -91,23 +91,23 @@ export default async function ClientesPage({ searchParams }: ClientesPageProps) 
                     <TableCell>
                       <Link
                         href={`/dashboard/clientes/${client.id}`}
-                        className="font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
+                        className="font-medium text-slate-900 dark:text-white hover:text-amber-600 dark:hover:text-amber-400"
                       >
                         {client.name}
                       </Link>
                     </TableCell>
-                    <TableCell className="text-gray-600 dark:text-gray-400">
+                    <TableCell className="text-slate-500 dark:text-slate-400">
                       {client.email || "-"}
                     </TableCell>
-                    <TableCell className="text-gray-600 dark:text-gray-400">
+                    <TableCell className="text-slate-500 dark:text-slate-400">
                       {client.phone || "-"}
                     </TableCell>
-                    <TableCell className="text-gray-600 dark:text-gray-400">
+                    <TableCell className="text-slate-500 dark:text-slate-400">
                       {[client.postal_code, client.city, client.province]
                         .filter(Boolean)
                         .join(", ") || "-"}
                     </TableCell>
-                    <TableCell className="text-gray-600 dark:text-gray-400">
+                    <TableCell className="text-slate-500 dark:text-slate-400">
                       {client.tax_id || "-"}
                     </TableCell>
                   </TableRow>

@@ -1,25 +1,18 @@
-import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
-const projectStatusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  planning: { label: "Planificación", variant: "secondary" },
-  in_progress: { label: "En Curso", variant: "default" },
-  paused: { label: "Pausada", variant: "outline" },
-  completed: { label: "Finalizada", variant: "secondary" },
-  cancelled: { label: "Cancelada", variant: "destructive" },
+const projectStatusConfig: Record<string, { label: string; className: string }> = {
+  planning: { label: "Planificacion", className: "status-planning" },
+  in_progress: { label: "En Curso", className: "status-in-progress" },
+  paused: { label: "Pausada", className: "status-paused" },
+  completed: { label: "Finalizada", className: "status-completed" },
+  cancelled: { label: "Cancelada", className: "status-cancelled" },
 };
 
-const estimateStatusConfig: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  draft: { label: "Borrador", variant: "secondary" },
-  sent: { label: "Enviado", variant: "default" },
-  accepted: { label: "Aceptado", variant: "secondary" },
-  rejected: { label: "Rechazado", variant: "destructive" },
-};
-
-const supplierTypeConfig: Record<string, string> = {
-  material: "Material",
-  labor: "Mano de obra",
-  service: "Servicio",
-  other: "Otro",
+const estimateStatusConfig: Record<string, { label: string; className: string }> = {
+  draft: { label: "Borrador", className: "status-draft" },
+  sent: { label: "Enviado", className: "status-sent" },
+  accepted: { label: "Aceptado", className: "status-accepted" },
+  rejected: { label: "Rechazado", className: "status-rejected" },
 };
 
 type StatusBadgeProps = {
@@ -29,10 +22,15 @@ type StatusBadgeProps = {
 
 export function StatusBadge({ type, status }: StatusBadgeProps) {
   const config = type === "project" ? projectStatusConfig : estimateStatusConfig;
-  const item = config[status] ?? { label: status, variant: "outline" as const };
-  return <Badge variant={item.variant}>{item.label}</Badge>;
-}
-
-export function SupplierTypeBadge({ type }: { type: string }) {
-  return <Badge variant="outline">{supplierTypeConfig[type] ?? type}</Badge>;
+  const item = config[status] ?? { label: status, className: "" };
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
+        item.className
+      )}
+    >
+      {item.label}
+    </span>
+  );
 }

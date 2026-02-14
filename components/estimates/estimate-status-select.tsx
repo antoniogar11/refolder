@@ -3,6 +3,13 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { updateEstimateStatusAction } from "@/app/dashboard/presupuestos/actions";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const statusOptions = [
   { value: "draft", label: "Borrador" },
@@ -19,8 +26,7 @@ type EstimateStatusSelectProps = {
 export function EstimateStatusSelect({ estimateId, currentStatus }: EstimateStatusSelectProps) {
   const [status, setStatus] = useState(currentStatus);
 
-  async function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    const newStatus = e.target.value;
+  async function handleChange(newStatus: string) {
     setStatus(newStatus);
     const result = await updateEstimateStatusAction(estimateId, newStatus);
     if (result.success) {
@@ -32,14 +38,17 @@ export function EstimateStatusSelect({ estimateId, currentStatus }: EstimateStat
   }
 
   return (
-    <select
-      value={status}
-      onChange={handleChange}
-      className="flex h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-    >
-      {statusOptions.map((opt) => (
-        <option key={opt.value} value={opt.value}>{opt.label}</option>
-      ))}
-    </select>
+    <Select value={status} onValueChange={handleChange}>
+      <SelectTrigger className="w-[140px]">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {statusOptions.map((opt) => (
+          <SelectItem key={opt.value} value={opt.value}>
+            {opt.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

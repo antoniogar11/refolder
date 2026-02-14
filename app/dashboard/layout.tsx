@@ -21,15 +21,15 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="flex">
         <Sidebar />
         <div className="flex-1 flex flex-col min-h-screen">
-          <header className="border-b bg-white dark:bg-gray-800 h-16 flex items-center px-4 lg:px-8">
+          <header className="border-b border-slate-200 bg-white dark:bg-slate-800 h-16 flex items-center px-4 lg:px-8">
             <MobileNav />
             <Breadcrumbs />
             <div className="ml-auto flex items-center gap-2">
-              <span className="hidden sm:block text-sm text-gray-600 dark:text-gray-400">
+              <span className="hidden sm:block text-sm text-slate-600 dark:text-slate-400">
                 {user.email}
               </span>
               <LogoutButton variant="outline" />

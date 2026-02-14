@@ -19,9 +19,12 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 min-h-screen">
+    <aside className="hidden lg:flex lg:flex-col lg:w-64 bg-slate-900 min-h-screen">
       <div className="p-6">
-        <Link href="/dashboard" className="text-xl font-bold text-gray-900 dark:text-white">
+        <Link href="/dashboard" className="flex items-center gap-2 text-xl font-bold text-white">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 text-sm font-bold text-white">
+            R
+          </span>
           Refolder
         </Link>
       </div>
@@ -38,8 +41,8 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white",
+                  ? "bg-slate-800 text-white border-l-2 border-amber-500"
+                  : "text-slate-400 hover:bg-slate-800 hover:text-white transition-colors",
               )}
             >
               <item.icon className="h-5 w-5" />

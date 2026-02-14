@@ -49,7 +49,7 @@ export function ExportPDFButton({ estimate, items }: ExportPDFButtonProps) {
 
   return (
     <Button variant="outline" onClick={handleExport}>
-      <FileDown className="mr-2 h-4 w-4" />
+      <FileDown className="mr-2 h-4 w-4 text-amber-600" />
       Exportar PDF
     </Button>
   );

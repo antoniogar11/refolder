@@ -17,57 +17,65 @@ export default async function DashboardPage() {
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
           Panel de Control
         </h2>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-slate-500 dark:text-slate-400">
           Gestiona tus obras, clientes y presupuestos desde aquí
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card>
+        <Card className="border-t-4 border-t-amber-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">
               Clientes
             </CardTitle>
-            <Users className="h-4 w-4 text-gray-400" />
+            <div className="h-8 w-8 rounded-lg bg-amber-50 flex items-center justify-center">
+              <Users className="h-4 w-4 text-amber-600" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalClients}</div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-t-4 border-t-emerald-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">
               Obras Activas
             </CardTitle>
-            <Building2 className="h-4 w-4 text-gray-400" />
+            <div className="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+              <Building2 className="h-4 w-4 text-emerald-600" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.activeProjects}</div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-t-4 border-t-sky-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">
               Presupuestos Pendientes
             </CardTitle>
-            <FileText className="h-4 w-4 text-gray-400" />
+            <div className="h-8 w-8 rounded-lg bg-sky-50 flex items-center justify-center">
+              <FileText className="h-4 w-4 text-sky-600" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.pendingEstimates}</div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-t-4 border-t-emerald-500">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+            <CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400">
               Presupuestos Aceptados
             </CardTitle>
-            <CircleDollarSign className="h-4 w-4 text-gray-400" />
+            <div className="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+              <CircleDollarSign className="h-4 w-4 text-emerald-600" />
+            </div>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">

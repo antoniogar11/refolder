@@ -23,7 +23,7 @@ export function Pagination({ currentPage, totalPages }: PaginationProps) {
 
   return (
     <div className="flex items-center justify-between mt-6">
-      <p className="text-sm text-gray-600 dark:text-gray-400">
+      <p className="text-sm text-slate-500 dark:text-slate-400">
         Página {currentPage} de {totalPages}
       </p>
       <div className="flex gap-2">

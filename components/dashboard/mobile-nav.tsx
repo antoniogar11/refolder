@@ -30,9 +30,12 @@ export function MobileNav() {
           <span className="sr-only">Menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-64 p-0">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-          <span className="text-xl font-bold text-gray-900 dark:text-white">
+      <SheetContent side="left" className="w-64 p-0 bg-slate-900 border-slate-800">
+        <div className="p-6 border-b border-slate-800">
+          <span className="flex items-center gap-2 text-xl font-bold text-white">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 text-sm font-bold text-white">
+              R
+            </span>
             Refolder
           </span>
         </div>
@@ -50,8 +53,8 @@ export function MobileNav() {
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white",
+                    ? "bg-slate-800 text-white border-l-2 border-amber-500"
+                    : "text-slate-400 hover:bg-slate-800 hover:text-white transition-colors",
                 )}
               >
                 <item.icon className="h-5 w-5" />

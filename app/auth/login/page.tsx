@@ -13,7 +13,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const hasError = params.error === "invalid_token";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-amber-50/30 dark:from-slate-900 dark:to-slate-800 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold">Iniciar Sesión</CardTitle>
@@ -43,9 +43,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </div>
           )}
           <LoginForm />
-          <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+          <div className="text-center text-sm text-slate-600 dark:text-slate-400">
             ¿No tienes cuenta?{" "}
-            <Link href="/auth/register" className="text-blue-600 hover:underline dark:text-blue-400">
+            <Link href="/auth/register" className="text-amber-600 hover:text-amber-700 hover:underline dark:text-amber-400">
               Regístrate aquí
             </Link>
           </div>
@@ -61,5 +61,3 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     </div>
   );
 }
-
-
