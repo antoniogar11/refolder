@@ -126,15 +126,18 @@ export async function createEstimateWithItemsAction(
     return { success: false, message: "No estás autenticado." };
   }
 
-  // Build insert data
+  // Build insert data - only include non-null foreign keys
   const insertData: Record<string, unknown> = {
     user_id: user.id,
     name,
     description,
     total_amount: totalAmount,
     status: "draft",
-    client_id: clientId,
   };
+
+  if (clientId) {
+    insertData.client_id = clientId;
+  }
 
   if (projectId) {
     insertData.project_id = projectId;

@@ -111,7 +111,8 @@ export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimat
         toast.error(result.message);
       }
     } catch (error) {
-      toast.error("Error al guardar el presupuesto.");
+      console.error("Save error:", error);
+      toast.error("Error al guardar el presupuesto. Revisa la consola para más detalles.");
     } finally {
       setIsSaving(false);
     }
