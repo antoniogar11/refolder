@@ -29,8 +29,9 @@ export async function POST(request: NextRequest) {
     }
 
     if (!ANTHROPIC_API_KEY) {
+      console.error("ANTHROPIC_API_KEY is not set in environment variables");
       return NextResponse.json(
-        { error: "API key de IA no configurada. Contacta al administrador." },
+        { error: "API key de IA no configurada. Añade ANTHROPIC_API_KEY en las variables de entorno de Vercel." },
         { status: 500 }
       );
     }
@@ -125,9 +126,19 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta:
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Anthropic API error:", errorText);
+      console.error("Anthropic API error:", response.status, errorText);
+
+      let userError = "Error al generar el presupuesto con IA. Inténtalo de nuevo.";
+      if (response.status === 401) {
+        userError = "La API key de Anthropic no es válida. Verifica ANTHROPIC_API_KEY en las variables de entorno.";
+      } else if (response.status === 429) {
+        userError = "Se superó el límite de uso de la IA. Espera unos minutos e inténtalo de nuevo.";
+      } else if (response.status === 529 || response.status === 503) {
+        userError = "El servicio de IA está temporalmente sobrecargado. Inténtalo de nuevo en unos minutos.";
+      }
+
       return NextResponse.json(
-        { error: "Error al generar el presupuesto con IA. Inténtalo de nuevo." },
+        { error: userError },
         { status: 502 }
       );
     }
