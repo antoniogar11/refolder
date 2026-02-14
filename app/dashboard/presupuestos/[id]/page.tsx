@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/dashboard/status-badge";
 import { DeleteEntityButton } from "@/components/shared/delete-entity-button";
 import { getEstimateById } from "@/lib/data/estimates";
 import { getEstimateItems } from "@/lib/data/estimate-items";
+import { getOrCreateCompany } from "@/lib/data/companies";
 import { deleteEstimateAction } from "@/app/dashboard/presupuestos/actions";
 import { EstimateItemsEditor } from "@/components/estimates/estimate-items-editor";
 import { EstimateStatusSelect } from "@/components/estimates/estimate-status-select";
@@ -22,9 +23,10 @@ type EstimateDetailPageProps = {
 
 export default async function EstimateDetailPage({ params }: EstimateDetailPageProps) {
   const { id } = await params;
-  const [estimate, items] = await Promise.all([
+  const [estimate, items, company] = await Promise.all([
     getEstimateById(id),
     getEstimateItems(id),
+    getOrCreateCompany(),
   ]);
 
   if (!estimate) {
@@ -68,7 +70,7 @@ export default async function EstimateDetailPage({ params }: EstimateDetailPageP
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <ExportPDFButton estimate={estimate} items={items} />
+          <ExportPDFButton estimate={estimate} items={items} company={company} />
           <EstimateStatusSelect estimateId={estimate.id} currentStatus={estimate.status} />
           <DeleteEntityButton
             entityId={estimate.id}

@@ -6,6 +6,15 @@ type EstimateData = {
   estimateNumber: string;
   date: string;
   validUntil: string;
+  // Datos de empresa
+  companyName: string;
+  companySubtitle: string | null;
+  companyTaxId: string | null;
+  companyAddress: string | null;
+  companyCity: string | null;
+  companyPhone: string | null;
+  companyEmail: string | null;
+  // Datos de cliente
   clientName: string;
   clientAddress: string | null;
   clientTaxId: string | null;
@@ -33,22 +42,39 @@ export function generateEstimatePDF(data: EstimateData) {
   doc.setFontSize(24);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(15, 23, 42); // slate-900
-  doc.text("Refolder", margin, 30);
+  doc.text(data.companyName || "Refolder", margin, 30);
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(100, 100, 100);
-  doc.text("Gestión de Obras y Reformas", margin, 37);
+  doc.text(data.companySubtitle || "Gestión de Obras y Reformas", margin, 37);
+
+  // Company contact details under the name
+  let companyY = 42;
+  doc.setFontSize(8);
+  if (data.companyTaxId) {
+    doc.text(`CIF/NIF: ${data.companyTaxId}`, margin, companyY);
+    companyY += 4;
+  }
+  if (data.companyAddress) {
+    const addressParts = [data.companyAddress, data.companyCity].filter(Boolean).join(", ");
+    doc.text(addressParts, margin, companyY);
+    companyY += 4;
+  }
+  if (data.companyPhone || data.companyEmail) {
+    const contactParts = [data.companyPhone, data.companyEmail].filter(Boolean).join(" · ");
+    doc.text(contactParts, margin, companyY);
+  }
 
   // Estimate number and date - right aligned
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(50, 50, 50);
   doc.setTextColor(30, 41, 59); // slate-800
   doc.text(`PRESUPUESTO`, pageWidth - margin, 25, { align: "right" });
 
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
+  doc.setTextColor(100, 100, 100);
   doc.text(`Nº: ${data.estimateNumber}`, pageWidth - margin, 32, {
     align: "right",
   });
@@ -58,12 +84,13 @@ export function generateEstimatePDF(data: EstimateData) {
   });
 
   // Horizontal line
+  const lineY = Math.max(companyY + 4, 52);
   doc.setDrawColor(200, 200, 200);
   doc.setLineWidth(0.5);
-  doc.line(margin, 50, pageWidth - margin, 50);
+  doc.line(margin, lineY, pageWidth - margin, lineY);
 
   // Client info box
-  let yPos = 58;
+  let yPos = lineY + 8;
   doc.setFillColor(248, 250, 252); // gray-50
   doc.roundedRect(
     margin,
@@ -126,7 +153,7 @@ export function generateEstimatePDF(data: EstimateData) {
   }
 
   // Estimate name
-  yPos = 100;
+  yPos = yPos + 40;
   doc.setFontSize(12);
   doc.setFont("helvetica", "bold");
   doc.setTextColor(30, 30, 30);

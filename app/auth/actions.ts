@@ -39,6 +39,17 @@ export async function registerAction(
     return { status: "error", message: error.message };
   }
 
+  // Auto-crear empresa para el nuevo usuario
+  if (data.user) {
+    await supabase
+      .from("companies")
+      .insert({
+        owner_id: data.user.id,
+        name: parsed.data.name || "Mi Empresa",
+      })
+      .single();
+  }
+
   if (data.session) {
     redirect("/dashboard");
   }

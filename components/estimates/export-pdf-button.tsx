@@ -3,14 +3,15 @@
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import { generateEstimatePDF } from "@/lib/pdf/generate-estimate-pdf";
-import type { Estimate, EstimateItem } from "@/types";
+import type { Estimate, EstimateItem, Company } from "@/types";
 
 type ExportPDFButtonProps = {
   estimate: Estimate;
   items: EstimateItem[];
+  company: Company | null;
 };
 
-export function ExportPDFButton({ estimate, items }: ExportPDFButtonProps) {
+export function ExportPDFButton({ estimate, items, company }: ExportPDFButtonProps) {
   function handleExport() {
     const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
     const iva = Math.round(subtotal * 0.21 * 100) / 100;
@@ -28,10 +29,17 @@ export function ExportPDFButton({ estimate, items }: ExportPDFButtonProps) {
       estimateNumber,
       date: estimateDate.toLocaleDateString("es-ES"),
       validUntil: validUntilDate.toLocaleDateString("es-ES"),
-      clientName: estimate.project?.client?.name || "Cliente sin especificar",
+      companyName: company?.name || "Refolder",
+      companySubtitle: company?.subtitle || null,
+      companyTaxId: company?.tax_id || null,
+      companyAddress: company?.address || null,
+      companyCity: company?.city || null,
+      companyPhone: company?.phone || null,
+      companyEmail: company?.email || null,
+      clientName: estimate.client?.name || estimate.project?.client?.name || "Cliente sin especificar",
       clientAddress: null,
       clientTaxId: null,
-      projectName: estimate.project?.name || "Obra sin especificar",
+      projectName: estimate.project?.name || "Sin obra asociada",
       projectAddress: null,
       items: items.map((item) => ({
         categoria: item.categoria,

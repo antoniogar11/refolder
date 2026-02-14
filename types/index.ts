@@ -1,3 +1,20 @@
+export type Company = {
+  id: string;
+  owner_id: string;
+  name: string;
+  tax_id: string | null;
+  address: string | null;
+  city: string | null;
+  province: string | null;
+  postal_code: string | null;
+  phone: string | null;
+  email: string | null;
+  logo_url: string | null;
+  subtitle: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Client = {
   id: string;
   user_id: string;
@@ -88,6 +105,27 @@ export type EstimateItem = {
   subtotal: number;
   orden: number;
   created_at: string;
+};
+
+export type TransactionType = "income" | "expense";
+
+export type FinanceTransaction = {
+  id: string;
+  user_id: string;
+  project_id: string | null;
+  client_id: string | null;
+  type: TransactionType;
+  category: string;
+  description: string;
+  amount: number;
+  transaction_date: string;
+  payment_method: string | null;
+  reference: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  project?: Pick<Project, "id" | "name"> | null;
+  client?: Pick<Client, "id" | "name"> | null;
 };
 
 export type CostCategory = "material" | "mano_de_obra" | "subcontrata" | "transporte" | "otros";
