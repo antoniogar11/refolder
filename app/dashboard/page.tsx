@@ -1,145 +1,180 @@
 import Link from "next/link";
+import { Users, Building2, FileText, Truck, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogoutButton } from "@/components/auth/logout-button";
+import { getDashboardStats } from "@/lib/data/dashboard";
 
-export default function DashboardPage() {
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat("es-ES", {
+    style: "currency",
+    currency: "EUR",
+  }).format(amount);
+}
+
+export default async function DashboardPage() {
+  const stats = await getDashboardStats();
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <nav className="border-b bg-white dark:bg-gray-800">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-              Refolder Dashboard
-            </h1>
-            <div className="flex items-center gap-2">
-              <Link href="/">
-                <Button variant="ghost">Inicio</Button>
-              </Link>
-              <LogoutButton variant="outline" />
+    <div>
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+          Panel de Control
+        </h2>
+        <p className="mt-2 text-gray-600 dark:text-gray-400">
+          Gestiona tus obras, clientes y presupuestos desde aquí
+        </p>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              Clientes
+            </CardTitle>
+            <Users className="h-4 w-4 text-gray-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.totalClients}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              Obras Activas
+            </CardTitle>
+            <Building2 className="h-4 w-4 text-gray-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.activeProjects}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              Presupuestos Pendientes
+            </CardTitle>
+            <FileText className="h-4 w-4 text-gray-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.pendingEstimates}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              Presupuestos Aceptados
+            </CardTitle>
+            <BarChart3 className="h-4 w-4 text-gray-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {formatCurrency(stats.acceptedEstimatesTotal)}
             </div>
-          </div>
-        </div>
-      </nav>
+          </CardContent>
+        </Card>
+      </div>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Panel de Control
-          </h2>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
-            Gestiona tus obras, clientes y presupuestos desde aquí
-          </p>
-        </div>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Obras
+            </CardTitle>
+            <CardDescription>Gestionar proyectos</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/dashboard/obras">
+              <Button className="w-full">Ver Obras</Button>
+            </Link>
+          </CardContent>
+        </Card>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
-            <CardHeader>
-              <CardTitle>Obras</CardTitle>
-              <CardDescription>Gestionar proyectos</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link href="/dashboard/obras">
-                <Button className="w-full">Ver Obras</Button>
-              </Link>
-            </CardContent>
-          </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Clientes
+            </CardTitle>
+            <CardDescription>Base de datos de clientes</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/dashboard/clientes">
+              <Button className="w-full">Ver Clientes</Button>
+            </Link>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Clientes</CardTitle>
-              <CardDescription>Base de datos de clientes</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link href="/dashboard/clientes">
-                <Button className="w-full">Ver Clientes</Button>
-              </Link>
-            </CardContent>
-          </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Presupuestos
+            </CardTitle>
+            <CardDescription>Gestionar presupuestos</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/dashboard/presupuestos">
+              <Button className="w-full">Ver Presupuestos</Button>
+            </Link>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Presupuestos</CardTitle>
-              <CardDescription>Gestionar presupuestos</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link href="/dashboard/presupuestos">
-                <Button className="w-full">Ver Presupuestos</Button>
-              </Link>
-            </CardContent>
-          </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Truck className="h-5 w-5" />
+              Proveedores
+            </CardTitle>
+            <CardDescription>Gestionar proveedores</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/dashboard/proveedores">
+              <Button className="w-full">Ver Proveedores</Button>
+            </Link>
+          </CardContent>
+        </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Proveedores</CardTitle>
-              <CardDescription>Gestionar proveedores</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link href="/dashboard/proveedores">
-                <Button className="w-full">Ver Proveedores</Button>
-              </Link>
-            </CardContent>
-          </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Finanzas
+            </CardTitle>
+            <CardDescription>Control de ingresos y gastos</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/dashboard/finanzas">
+              <Button className="w-full">Ver Finanzas</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Finanzas</CardTitle>
-              <CardDescription>Control de ingresos y gastos</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link href="/dashboard/finanzas">
-                <Button className="w-full">Ver Finanzas</Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="mt-8 grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Estadísticas Rápidas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Obras Activas</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">0</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Clientes</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">0</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Presupuestos Pendientes</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">0</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Balance Financiero</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">€0</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Acciones Rápidas</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button className="w-full" variant="outline">
-                Nueva Obra
-              </Button>
-              <Button className="w-full" variant="outline">
-                Nuevo Cliente
-              </Button>
-              <Button className="w-full" variant="outline">
-                Crear Presupuesto
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </main>
+      <div className="mt-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Acciones Rápidas</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            <Link href="/dashboard/obras">
+              <Button variant="outline">Nueva Obra</Button>
+            </Link>
+            <Link href="/dashboard/clientes">
+              <Button variant="outline">Nuevo Cliente</Button>
+            </Link>
+            <Link href="/dashboard/presupuestos">
+              <Button variant="outline">Crear Presupuesto</Button>
+            </Link>
+            <Link href="/dashboard/proveedores">
+              <Button variant="outline">Nuevo Proveedor</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
-

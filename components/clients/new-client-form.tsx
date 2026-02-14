@@ -1,136 +1,82 @@
 "use client";
 
 import { useActionState } from "react";
-import { useFormStatus } from "react-dom";
 
 import { createClientAction } from "@/app/dashboard/clientes/actions";
-import { Button } from "@/components/ui/button";
-import { initialClientFormState } from "@/lib/forms/client-form-state";
-
-const inputClasses =
-  "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
-
-const textareaClasses =
-  "flex min-h-[96px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
-
-function FieldError({ messages }: { messages?: string[] }) {
-  if (!messages?.length) return null;
-  return (
-    <p className="text-sm text-red-600 dark:text-red-400" role="alert">
-      {messages.join(" ")}
-    </p>
-  );
-}
-
-function FormMessage({ status, message }: { status: "idle" | "success" | "error"; message?: string }) {
-  if (!message || status === "idle") return null;
-
-  const styles =
-    status === "error"
-      ? "text-sm text-red-600 dark:text-red-400"
-      : "text-sm text-green-600 dark:text-green-400";
-
-  return <p className={styles}>{message}</p>;
-}
-
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <Button type="submit" className="w-full" disabled={pending}>
-      {pending ? "Guardando..." : "Guardar Cliente"}
-    </Button>
-  );
-}
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { FieldError, FormMessage, SubmitButton } from "@/components/shared/entity-form";
+import { initialFormState } from "@/lib/forms/form-state";
 
 export function NewClientForm() {
-  const [state, formAction] = useActionState(createClientAction, initialClientFormState);
+  const [state, formAction] = useActionState(createClientAction, initialFormState);
 
   return (
     <form action={formAction} className="space-y-4" noValidate>
       <div className="space-y-2">
-        <label htmlFor="name" className="text-sm font-medium">
-          Nombre *
-        </label>
-        <input id="name" name="name" type="text" required className={inputClasses} placeholder="Ej. Juan Pérez" />
+        <Label htmlFor="name">Nombre *</Label>
+        <Input id="name" name="name" type="text" required placeholder="Ej. Juan Pérez" />
         <FieldError messages={state.errors?.name} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <label htmlFor="email" className="text-sm font-medium">
-            Email
-          </label>
-          <input id="email" name="email" type="email" className={inputClasses} placeholder="juan@ejemplo.com" />
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" name="email" type="email" placeholder="juan@ejemplo.com" />
           <FieldError messages={state.errors?.email} />
         </div>
         <div className="space-y-2">
-          <label htmlFor="phone" className="text-sm font-medium">
-            Teléfono
-          </label>
-          <input id="phone" name="phone" type="text" className={inputClasses} placeholder="+34 600 000 000" />
+          <Label htmlFor="phone">Teléfono</Label>
+          <Input id="phone" name="phone" type="text" placeholder="+34 600 000 000" />
           <FieldError messages={state.errors?.phone} />
         </div>
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="address" className="text-sm font-medium">
-          Dirección
-        </label>
-        <input id="address" name="address" type="text" className={inputClasses} placeholder="Calle y número" />
+        <Label htmlFor="address">Dirección</Label>
+        <Input id="address" name="address" type="text" placeholder="Calle y número" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <div className="space-y-2">
-          <label htmlFor="postal_code" className="text-sm font-medium">
-            Código Postal
-          </label>
-          <input
+          <Label htmlFor="postal_code">Código Postal</Label>
+          <Input
             id="postal_code"
             name="postal_code"
             type="text"
-            className={inputClasses}
             placeholder="28001"
             maxLength={5}
           />
           <FieldError messages={state.errors?.postal_code} />
         </div>
         <div className="space-y-2">
-          <label htmlFor="city" className="text-sm font-medium">
-            Población
-          </label>
-          <input id="city" name="city" type="text" className={inputClasses} placeholder="Madrid" />
+          <Label htmlFor="city">Población</Label>
+          <Input id="city" name="city" type="text" placeholder="Madrid" />
         </div>
         <div className="space-y-2">
-          <label htmlFor="province" className="text-sm font-medium">
-            Provincia
-          </label>
-          <input id="province" name="province" type="text" className={inputClasses} placeholder="Madrid" />
+          <Label htmlFor="province">Provincia</Label>
+          <Input id="province" name="province" type="text" placeholder="Madrid" />
         </div>
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="tax_id" className="text-sm font-medium">
-          CIF / NIF
-        </label>
-        <input
+        <Label htmlFor="tax_id">CIF / NIF</Label>
+        <Input
           id="tax_id"
           name="tax_id"
           type="text"
-          className={inputClasses}
           placeholder="12345678A o B12345678"
         />
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="notes" className="text-sm font-medium">
-          Notas
-        </label>
-        <textarea id="notes" name="notes" className={textareaClasses} placeholder="Información adicional" />
+        <Label htmlFor="notes">Notas</Label>
+        <Textarea id="notes" name="notes" placeholder="Información adicional" />
       </div>
 
       <FormMessage status={state.status} message={state.message} />
-      <SubmitButton />
+      <SubmitButton label="Guardar Cliente" />
     </form>
   );
 }
-

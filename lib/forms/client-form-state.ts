@@ -1,10 +1,5 @@
-export type ClientFormState = {
-  status: "idle" | "success" | "error";
-  message?: string;
-  errors?: Record<string, string[]>;
-};
+import type { FormState } from "./form-state";
+import { initialFormState } from "./form-state";
 
-export const initialClientFormState: ClientFormState = {
-  status: "idle",
-};
-
+export type ClientFormState = FormState;
+export const initialClientFormState = initialFormState;
