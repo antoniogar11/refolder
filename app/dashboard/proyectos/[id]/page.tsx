@@ -25,6 +25,7 @@ import { ProjectFinancialSummary } from "@/components/projects/project-financial
 import { ProjectDetailTabs } from "@/components/projects/project-detail-tabs";
 import { LinkEstimateSelect } from "@/components/projects/link-estimate-select";
 import { CostComparison } from "@/components/projects/cost-comparison";
+import { ProjectPageTabs } from "@/components/projects/project-page-tabs";
 
 type ProjectEditPageProps = {
   params: Promise<{ id: string }>;
@@ -51,17 +52,7 @@ export default async function ProjectEditPage({ params }: ProjectEditPageProps) 
 
   return (
     <div className="max-w-5xl space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
-          Editar Proyecto
-        </h2>
-        <p className="mt-1 text-slate-500 dark:text-slate-400">
-          Modifica la información del proyecto
-        </p>
-      </div>
-
-      {/* Project info card */}
+      {/* Header - siempre visible fuera de los tabs */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -92,106 +83,124 @@ export default async function ProjectEditPage({ params }: ProjectEditPageProps) 
             />
           </div>
         </CardHeader>
-        <CardContent>
-          <EditProjectForm project={project} clients={clients} />
-        </CardContent>
       </Card>
 
-      {/* Financial summary - always visible */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Resumen financiero</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ProjectFinancialSummary summary={financialSummary} />
-        </CardContent>
-      </Card>
+      {/* Tabs a nivel de pagina */}
+      <ProjectPageTabs
+        finanzasTab={
+          <>
+            {/* Resumen financiero */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Resumen financiero</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ProjectFinancialSummary summary={financialSummary} />
+              </CardContent>
+            </Card>
 
-      {/* Budget comparison */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Comparación presupuesto vs coste real</CardTitle>
-          <CardDescription>Vincula un presupuesto para comparar con el gasto real</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <LinkEstimateSelect projectId={project.id} estimates={allEstimates} />
-          <CostComparison
-            budgeted={financialSummary.presupuestado}
-            spent={financialSummary.gastado}
-          />
-        </CardContent>
-      </Card>
+            {/* Comparacion presupuesto vs coste */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Comparacion presupuesto vs coste real</CardTitle>
+                <CardDescription>Vincula un presupuesto para comparar con el gasto real</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <LinkEstimateSelect projectId={project.id} estimates={allEstimates} />
+                <CostComparison
+                  budgeted={financialSummary.presupuestado}
+                  spent={financialSummary.gastado}
+                />
+              </CardContent>
+            </Card>
 
-      {/* Tabs: Gastos | Ingresos | Horas */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Movimientos del proyecto</CardTitle>
-          <CardDescription>Gestiona gastos, ingresos y horas de mano de obra</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ProjectDetailTabs
-            projectId={project.id}
-            gastos={gastos}
-            ingresos={ingresos}
-            hours={hours}
-            workerRates={workerRates}
-          />
-        </CardContent>
-      </Card>
+            {/* Movimientos: Gastos | Ingresos | Horas */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Movimientos del proyecto</CardTitle>
+                <CardDescription>Gestiona gastos, ingresos y horas de mano de obra</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ProjectDetailTabs
+                  projectId={project.id}
+                  gastos={gastos}
+                  ingresos={ingresos}
+                  hours={hours}
+                  workerRates={workerRates}
+                />
+              </CardContent>
+            </Card>
+          </>
+        }
+        presupuestosTab={
+          <>
+            {/* Tabla de presupuestos */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Presupuestos ({estimates.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {estimates.length === 0 ? (
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Este proyecto no tiene presupuestos. Genera uno con IA a continuacion.
+                  </p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nombre</TableHead>
+                        <TableHead className="text-right">Total</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead>Fecha</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {estimates.map((estimate) => (
+                        <TableRow key={estimate.id}>
+                          <TableCell>
+                            <Link
+                              href={`/dashboard/presupuestos/${estimate.id}`}
+                              className="font-medium text-slate-900 dark:text-white hover:text-amber-600"
+                            >
+                              {estimate.name}
+                            </Link>
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {new Intl.NumberFormat("es-ES", {
+                              style: "currency",
+                              currency: "EUR",
+                            }).format(estimate.total_amount)}
+                          </TableCell>
+                          <TableCell>
+                            <StatusBadge type="estimate" status={estimate.status} />
+                          </TableCell>
+                          <TableCell className="text-slate-500 dark:text-slate-400">
+                            {new Date(estimate.created_at).toLocaleDateString("es-ES")}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
 
-      {/* Presupuestos de este proyecto */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Presupuestos ({estimates.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {estimates.length === 0 ? (
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Este proyecto no tiene presupuestos. Genera uno con IA a continuación.
-            </p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Fecha</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {estimates.map((estimate) => (
-                  <TableRow key={estimate.id}>
-                    <TableCell>
-                      <Link
-                        href={`/dashboard/presupuestos/${estimate.id}`}
-                        className="font-medium text-slate-900 dark:text-white hover:text-amber-600"
-                      >
-                        {estimate.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {new Intl.NumberFormat("es-ES", {
-                        style: "currency",
-                        currency: "EUR",
-                      }).format(estimate.total_amount)}
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge type="estimate" status={estimate.status} />
-                    </TableCell>
-                    <TableCell className="text-slate-500 dark:text-slate-400">
-                      {new Date(estimate.created_at).toLocaleDateString("es-ES")}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Generar presupuesto con IA */}
-      <GenerateEstimateForm projectId={project.id} projectName={project.name} />
+            {/* Generar presupuesto con IA */}
+            <GenerateEstimateForm projectId={project.id} projectName={project.name} />
+          </>
+        }
+        datosTab={
+          <Card>
+            <CardHeader>
+              <CardTitle>Editar datos del proyecto</CardTitle>
+              <CardDescription>Modifica la informacion del proyecto</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <EditProjectForm project={project} clients={clients} />
+            </CardContent>
+          </Card>
+        }
+      />
     </div>
   );
 }
