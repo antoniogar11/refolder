@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -69,14 +70,14 @@ export function QuickAddClientDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="h-5 w-5" />
             Nuevo Cliente
           </DialogTitle>
           <DialogDescription>
-            Crea un cliente rapido. Podras completar sus datos despues.
+            Rellena los datos del cliente. Solo el nombre es obligatorio.
           </DialogDescription>
         </DialogHeader>
 
@@ -87,7 +88,7 @@ export function QuickAddClientDialog({
               id="qc-name"
               name="name"
               required
-              placeholder="Ej. Juan Perez"
+              placeholder="Ej. Juan Pérez"
               autoFocus
             />
             {errors.name && (
@@ -109,7 +110,7 @@ export function QuickAddClientDialog({
               )}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="qc-phone">Telefono</Label>
+              <Label htmlFor="qc-phone">Teléfono</Label>
               <Input
                 id="qc-phone"
                 name="phone"
@@ -120,6 +121,69 @@ export function QuickAddClientDialog({
                 <p className="text-sm text-red-600">{errors.phone}</p>
               )}
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="qc-address">Dirección</Label>
+            <Input
+              id="qc-address"
+              name="address"
+              type="text"
+              placeholder="Calle y número"
+            />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="space-y-2">
+              <Label htmlFor="qc-postal_code">Código Postal</Label>
+              <Input
+                id="qc-postal_code"
+                name="postal_code"
+                type="text"
+                placeholder="28001"
+                maxLength={5}
+              />
+              {errors.postal_code && (
+                <p className="text-sm text-red-600">{errors.postal_code}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="qc-city">Población</Label>
+              <Input
+                id="qc-city"
+                name="city"
+                type="text"
+                placeholder="Madrid"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="qc-province">Provincia</Label>
+              <Input
+                id="qc-province"
+                name="province"
+                type="text"
+                placeholder="Madrid"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="qc-tax_id">CIF / NIF</Label>
+            <Input
+              id="qc-tax_id"
+              name="tax_id"
+              type="text"
+              placeholder="12345678A o B12345678"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="qc-notes">Notas</Label>
+            <Textarea
+              id="qc-notes"
+              name="notes"
+              placeholder="Información adicional"
+            />
           </div>
 
           <DialogFooter>
@@ -138,7 +202,7 @@ export function QuickAddClientDialog({
                   Guardando...
                 </>
               ) : (
-                "Crear Cliente"
+                "Guardar Cliente"
               )}
             </Button>
           </DialogFooter>
