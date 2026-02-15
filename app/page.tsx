@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Building2, Sparkles, FileDown, Check, ArrowRight } from "lucide-react";
+import { Users, Building2, Sparkles, FileDown, Check, ArrowRight, Clock } from "lucide-react";
 
 export default function Home() {
   return (
@@ -39,11 +39,11 @@ export default function Home() {
           </div>
           <h1 className="mb-6 text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight max-w-4xl mx-auto">
             <span className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-slate-200 dark:to-slate-300 bg-clip-text text-transparent">
-              Genera presupuestos profesionales con IA para tus obras y reformas
+              Presupuesta con IA y controla tus obras en tiempo real
             </span>
           </h1>
           <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-8">
-            Describe el trabajo, la IA genera las partidas con precios reales del mercado español. Edita, personaliza y exporta a PDF en minutos.
+            Genera presupuestos con IA en minutos, registra gastos e ingresos por proyecto y compara el coste real con lo presupuestado. Todo en una sola plataforma.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/register">
@@ -57,7 +57,7 @@ export default function Home() {
         {/* Features */}
         <section className="py-16">
           <h2 className="text-3xl font-bold text-center text-slate-900 dark:text-white mb-12">
-            Todo lo que necesitas para presupuestar
+            Todo lo que necesitas para presupuestar y controlar tus obras
           </h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <Card className="border-2 hover:border-slate-300 dark:hover:border-slate-700 transition-all hover:shadow-lg">
@@ -76,7 +76,7 @@ export default function Home() {
                   <Building2 className="h-6 w-6 text-amber-600 dark:text-amber-400" />
                 </div>
                 <CardTitle className="text-lg">Control de Proyectos</CardTitle>
-                <CardDescription className="text-sm">Gestiona tus proyectos, controla costes reales vs presupuestados y mantén el margen.</CardDescription>
+                <CardDescription className="text-sm">Registra gastos e ingresos, compara presupuesto vs coste real con barra de progreso visual y controla tu beneficio.</CardDescription>
               </CardHeader>
             </Card>
 
@@ -107,7 +107,7 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-center text-slate-900 dark:text-white mb-12">
             Cómo funciona
           </h2>
-          <div className="grid gap-8 md:grid-cols-4">
+          <div className="grid gap-8 md:grid-cols-5">
             <div className="text-center">
               <div className="mx-auto h-12 w-12 rounded-full bg-slate-900 text-white flex items-center justify-center text-xl font-bold mb-4">
                 1
@@ -127,7 +127,7 @@ export default function Home() {
                 3
               </div>
               <h3 className="font-semibold text-slate-900 dark:text-white mb-2">Genera con IA</h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Describe el trabajo y la IA crea las partidas con precios reales</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">La IA crea las partidas con precios reales del mercado español</p>
             </div>
             <div className="text-center">
               <div className="mx-auto h-12 w-12 rounded-full bg-slate-900 text-white flex items-center justify-center text-xl font-bold mb-4">
@@ -135,6 +135,13 @@ export default function Home() {
               </div>
               <h3 className="font-semibold text-slate-900 dark:text-white mb-2">Exporta y envía</h3>
               <p className="text-sm text-slate-600 dark:text-slate-400">Descarga el presupuesto en PDF profesional listo para tu cliente</p>
+            </div>
+            <div className="text-center">
+              <div className="mx-auto h-12 w-12 rounded-full bg-amber-500 text-white flex items-center justify-center text-xl font-bold mb-4">
+                5
+              </div>
+              <h3 className="font-semibold text-slate-900 dark:text-white mb-2">Controla la obra</h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Registra gastos e ingresos para ver tu beneficio real en tiempo real</p>
             </div>
           </div>
         </section>
@@ -209,15 +216,15 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Check className="h-4 w-4 text-amber-600 flex-shrink-0" />
-                  <span>Plantillas profesionales</span>
+                  <span>Control de costes por proyecto</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="h-4 w-4 text-amber-600 flex-shrink-0" />
+                  <span>Registro de horas de mano de obra</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Check className="h-4 w-4 text-amber-600 flex-shrink-0" />
                   <span>Soporte prioritario</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm">
-                  <Check className="h-4 w-4 text-amber-600 flex-shrink-0" />
-                  <span>Usuarios ilimitados</span>
                 </div>
                 <Link href="/auth/register" className="block pt-4">
                   <Button className="w-full bg-amber-500 hover:bg-amber-600 text-white">Empezar prueba gratuita</Button>

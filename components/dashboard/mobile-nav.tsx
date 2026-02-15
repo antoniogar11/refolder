@@ -10,9 +10,9 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/clientes", label: "Clientes", icon: Users },
   { href: "/dashboard/proyectos", label: "Proyectos", icon: Building2 },
   { href: "/dashboard/presupuestos", label: "Presupuestos", icon: FileText },
+  { href: "/dashboard/clientes", label: "Clientes", icon: Users },
 ];
 
 export function MobileNav() {

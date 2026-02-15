@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 
 import { NewProjectForm } from "@/components/projects/new-project-form";
-import { Button } from "@/components/ui/button";
+import { NewProjectToggle } from "@/components/projects/new-project-toggle";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -45,24 +45,9 @@ export default async function ProyectosPage({ searchParams }: ProyectosPageProps
             {total} proyecto{total !== 1 ? "s" : ""} registrado{total !== 1 ? "s" : ""}
           </p>
         </div>
-        <a href="#nuevo-proyecto">
-          <Button>Nuevo Proyecto</Button>
-        </a>
-      </div>
-
-      <div
-        id="nuevo-proyecto"
-        className="mb-10 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
-      >
-        <div className="mb-4">
-          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">
-            Crear nuevo proyecto
-          </h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            Completa el formulario para crear un proyecto.
-          </p>
-        </div>
-        <NewProjectForm clients={clients} />
+        <NewProjectToggle>
+          <NewProjectForm clients={clients} />
+        </NewProjectToggle>
       </div>
 
       <Suspense>
