@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -26,12 +27,13 @@ type EstimateItemsEditorProps = {
 };
 
 export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal }: EstimateItemsEditorProps) {
+  const router = useRouter();
   const [items, setItems] = useState(initialItems);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
-  const iva = Math.round(subtotal * 0.21 * 100) / 100;
-  const total = Math.round((subtotal + iva) * 100) / 100;
+  const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.subtotal, 0), [items]);
+  const iva = useMemo(() => Math.round(subtotal * 0.21 * 100) / 100, [subtotal]);
+  const total = useMemo(() => Math.round((subtotal + iva) * 100) / 100, [subtotal, iva]);
 
   const handleUpdateItem = useCallback(async (itemId: string, field: string, value: string) => {
     const item = items.find(i => i.id === itemId);
@@ -77,8 +79,7 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal }:
     const result = await addEstimateItemAction(estimateId, newItem);
     if (result.success) {
       toast.success("Partida añadida");
-      // Reload to get the new item with its ID
-      window.location.reload();
+      router.refresh();
     } else {
       toast.error(result.message);
     }

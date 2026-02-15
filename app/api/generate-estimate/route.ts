@@ -3,6 +3,29 @@ import { createClient } from "@/lib/supabase/server";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
+// Rate limiting: max requests per user per time window
+const RATE_LIMIT_MAX = 20; // max requests
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
+
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(userId: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(userId);
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(userId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return false;
+  }
+
+  entry.count++;
+  if (entry.count > RATE_LIMIT_MAX) {
+    return true;
+  }
+
+  return false;
+}
+
 type Partida = {
   categoria: string;
   descripcion: string;
@@ -28,10 +51,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No autenticado" }, { status: 401 });
     }
 
+    // Rate limiting per user
+    if (isRateLimited(user.id)) {
+      return NextResponse.json(
+        { error: "Has alcanzado el límite de generaciones por hora. Espera un poco e inténtalo de nuevo." },
+        { status: 429 }
+      );
+    }
+
     if (!GEMINI_API_KEY) {
       console.error("GEMINI_API_KEY is not set in environment variables");
       return NextResponse.json(
-        { error: "API key de IA no configurada. Añade GEMINI_API_KEY en las variables de entorno de Vercel." },
+        { error: "Servicio de IA no disponible. Contacta al administrador." },
         { status: 500 }
       );
     }
@@ -110,12 +141,13 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin markdow
     userMessage += `\nDescripción del trabajo:\n${descripcion}\n\nGenera todas las partidas necesarias con precios realistas del mercado español. Responde SOLO con el JSON, sin texto adicional.`;
 
     // Call Google Gemini API
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const geminiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
     const response = await fetch(geminiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "x-goog-api-key": GEMINI_API_KEY,
       },
       body: JSON.stringify({
         system_instruction: {
@@ -139,15 +171,15 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin markdow
       const errorText = await response.text();
       console.error("Gemini API error:", response.status, errorText);
 
-      let userError = "Error al generar el presupuesto con IA. Inténtalo de nuevo.";
+      let userError = "Error al generar el presupuesto. Inténtalo de nuevo.";
       if (response.status === 400) {
-        userError = "Error en la solicitud a la IA. Verifica la descripción e inténtalo de nuevo.";
+        userError = "Error en la solicitud. Verifica la descripción e inténtalo de nuevo.";
       } else if (response.status === 403) {
-        userError = "La API key de Gemini no es válida o no tiene permisos. Verifica GEMINI_API_KEY en las variables de entorno.";
+        userError = "Servicio de IA no disponible. Contacta al administrador.";
       } else if (response.status === 429) {
-        userError = "Se superó el límite de uso de la IA. Espera unos minutos e inténtalo de nuevo.";
+        userError = "Has alcanzado el límite de generaciones. Espera unos minutos e inténtalo de nuevo.";
       } else if (response.status === 503) {
-        userError = "El servicio de IA está temporalmente sobrecargado. Inténtalo de nuevo en unos minutos.";
+        userError = "El servicio está temporalmente sobrecargado. Inténtalo en unos minutos.";
       }
 
       return NextResponse.json(
