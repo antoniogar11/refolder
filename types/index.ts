@@ -128,7 +128,16 @@ export type FinanceTransaction = {
   client?: Pick<Client, "id" | "name"> | null;
 };
 
-export type CostCategory = "material" | "mano_de_obra" | "subcontrata" | "transporte" | "otros";
+export type CostCategory =
+  | "material"
+  | "mano_de_obra"
+  | "subcontrata"
+  | "transporte"
+  | "otros"
+  | "pago_cliente"
+  | "certificacion";
+
+export type MovementType = "gasto" | "ingreso";
 
 export type ProjectCost = {
   id: string;
@@ -137,6 +146,29 @@ export type ProjectCost = {
   descripcion: string;
   categoria: CostCategory;
   importe: number;
+  fecha: string;
+  notas: string | null;
+  tipo: MovementType;
+  created_at: string;
+};
+
+export type WorkerRate = {
+  id: string;
+  user_id: string;
+  nombre: string;
+  tarifa_hora: number;
+  created_at: string;
+};
+
+export type ProjectHour = {
+  id: string;
+  project_id: string;
+  user_id: string;
+  descripcion: string;
+  categoria_trabajador: string;
+  tarifa_hora: number;
+  horas: number;
+  coste_total: number;
   fecha: string;
   notas: string | null;
   created_at: string;

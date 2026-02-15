@@ -14,6 +14,8 @@ const categoryLabels: Record<string, string> = {
   subcontrata: "Subcontrata",
   transporte: "Transporte",
   otros: "Otros",
+  pago_cliente: "Pago de cliente",
+  certificacion: "Certificación",
 };
 
 const categoryColors: Record<string, string> = {
@@ -22,6 +24,8 @@ const categoryColors: Record<string, string> = {
   subcontrata: "bg-violet-100 text-violet-700",
   transporte: "bg-emerald-100 text-emerald-700",
   otros: "bg-slate-100 text-slate-700",
+  pago_cliente: "bg-emerald-100 text-emerald-700",
+  certificacion: "bg-blue-100 text-blue-700",
 };
 
 function formatCurrency(amount: number) {
