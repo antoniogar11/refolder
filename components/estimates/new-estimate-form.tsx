@@ -11,7 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { NativeSelect } from "@/components/ui/native-select";
 import { toast } from "sonner";
 import { createEstimateWithItemsAction } from "@/app/dashboard/presupuestos/actions";
-import { Loader2, Sparkles, Save } from "lucide-react";
+import { Loader2, Sparkles, Save, UserPlus } from "lucide-react";
+import { QuickAddClientDialog } from "@/components/clients/quick-add-client-dialog";
 
 type Partida = {
   categoria: string;
@@ -31,8 +32,9 @@ function formatCurrency(amount: number) {
   return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
 }
 
-export function NewEstimateForm({ clients }: NewEstimateFormProps) {
+export function NewEstimateForm({ clients: initialClients }: NewEstimateFormProps) {
   const router = useRouter();
+  const [clients, setClients] = useState(initialClients);
   const [clientId, setClientId] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [tipoObra, setTipoObra] = useState("");
@@ -41,6 +43,7 @@ export function NewEstimateForm({ clients }: NewEstimateFormProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [partidas, setPartidas] = useState<Partida[]>([]);
   const [totals, setTotals] = useState({ subtotal: 0, iva: 0, total: 0 });
+  const [showNewClient, setShowNewClient] = useState(false);
 
   const selectedClientName = clients.find(c => c.id === clientId)?.name;
 
@@ -143,16 +146,30 @@ export function NewEstimateForm({ clients }: NewEstimateFormProps) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="client_id">Cliente (opcional)</Label>
-              <NativeSelect
-                id="client_id"
-                value={clientId}
-                onChange={(e) => setClientId(e.target.value)}
-              >
-                <option value="">Sin cliente</option>
-                {clients.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </NativeSelect>
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <NativeSelect
+                    id="client_id"
+                    value={clientId}
+                    onChange={(e) => setClientId(e.target.value)}
+                  >
+                    <option value="">Sin cliente</option>
+                    {clients.map((c) => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </NativeSelect>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="shrink-0"
+                  onClick={() => setShowNewClient(true)}
+                  title="Nuevo cliente"
+                >
+                  <UserPlus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -283,6 +300,14 @@ export function NewEstimateForm({ clients }: NewEstimateFormProps) {
           </CardContent>
         </Card>
       )}
+      <QuickAddClientDialog
+        open={showNewClient}
+        onOpenChange={setShowNewClient}
+        onClientCreated={(newClient) => {
+          setClients((prev) => [...prev, newClient]);
+          setClientId(newClient.id);
+        }}
+      />
     </div>
   );
 }
