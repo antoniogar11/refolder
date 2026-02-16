@@ -1,4 +1,6 @@
+import { throwQueryError } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
+import { roundCurrency } from "@/lib/utils";
 import type { FinanceTransaction } from "@/types";
 
 const PAGE_SIZE = 20;
@@ -42,10 +44,7 @@ export async function getTransactions(
     .order("transaction_date", { ascending: false })
     .range(from, to);
 
-  if (error) {
-    console.error("Error fetching transactions", error);
-    return { transactions: [], total: 0 };
-  }
+  if (error) throwQueryError("getTransactions", error);
 
   return { transactions: (data ?? []) as FinanceTransaction[], total: count ?? 0 };
 }
@@ -70,15 +69,12 @@ export async function getFinanceSummary(): Promise<FinanceSummary> {
     .select("type, amount")
     .eq("user_id", user.id);
 
-  if (error || !data) {
-    console.error("Error fetching finance summary", error);
-    return { totalIncome: 0, totalExpenses: 0, balance: 0, transactionCount: 0 };
-  }
+  if (error) throwQueryError("getFinanceSummary", error);
 
   let totalIncome = 0;
   let totalExpenses = 0;
 
-  for (const tx of data) {
+  for (const tx of data ?? []) {
     if (tx.type === "income") {
       totalIncome += tx.amount;
     } else {
@@ -87,9 +83,9 @@ export async function getFinanceSummary(): Promise<FinanceSummary> {
   }
 
   return {
-    totalIncome: Math.round(totalIncome * 100) / 100,
-    totalExpenses: Math.round(totalExpenses * 100) / 100,
-    balance: Math.round((totalIncome - totalExpenses) * 100) / 100,
-    transactionCount: data.length,
+    totalIncome: roundCurrency(totalIncome),
+    totalExpenses: roundCurrency(totalExpenses),
+    balance: roundCurrency(totalIncome - totalExpenses),
+    transactionCount: (data ?? []).length,
   };
 }

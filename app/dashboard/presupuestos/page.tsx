@@ -11,10 +11,7 @@ import { SearchInput } from "@/components/dashboard/search-input";
 import { Pagination } from "@/components/dashboard/pagination";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { getEstimates } from "@/lib/data/estimates";
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
+import { formatCurrency } from "@/lib/utils/format";
 
 type PresupuestosPageProps = {
   searchParams: Promise<{ q?: string; status?: string; page?: string }>;

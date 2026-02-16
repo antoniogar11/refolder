@@ -8,10 +8,7 @@ import { toast } from "sonner";
 import { createWorkerRateAction, deleteWorkerRateAction } from "@/app/dashboard/proyectos/worker-rate-actions";
 import { Plus, Trash2, Loader2, Settings } from "lucide-react";
 import type { WorkerRate } from "@/types";
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
+import { formatCurrency } from "@/lib/utils/format";
 
 type WorkerRatesManagerProps = {
   rates: WorkerRate[];

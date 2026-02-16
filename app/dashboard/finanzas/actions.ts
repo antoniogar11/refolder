@@ -4,16 +4,9 @@ import { revalidatePath } from "next/cache";
 
 import type { FormState } from "@/lib/forms/form-state";
 import { zodErrorsToFormState } from "@/lib/forms/form-state";
+import { parseFormData } from "@/lib/forms/parse";
 import { createClient } from "@/lib/supabase/server";
 import { financeTransactionSchema } from "@/lib/validations/finance";
-
-function parseFormData(formData: FormData): Record<string, string> {
-  const result: Record<string, string> = {};
-  formData.forEach((value, key) => {
-    result[key] = typeof value === "string" ? value.trim() : "";
-  });
-  return result;
-}
 
 export async function createTransactionAction(
   _: FormState,

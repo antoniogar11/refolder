@@ -4,16 +4,10 @@ import { revalidatePath } from "next/cache";
 
 import type { FormState } from "@/lib/forms/form-state";
 import { zodErrorsToFormState } from "@/lib/forms/form-state";
+import { parseFormData } from "@/lib/forms/parse";
 import { createClient } from "@/lib/supabase/server";
+import { roundCurrency } from "@/lib/utils";
 import { estimateSchema } from "@/lib/validations/estimate";
-
-function parseFormData(formData: FormData): Record<string, string> {
-  const result: Record<string, string> = {};
-  formData.forEach((value, key) => {
-    result[key] = typeof value === "string" ? value.trim() : "";
-  });
-  return result;
-}
 
 export async function createEstimateAction(
   _: FormState,
@@ -118,6 +112,7 @@ export async function createEstimateWithItemsAction(
   description: string,
   items: { categoria: string; descripcion: string; unidad: string; cantidad: number; precio_unitario: number; subtotal: number; orden: number }[],
   totalAmount: number,
+  idempotencyKey?: string,
 ): Promise<{ success: boolean; message: string; estimateId?: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -126,24 +121,63 @@ export async function createEstimateWithItemsAction(
     return { success: false, message: "No estás autenticado." };
   }
 
-  // Build insert data - only include non-null foreign keys
+  // Intentar la creación atómica via RPC
+  const { data: rpcResult, error: rpcError } = await supabase.rpc(
+    "create_estimate_with_items",
+    {
+      p_user_id: user.id,
+      p_name: name,
+      p_description: description,
+      p_total_amount: totalAmount,
+      p_client_id: clientId || null,
+      p_project_id: projectId || null,
+      p_idempotency_key: idempotencyKey || null,
+      p_items: JSON.stringify(items),
+    },
+  );
+
+  if (rpcError) {
+    console.error("Error creating estimate (RPC)", rpcError);
+
+    // Fallback: creación no-atómica si la función RPC no existe aún
+    if (rpcError.message?.includes("function") && rpcError.message?.includes("does not exist")) {
+      return createEstimateWithItemsFallback(supabase, user.id, projectId, clientId, name, description, items, totalAmount);
+    }
+
+    return { success: false, message: `No se pudo crear el presupuesto: ${rpcError.message}` };
+  }
+
+  const result = rpcResult as { success: boolean; message: string; estimateId: string };
+
+  revalidatePath("/dashboard/presupuestos");
+  if (projectId) {
+    revalidatePath(`/dashboard/proyectos/${projectId}`);
+  }
+  return { success: result.success, message: result.message, estimateId: result.estimateId };
+}
+
+// Fallback no-atómico para cuando la función RPC aún no se ha desplegado
+async function createEstimateWithItemsFallback(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  projectId: string | null,
+  clientId: string | null,
+  name: string,
+  description: string,
+  items: { categoria: string; descripcion: string; unidad: string; cantidad: number; precio_unitario: number; subtotal: number; orden: number }[],
+  totalAmount: number,
+): Promise<{ success: boolean; message: string; estimateId?: string }> {
   const insertData: Record<string, unknown> = {
-    user_id: user.id,
+    user_id: userId,
     name,
     description,
     total_amount: totalAmount,
     status: "draft",
   };
 
-  if (clientId) {
-    insertData.client_id = clientId;
-  }
+  if (clientId) insertData.client_id = clientId;
+  if (projectId) insertData.project_id = projectId;
 
-  if (projectId) {
-    insertData.project_id = projectId;
-  }
-
-  // Create estimate header
   const { data: estimate, error: estimateError } = await supabase
     .from("estimates")
     .insert(insertData)
@@ -151,11 +185,10 @@ export async function createEstimateWithItemsAction(
     .single();
 
   if (estimateError || !estimate) {
-    console.error("Error creating estimate", estimateError);
+    console.error("Error creating estimate (fallback)", estimateError);
     return { success: false, message: `No se pudo crear el presupuesto: ${estimateError?.message}` };
   }
 
-  // Create items
   if (items.length > 0) {
     const rows = items.map((item, index) => ({
       estimate_id: estimate.id,
@@ -170,8 +203,7 @@ export async function createEstimateWithItemsAction(
 
     const { error: itemsError } = await supabase.from("estimate_items").insert(rows);
     if (itemsError) {
-      console.error("Error creating estimate items", itemsError);
-      // Delete the estimate if items failed
+      console.error("Error creating estimate items (fallback)", itemsError);
       await supabase.from("estimates").delete().eq("id", estimate.id);
       return { success: false, message: "Error al guardar las partidas del presupuesto." };
     }
@@ -193,7 +225,7 @@ export async function updateEstimateItemAction(
   if (!user) return { success: false, message: "No estás autenticado." };
 
   const subtotal = (data.cantidad ?? 0) * (data.precio_unitario ?? 0);
-  const updateData = { ...data, subtotal: Math.round(subtotal * 100) / 100 };
+  const updateData = { ...data, subtotal: roundCurrency(subtotal) };
 
   const { error } = await supabase
     .from("estimate_items")
@@ -216,7 +248,7 @@ export async function addEstimateItemAction(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, message: "No estás autenticado." };
 
-  const subtotal = Math.round(item.cantidad * item.precio_unitario * 100) / 100;
+  const subtotal = roundCurrency(item.cantidad * item.precio_unitario);
 
   const { error } = await supabase.from("estimate_items").insert({
     estimate_id: estimateId,

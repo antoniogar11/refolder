@@ -5,15 +5,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { FormState } from "@/lib/forms/form-state";
 import { zodErrorsToFormState } from "@/lib/forms/form-state";
+import { parseFormData } from "@/lib/forms/parse";
 import { registerSchema, loginSchema } from "@/lib/validations/auth";
-
-function parseFormData(formData: FormData): Record<string, string> {
-  const result: Record<string, string> = {};
-  formData.forEach((value, key) => {
-    result[key] = typeof value === "string" ? value.trim() : "";
-  });
-  return result;
-}
 
 export async function registerAction(
   _: FormState,

@@ -1,8 +1,5 @@
 import type { FinanceSummary } from "@/lib/data/finance";
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
+import { formatCurrency } from "@/lib/utils/format";
 
 type FinanceSummaryCardsProps = {
   summary: FinanceSummary;

@@ -1,3 +1,4 @@
+import { throwQueryError } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
 import type { Estimate } from "@/types";
 
@@ -49,10 +50,7 @@ export async function getEstimates(
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  if (error) {
-    console.error("Error fetching estimates", error);
-    return { estimates: [], total: 0 };
-  }
+  if (error) throwQueryError("getEstimates", error);
 
   return { estimates: (data as Estimate[]) ?? [], total: count ?? 0 };
 }
@@ -72,10 +70,7 @@ export async function getEstimateById(id: string): Promise<Estimate | null> {
     .eq("user_id", user.id)
     .single();
 
-  if (error) {
-    console.error("Error fetching estimate", error);
-    return null;
-  }
+  if (error) throwQueryError("getEstimateById", error);
 
   return data as Estimate;
 }
@@ -91,9 +86,7 @@ export async function getAllEstimates(): Promise<Pick<Estimate, "id" | "name" | 
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error("Error fetching all estimates", error);
-    return [];
-  }
+  if (error) throwQueryError("getAllEstimates", error);
+
   return data ?? [];
 }

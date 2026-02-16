@@ -14,11 +14,9 @@ import {
   deleteEstimateItemAction,
   updateEstimateTotalAction,
 } from "@/app/dashboard/presupuestos/actions";
+import { formatCurrency } from "@/lib/utils/format";
+import { roundCurrency } from "@/lib/utils";
 import type { EstimateItem } from "@/types";
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
 
 type EstimateItemsEditorProps = {
   estimateId: string;
@@ -32,8 +30,8 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal }:
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.subtotal, 0), [items]);
-  const iva = useMemo(() => Math.round(subtotal * 0.21 * 100) / 100, [subtotal]);
-  const total = useMemo(() => Math.round((subtotal + iva) * 100) / 100, [subtotal, iva]);
+  const iva = useMemo(() => roundCurrency(subtotal * 0.21), [subtotal]);
+  const total = useMemo(() => roundCurrency(subtotal + iva), [subtotal, iva]);
 
   const handleUpdateItem = useCallback(async (itemId: string, field: string, value: string) => {
     const item = items.find(i => i.id === itemId);
@@ -51,9 +49,9 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal }:
       update.precio_unitario = item.precio_unitario;
     }
 
-    const newSubtotal = Math.round(
-      (update.cantidad as number) * (update.precio_unitario as number) * 100
-    ) / 100;
+    const newSubtotal = roundCurrency(
+      (update.cantidad as number) * (update.precio_unitario as number)
+    );
 
     setItems(prev => prev.map(i =>
       i.id === itemId ? { ...i, ...update, subtotal: newSubtotal } as EstimateItem : i

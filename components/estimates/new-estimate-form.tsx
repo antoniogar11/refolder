@@ -14,6 +14,7 @@ import { createEstimateWithItemsAction } from "@/app/dashboard/presupuestos/acti
 import { Loader2, Sparkles, Save, UserPlus } from "lucide-react";
 import { QuickAddClientDialog } from "@/components/clients/quick-add-client-dialog";
 import { linkEstimateToVisitAction } from "@/app/dashboard/visitas/actions";
+import { formatCurrency } from "@/lib/utils/format";
 
 type Partida = {
   categoria: string;
@@ -31,10 +32,6 @@ type NewEstimateFormProps = {
   prefilledClientId?: string;
   visitId?: string;
 };
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
 
 export function NewEstimateForm({ clients: initialClients, prefilledDescription, prefilledClientId, visitId }: NewEstimateFormProps) {
   const router = useRouter();

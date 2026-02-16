@@ -12,6 +12,7 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { toast } from "sonner";
 import { createEstimateWithItemsAction } from "@/app/dashboard/presupuestos/actions";
 import { Loader2, Sparkles, Save } from "lucide-react";
+import { formatCurrency } from "@/lib/utils/format";
 
 type Partida = {
   categoria: string;
@@ -27,10 +28,6 @@ type GenerateEstimateFormProps = {
   projectId: string;
   projectName: string;
 };
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
 
 export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimateFormProps) {
   const router = useRouter();

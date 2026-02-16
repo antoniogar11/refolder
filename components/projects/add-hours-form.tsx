@@ -9,11 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { createHourAction } from "@/app/dashboard/proyectos/hour-actions";
 import { Plus, Loader2 } from "lucide-react";
+import { formatCurrency } from "@/lib/utils/format";
+import { roundCurrency } from "@/lib/utils";
 import type { WorkerRate } from "@/types";
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
 
 type AddHoursFormProps = {
   projectId: string;
@@ -31,7 +29,7 @@ export function AddHoursForm({ projectId, workerRates }: AddHoursFormProps) {
     const t = parseFloat(tarifa);
     const h = parseFloat(horas);
     if (isNaN(t) || isNaN(h) || t <= 0 || h <= 0) return 0;
-    return Math.round(t * h * 100) / 100;
+    return roundCurrency(t * h);
   }, [tarifa, horas]);
 
   function handleWorkerChange(value: string) {

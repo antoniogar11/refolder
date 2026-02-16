@@ -16,10 +16,7 @@ import {
 import { SearchInput } from "@/components/dashboard/search-input";
 import { Pagination } from "@/components/dashboard/pagination";
 import { getTransactions, getFinanceSummary } from "@/lib/data/finance";
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
+import { formatCurrency } from "@/lib/utils/format";
 
 const categoryLabels: Record<string, string> = {
   material: "Material",

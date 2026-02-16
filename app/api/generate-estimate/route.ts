@@ -1,30 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { ratelimit } from "@/lib/rate-limit";
+import { roundCurrency } from "@/lib/utils";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-
-// Rate limiting: max requests per user per time window
-const RATE_LIMIT_MAX = 20; // max requests
-const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000; // 1 hour
-
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-
-function isRateLimited(userId: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(userId);
-
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(userId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return false;
-  }
-
-  entry.count++;
-  if (entry.count > RATE_LIMIT_MAX) {
-    return true;
-  }
-
-  return false;
-}
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 type Partida = {
   categoria: string;
@@ -52,7 +32,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate limiting per user
-    if (isRateLimited(user.id)) {
+    const { success } = await ratelimit.limit(user.id);
+    if (!success) {
       return NextResponse.json(
         { error: "Has alcanzado el límite de generaciones por hora. Espera un poco e inténtalo de nuevo." },
         { status: 429 }
@@ -141,7 +122,7 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin markdow
     userMessage += `\nDescripción del trabajo:\n${descripcion}\n\nGenera todas las partidas necesarias con precios realistas del mercado español. Responde SOLO con el JSON, sin texto adicional.`;
 
     // Call Google Gemini API
-    const geminiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
     const response = await fetch(geminiUrl, {
       method: "POST",
@@ -220,13 +201,13 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin markdow
     // Validate and recalculate totals
     const partidas = parsed.partidas.map((p, index) => ({
       ...p,
-      subtotal: Math.round(p.cantidad * p.precio_unitario * 100) / 100,
+      subtotal: roundCurrency(p.cantidad * p.precio_unitario),
       orden: index,
     }));
 
-    const subtotal = Math.round(partidas.reduce((sum, p) => sum + p.subtotal, 0) * 100) / 100;
-    const iva = Math.round(subtotal * 0.21 * 100) / 100;
-    const total = Math.round((subtotal + iva) * 100) / 100;
+    const subtotal = roundCurrency(partidas.reduce((sum, p) => sum + p.subtotal, 0));
+    const iva = roundCurrency(subtotal * 0.21);
+    const total = roundCurrency(subtotal + iva);
 
     return NextResponse.json({
       partidas,

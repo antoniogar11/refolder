@@ -1,4 +1,6 @@
+import { throwQueryError } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
+import { roundCurrency } from "@/lib/utils";
 import type { MovementType, ProjectCost } from "@/types";
 
 export async function getCostsByProjectId(
@@ -21,10 +23,7 @@ export async function getCostsByProjectId(
 
   const { data, error } = await query.order("fecha", { ascending: false });
 
-  if (error) {
-    console.error("Error fetching project costs", error);
-    return [];
-  }
+  if (error) throwQueryError("getCostsByProjectId", error);
 
   return data ?? [];
 }
@@ -49,13 +48,10 @@ export async function getCostsSummary(
 
   const { data, error } = await query;
 
-  if (error) {
-    console.error("Error fetching costs summary", error);
-    return { totalCost: 0, count: 0 };
-  }
+  if (error) throwQueryError("getCostsSummary", error);
 
   const totalCost = data?.reduce((sum, c) => sum + Number(c.importe), 0) ?? 0;
-  return { totalCost: Math.round(totalCost * 100) / 100, count: data?.length ?? 0 };
+  return { totalCost: roundCurrency(totalCost), count: data?.length ?? 0 };
 }
 
 export type FinancialSummary = {
@@ -91,6 +87,9 @@ export async function getFinancialSummary(projectId: string): Promise<FinancialS
       .eq("user_id", user.id),
   ]);
 
+  if (costsRes.error) throwQueryError("getFinancialSummary:costs", costsRes.error);
+  if (hoursRes.error) throwQueryError("getFinancialSummary:hours", hoursRes.error);
+
   const presupuestado = Number(projectRes.data?.total_budget) || 0;
 
   const gastos = costsRes.data
@@ -104,14 +103,14 @@ export async function getFinancialSummary(projectId: string): Promise<FinancialS
   const costeManoObra = hoursRes.data
     ?.reduce((sum, h) => sum + Number(h.coste_total), 0) ?? 0;
 
-  const gastadoTotal = Math.round((gastos + costeManoObra) * 100) / 100;
-  const beneficio = Math.round((cobrado - gastadoTotal) * 100) / 100;
+  const gastadoTotal = roundCurrency(gastos + costeManoObra);
+  const beneficio = roundCurrency(cobrado - gastadoTotal);
 
   return {
-    presupuestado: Math.round(presupuestado * 100) / 100,
+    presupuestado: roundCurrency(presupuestado),
     gastado: gastadoTotal,
-    cobrado: Math.round(cobrado * 100) / 100,
-    costeManoObra: Math.round(costeManoObra * 100) / 100,
+    cobrado: roundCurrency(cobrado),
+    costeManoObra: roundCurrency(costeManoObra),
     beneficio,
   };
 }

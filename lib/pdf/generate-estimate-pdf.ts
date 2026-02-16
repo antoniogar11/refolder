@@ -200,10 +200,9 @@ export function generateEstimatePDF(data: EstimateData) {
     },
   });
 
-  // Totals
-  const finalY =
-    (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable
-      .finalY + 10;
+  // Totals — jspdf-autotable adds lastAutoTable dynamically
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const finalY = ((doc as any).lastAutoTable?.finalY ?? yPos + 40) + 10;
 
   const totalsX = pageWidth - margin - 60;
 

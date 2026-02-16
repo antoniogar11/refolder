@@ -5,6 +5,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/** Redondea a 2 decimales (para importes monetarios). */
+export function roundCurrency(amount: number): number {
+  return Math.round(amount * 100) / 100;
+}
+
 export function formatDuration(minutes: number | null): string {
   if (minutes === null) return "En curso";
   const hours = Math.floor(minutes / 60);
@@ -61,7 +66,7 @@ export function calculateTimeSummaryByPeriod(
     .map(([periodKey, data]) => ({
       period: periodKey,
       minutes: data.minutes,
-      hours: Math.round((data.minutes / 60) * 100) / 100,
+      hours: roundCurrency(data.minutes / 60),
       count: data.count,
     }))
     .sort((a, b) => a.period.localeCompare(b.period));
@@ -129,9 +134,9 @@ export function calculateFinanceSummaryByPeriod(
   return Object.entries(summary)
     .map(([periodKey, data]) => ({
       period: periodKey,
-      income: Math.round(data.income * 100) / 100,
-      expenses: Math.round(data.expenses * 100) / 100,
-      balance: Math.round((data.income - data.expenses) * 100) / 100,
+      income: roundCurrency(data.income),
+      expenses: roundCurrency(data.expenses),
+      balance: roundCurrency(data.income - data.expenses),
       count: data.count,
     }))
     .sort((a, b) => a.period.localeCompare(b.period));

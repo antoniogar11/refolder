@@ -7,10 +7,7 @@ import { toast } from "sonner";
 import { deleteHourAction } from "@/app/dashboard/proyectos/hour-actions";
 import { Trash2, Loader2 } from "lucide-react";
 import type { ProjectHour } from "@/types";
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
+import { formatCurrency } from "@/lib/utils/format";
 
 type HoursTableProps = {
   hours: ProjectHour[];

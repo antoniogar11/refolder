@@ -233,3 +233,16 @@ export type WorkType = {
   is_default: boolean;
   created_at: string;
 };
+
+// Data layer error types
+
+export type DataError = {
+  code: "UNAUTHENTICATED" | "NOT_FOUND" | "QUERY_ERROR" | "UNKNOWN";
+  message: string;
+  context?: string;
+};
+
+export type DataResult<T> = {
+  data: T;
+  error: DataError | null;
+};

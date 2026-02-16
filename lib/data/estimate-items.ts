@@ -1,3 +1,4 @@
+import { throwQueryError } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
 import type { EstimateItem } from "@/types";
 
@@ -12,10 +13,7 @@ export async function getEstimateItems(estimateId: string): Promise<EstimateItem
     .eq("estimate_id", estimateId)
     .order("orden", { ascending: true });
 
-  if (error) {
-    console.error("Error fetching estimate items", error);
-    return [];
-  }
+  if (error) throwQueryError("getEstimateItems", error);
 
   return data ?? [];
 }
@@ -39,10 +37,7 @@ export async function createEstimateItems(
 
   const { error } = await supabase.from("estimate_items").insert(rows);
 
-  if (error) {
-    console.error("Error creating estimate items", error);
-    return false;
-  }
+  if (error) throwQueryError("createEstimateItems", error);
 
   return true;
 }
@@ -54,9 +49,7 @@ export async function deleteEstimateItemsByEstimateId(estimateId: string): Promi
     .delete()
     .eq("estimate_id", estimateId);
 
-  if (error) {
-    console.error("Error deleting estimate items", error);
-    return false;
-  }
+  if (error) throwQueryError("deleteEstimateItemsByEstimateId", error);
+
   return true;
 }

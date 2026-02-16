@@ -1,3 +1,4 @@
+import { throwQueryError } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
 import type { Company } from "@/types";
 
@@ -15,10 +16,7 @@ export async function getCompanyByUserId(): Promise<Company | null> {
     .eq("owner_id", user.id)
     .single();
 
-  if (error) {
-    console.error("Error fetching company", error);
-    return null;
-  }
+  if (error) throwQueryError("getCompanyByUserId", error);
 
   return data;
 }
@@ -51,10 +49,7 @@ export async function getOrCreateCompany(): Promise<Company | null> {
     .select("*")
     .single();
 
-  if (error) {
-    console.error("Error creating company", error);
-    return null;
-  }
+  if (error) throwQueryError("getOrCreateCompany", error);
 
   return created;
 }
