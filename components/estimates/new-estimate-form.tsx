@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { createEstimateWithItemsAction } from "@/app/dashboard/presupuestos/actions";
 import { Loader2, Sparkles, Save, UserPlus } from "lucide-react";
 import { QuickAddClientDialog } from "@/components/clients/quick-add-client-dialog";
+import { linkEstimateToVisitAction } from "@/app/dashboard/visitas/actions";
 
 type Partida = {
   categoria: string;
@@ -26,17 +27,20 @@ type Partida = {
 
 type NewEstimateFormProps = {
   clients: { id: string; name: string }[];
+  prefilledDescription?: string;
+  prefilledClientId?: string;
+  visitId?: string;
 };
 
 function formatCurrency(amount: number) {
   return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
 }
 
-export function NewEstimateForm({ clients: initialClients }: NewEstimateFormProps) {
+export function NewEstimateForm({ clients: initialClients, prefilledDescription, prefilledClientId, visitId }: NewEstimateFormProps) {
   const router = useRouter();
   const [clients, setClients] = useState(initialClients);
-  const [clientId, setClientId] = useState("");
-  const [descripcion, setDescripcion] = useState("");
+  const [clientId, setClientId] = useState(prefilledClientId ?? "");
+  const [descripcion, setDescripcion] = useState(prefilledDescription ?? "");
   const [tipoObra, setTipoObra] = useState("");
   const [nombrePresupuesto, setNombrePresupuesto] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -111,6 +115,10 @@ export function NewEstimateForm({ clients: initialClients }: NewEstimateFormProp
       );
 
       if (result.success && result.estimateId) {
+        // Link estimate to visit if coming from a visit
+        if (visitId) {
+          await linkEstimateToVisitAction(visitId, result.estimateId);
+        }
         toast.success(result.message);
         router.push(`/dashboard/presupuestos/${result.estimateId}`);
       } else {

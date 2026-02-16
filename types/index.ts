@@ -173,3 +173,63 @@ export type ProjectHour = {
   notas: string | null;
   created_at: string;
 };
+
+// Site Visits
+
+export type SiteVisitStatus = "pendiente" | "presupuestado" | "vinculado";
+
+export type SiteVisitZoneWork = {
+  id: string;
+  zone_id: string;
+  work_type: string;
+  notes: string | null;
+  created_at: string;
+};
+
+export type SiteVisitPhoto = {
+  id: string;
+  zone_id: string;
+  photo_url: string;
+  caption: string | null;
+  created_at: string;
+};
+
+export type SiteVisitZone = {
+  id: string;
+  site_visit_id: string;
+  name: string;
+  largo: number | null;
+  ancho: number | null;
+  alto: number | null;
+  notes: string | null;
+  sort_order: number;
+  created_at: string;
+  works?: SiteVisitZoneWork[];
+  photos?: SiteVisitPhoto[];
+};
+
+export type SiteVisit = {
+  id: string;
+  user_id: string;
+  client_id: string | null;
+  estimate_id: string | null;
+  project_id: string | null;
+  address: string;
+  visit_date: string;
+  status: SiteVisitStatus;
+  general_notes: string | null;
+  created_at: string;
+  updated_at: string;
+  client?: Pick<Client, "id" | "name"> | null;
+  estimate?: Pick<Estimate, "id" | "name"> | null;
+  project?: Pick<Project, "id" | "name"> | null;
+  zones?: SiteVisitZone[];
+};
+
+export type WorkType = {
+  id: string;
+  user_id: string | null;
+  name: string;
+  is_default: boolean;
+  created_at: string;
+};
