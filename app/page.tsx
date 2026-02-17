@@ -51,25 +51,21 @@ export default function Home() {
         <section className="py-16 lg:py-24 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 text-sm font-medium mb-6">
             <Sparkles className="h-4 w-4" />
-            <span>Ahorra horas en cada presupuesto</span>
+            <span>Presupuestos claros y rápidos para tus obras</span>
           </div>
           <h1 className="mb-6 text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight max-w-4xl mx-auto">
             <span className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-700 dark:from-white dark:via-slate-200 dark:to-slate-300 bg-clip-text text-transparent">
-              Presupuestos con IA y control real de tus obras
+              Presupuesta mejor y controla el dinero de cada obra
             </span>
           </h1>
           <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto mb-4">
-            Genera presupuestos profesionales con IA en minutos y controla, en
-            tiempo real, si realmente ganas dinero en cada obra.
-          </p>
-          <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 max-w-xl mx-auto mb-8">
-            Pensado para empresas de reformas, constructoras pequeñas y
-            autónomos que hoy todavía trabajan con Excel y plantillas de Word.
+            Genera presupuestos profesionales en minutos y sigue el coste real
+            de cada proyecto sin pelearte con Excel.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/auth/register">
               <Button className="text-lg px-8 py-6 bg-amber-500 hover:bg-amber-600 text-white">
-                Empezar gratis ahora
+                Crear cuenta gratuita
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
@@ -79,61 +75,13 @@ export default function Home() {
               </Button>
             </Link>
           </div>
-          <p className="mt-4 text-xs md:text-sm text-slate-500 dark:text-slate-400">
-            Sin tarjeta de crédito · Cancela cuando quieras
-          </p>
-        </section>
-
-        {/* Para quién es */}
-        <section className="py-12">
-          <div className="grid gap-8 md:grid-cols-3 max-w-5xl mx-auto">
-            <Card className="border-dashed">
-              <CardHeader>
-                <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">
-                  Jefes de obra y empresas de reformas
-                </CardTitle>
-                <CardDescription className="text-sm">
-                  Que gestionan varias obras a la vez y necesitan saber rápido
-                  qué proyectos son rentables y cuáles se están desviando.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="border-dashed">
-              <CardHeader>
-                <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">
-                  Autónomos de la construcción
-                </CardTitle>
-                <CardDescription className="text-sm">
-                  Que quieren dejar de perder horas con Excel y plantillas de
-                  Word y enviar presupuestos cuidados que se entiendan a la
-                  primera.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card className="border-dashed">
-              <CardHeader>
-                <CardTitle className="text-base font-semibold text-slate-900 dark:text-white">
-                  Estudios pequeños y interioristas
-                </CardTitle>
-                <CardDescription className="text-sm">
-                  Que necesitan una visión sencilla de clientes, proyectos,
-                  presupuestos enviados y aceptados, sin montar un ERP enorme.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </div>
         </section>
 
         {/* Features */}
         <section className="py-16">
           <h2 className="text-3xl font-bold text-center text-slate-900 dark:text-white mb-3">
-            Todo el ciclo de tu obra en un solo lugar
+            Lo básico para llevar tus obras al día
           </h2>
-          <p className="text-center text-slate-600 dark:text-slate-400 mb-12 max-w-2xl mx-auto">
-            De la primera visita al cliente hasta el cierre económico del
-            proyecto. Refolder une presupuestos, ejecución y control de
-            beneficio.
-          </p>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             <Card className="border-2 hover:border-slate-300 dark:hover:border-slate-700 transition-all hover:shadow-lg">
               <CardHeader>
@@ -142,8 +90,7 @@ export default function Home() {
                 </div>
                 <CardTitle className="text-lg">Gestión de clientes</CardTitle>
                 <CardDescription className="text-sm">
-                  Toda la información fiscal y de contacto de tus clientes,
-                  ligada a sus proyectos y presupuestos.
+                  Ten en un mismo sitio los datos de tus clientes y sus obras.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -155,8 +102,7 @@ export default function Home() {
                 </div>
                 <CardTitle className="text-lg">Control de proyectos</CardTitle>
                 <CardDescription className="text-sm">
-                  Registra gastos, ingresos y horas de mano de obra. Ve de un
-                  vistazo si cada obra va en verde o en rojo.
+                  Apunta gastos, ingresos y estado de cada obra sin complicarte.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -168,8 +114,8 @@ export default function Home() {
                 </div>
                 <CardTitle className="text-lg">Presupuestos con IA</CardTitle>
                 <CardDescription className="text-sm">
-                  Describe la reforma y deja que la IA proponga partidas
-                  desglosadas con precios alineados con el mercado español.
+                  Escribe en lenguaje natural y deja que te proponga partidas
+                  que luego puedes ajustar.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -181,8 +127,8 @@ export default function Home() {
                 </div>
                 <CardTitle className="text-lg">PDF listo para enviar</CardTitle>
                 <CardDescription className="text-sm">
-                  Genera PDFs limpios y profesionales que tus clientes entienden
-                  sin llamadas de aclaración.
+                  Descarga un presupuesto limpio y ordenado para mandarlo por
+                  email o WhatsApp.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -191,117 +137,55 @@ export default function Home() {
 
         {/* Cómo funciona */}
         <section className="py-16">
-          <h2 className="text-3xl font-bold text-center text-slate-900 dark:text-white mb-12">
-            Cómo pasas de “no me da la vida” a “lo tengo todo controlado”
+          <h2 className="text-3xl font-bold text-center text-slate-900 dark:text-white mb-10">
+            Cómo se usa en el día a día
           </h2>
-          <div className="grid gap-8 md:grid-cols-5">
+          <div className="grid gap-8 md:grid-cols-4">
             <div className="text-center">
-              <div className="mx-auto h-12 w-12 rounded-full bg-slate-900 text-white flex items-center justify-center text-xl font-bold mb-4">
+              <div className="mx-auto h-10 w-10 rounded-full bg-slate-900 text-white flex items-center justify-center text-lg font-bold mb-3">
                 1
               </div>
-              <h3 className="font-semibold text-slate-900 dark:text-white mb-2">
-                Registra tu cliente
-              </h3>
+              <p className="font-semibold text-slate-900 dark:text-white mb-1">
+                Creas el cliente
+              </p>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Nombre, CIF, dirección y datos de contacto. Todo ordenado para
-                reutilizar en futuros proyectos.
+                Guardas sus datos básicos y lo dejas listo para futuras obras.
               </p>
             </div>
             <div className="text-center">
-              <div className="mx-auto h-12 w-12 rounded-full bg-slate-900 text-white flex items-center justify-center text-xl font-bold mb-4">
+              <div className="mx-auto h-10 w-10 rounded-full bg-slate-900 text-white flex items-center justify-center text-lg font-bold mb-3">
                 2
               </div>
-              <h3 className="font-semibold text-slate-900 dark:text-white mb-2">
-                Describe la obra
-              </h3>
+              <p className="font-semibold text-slate-900 dark:text-white mb-1">
+                Describes la reforma
+              </p>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Tipo de reforma, metros, calidades… igual que se lo explicarías
-                al cliente por teléfono o en la visita.
+                Tipo de trabajo, metros y detalles principales.
               </p>
             </div>
             <div className="text-center">
-              <div className="mx-auto h-12 w-12 rounded-full bg-slate-900 text-white flex items-center justify-center text-xl font-bold mb-4">
+              <div className="mx-auto h-10 w-10 rounded-full bg-slate-900 text-white flex items-center justify-center text-lg font-bold mb-3">
                 3
               </div>
-              <h3 className="font-semibold text-slate-900 dark:text-white mb-2">
-                Genera el presupuesto con IA
-              </h3>
+              <p className="font-semibold text-slate-900 dark:text-white mb-1">
+                Generas el presupuesto
+              </p>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                La IA propone partidas y precios. Tú revisas, ajustas márgenes y
-                añades tus conceptos habituales.
+                Revisas partidas, ajustas precios y descargas el PDF.
               </p>
             </div>
             <div className="text-center">
-              <div className="mx-auto h-12 w-12 rounded-full bg-slate-900 text-white flex items-center justify-center text-xl font-bold mb-4">
+              <div className="mx-auto h-10 w-10 rounded-full bg-amber-500 text-white flex items-center justify-center text-lg font-bold mb-3">
                 4
               </div>
-              <h3 className="font-semibold text-slate-900 dark:text-white mb-2">
-                Envía el PDF
-              </h3>
+              <p className="font-semibold text-slate-900 dark:text-white mb-1">
+                Sigues la obra
+              </p>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Exporta un PDF limpio con tu imagen de marca, listo para enviar
-                por WhatsApp o email.
+                Apuntas gastos e ingresos y ves si la obra va bien o se está
+                yendo de presupuesto.
               </p>
             </div>
-            <div className="text-center">
-              <div className="mx-auto h-12 w-12 rounded-full bg-amber-500 text-white flex items-center justify-center text-xl font-bold mb-4">
-                5
-              </div>
-              <h3 className="font-semibold text-slate-900 dark:text-white mb-2">
-                Controla la obra en tiempo real
-              </h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                Registra gastos e ingresos y compara siempre presupuesto vs
-                coste real para saber tu beneficio de verdad.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Por qué ahora usas Excel */}
-        <section className="py-16">
-          <div className="grid gap-10 lg:grid-cols-2 items-start">
-            <div>
-              <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">
-                De hojas sueltas y Excels a tenerlo todo en un panel
-              </h2>
-              <p className="text-slate-600 dark:text-slate-400 mb-4">
-                La mayoría de empresas de reformas trabajan con una mezcla de
-                WhatsApp, notas en papel, plantillas de Word y Excels que nadie
-                actualiza. Resultado: presupuestos que se pierden, márgenes que
-                se escapan y cero visibilidad real.
-              </p>
-              <p className="text-slate-600 dark:text-slate-400">
-                Refolder está pensado justo para ese escenario: mínimo tiempo de
-                configuración, sin tecnicismos, y con los datos clave delante de
-                ti cada vez que entras al panel.
-              </p>
-            </div>
-            <Card className="border-2 border-dashed">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-amber-500" />
-                  Menos tiempo delante del ordenador
-                </CardTitle>
-                <CardDescription>
-                  Lo que hoy te lleva 1–2 horas entre Excel, copiar/pegar y
-                  revisar números, aquí se convierte en minutos.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
-                <ul className="space-y-2">
-                  <li>• Presupuesto inicial en minutos con ayuda de IA.</li>
-                  <li>
-                    • Sin pelearte con fórmulas: totales e impuestos calculados
-                    automáticamente.
-                  </li>
-                  <li>
-                    • Misma herramienta para presupuestar y controlar el avance
-                    económico.
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
           </div>
         </section>
 
