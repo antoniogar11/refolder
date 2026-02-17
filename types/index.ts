@@ -31,22 +31,6 @@ export type Client = {
   updated_at: string;
 };
 
-export type Supplier = {
-  id: string;
-  user_id: string;
-  name: string;
-  type: "material" | "labor" | "service" | "other";
-  contact_name: string | null;
-  phone: string | null;
-  email: string | null;
-  address: string | null;
-  city: string | null;
-  tax_id: string | null;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
 export type ProjectStatus =
   | "planning"
   | "in_progress"
@@ -105,27 +89,6 @@ export type EstimateItem = {
   subtotal: number;
   orden: number;
   created_at: string;
-};
-
-export type TransactionType = "income" | "expense";
-
-export type FinanceTransaction = {
-  id: string;
-  user_id: string;
-  project_id: string | null;
-  client_id: string | null;
-  type: TransactionType;
-  category: string;
-  description: string;
-  amount: number;
-  transaction_date: string;
-  payment_method: string | null;
-  reference: string | null;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-  project?: Pick<Project, "id" | "name"> | null;
-  client?: Pick<Client, "id" | "name"> | null;
 };
 
 export type CostCategory =
@@ -234,15 +197,3 @@ export type WorkType = {
   created_at: string;
 };
 
-// Data layer error types
-
-export type DataError = {
-  code: "UNAUTHENTICATED" | "NOT_FOUND" | "QUERY_ERROR" | "UNKNOWN";
-  message: string;
-  context?: string;
-};
-
-export type DataResult<T> = {
-  data: T;
-  error: DataError | null;
-};

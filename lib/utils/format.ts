@@ -107,25 +107,4 @@ export function formatPhone(phone: string | null | undefined): string {
   return phone;
 }
 
-/**
- * Formatea un código postal español
- * @param postalCode - Código postal
- * @returns Código postal formateado
- */
-export function formatPostalCode(
-  postalCode: string | null | undefined
-): string {
-  if (!postalCode) return "-";
-  return postalCode.trim();
-}
-
-/**
- * Formatea un CIF/NIF español
- * @param taxId - CIF o NIF
- * @returns CIF/NIF formateado
- */
-export function formatTaxId(taxId: string | null | undefined): string {
-  if (!taxId) return "-";
-  return taxId.trim().toUpperCase();
-}
 

@@ -9,8 +9,6 @@ export {
   formatNumber,
   formatPercentage,
   formatPhone,
-  formatPostalCode,
-  formatTaxId,
 } from "./format";
 
 // Validación
