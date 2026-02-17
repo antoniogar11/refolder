@@ -69,6 +69,7 @@ export type Estimate = {
   status: EstimateStatus;
   valid_until: string | null;
   notes: string | null;
+  margen_global: number | null;
   created_at: string;
   updated_at: string;
   project?: Pick<Project, "id" | "name"> & {
@@ -85,6 +86,8 @@ export type EstimateItem = {
   descripcion: string;
   unidad: string;
   cantidad: number;
+  precio_coste: number | null;
+  margen: number;
   precio_unitario: number;
   subtotal: number;
   orden: number;
@@ -194,6 +197,18 @@ export type WorkType = {
   user_id: string | null;
   name: string;
   is_default: boolean;
+  created_at: string;
+};
+
+// Precios de referencia BCCA
+
+export type PrecioReferencia = {
+  id: string;
+  codigo: string;
+  descripcion: string;
+  unidad: string;
+  precio: number;
+  categoria: string;
   created_at: string;
 };
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { cn, roundCurrency, formatDuration } from "@/lib/utils";
+import { cn, roundCurrency, formatDuration, computeSellingPrice } from "@/lib/utils";
 import { formatCurrency } from "@/lib/utils/format";
 
 describe("cn", () => {
@@ -57,6 +57,38 @@ describe("formatDuration", () => {
 
   it("formats hours and minutes", () => {
     expect(formatDuration(90)).toBe("1 h 30 min");
+  });
+});
+
+describe("computeSellingPrice", () => {
+  it("computes selling price with 20% margin", () => {
+    expect(computeSellingPrice(100, 20)).toBe(120);
+  });
+
+  it("handles zero margin", () => {
+    expect(computeSellingPrice(100, 0)).toBe(100);
+  });
+
+  it("handles 100% margin", () => {
+    expect(computeSellingPrice(100, 100)).toBe(200);
+  });
+
+  it("handles small margins", () => {
+    expect(computeSellingPrice(50, 10)).toBe(55);
+  });
+
+  it("rounds correctly", () => {
+    // 33.33 * 1.15 = 38.3295 → should round to 38.33
+    expect(computeSellingPrice(33.33, 15)).toBe(38.33);
+  });
+
+  it("handles zero cost", () => {
+    expect(computeSellingPrice(0, 20)).toBe(0);
+  });
+
+  it("handles decimal margin", () => {
+    // 100 * 1.125 = 112.5
+    expect(computeSellingPrice(100, 12.5)).toBe(112.5);
   });
 });
 

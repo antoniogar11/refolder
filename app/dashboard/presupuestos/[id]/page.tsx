@@ -83,6 +83,7 @@ export default async function EstimateDetailPage({ params }: EstimateDetailPageP
         estimateId={estimate.id}
         initialItems={items}
         estimateTotal={estimate.total_amount}
+        margenGlobal={estimate.margen_global}
       />
     </div>
   );
