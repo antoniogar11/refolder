@@ -1,3 +1,4 @@
+import { throwQueryError } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
 import type { WorkerRate } from "@/types";
 
@@ -12,10 +13,7 @@ export async function getWorkerRates(): Promise<WorkerRate[]> {
     .eq("user_id", user.id)
     .order("nombre", { ascending: true });
 
-  if (error) {
-    console.error("Error fetching worker rates", error);
-    return [];
-  }
+  if (error) throwQueryError("getWorkerRates", error);
 
   return data ?? [];
 }

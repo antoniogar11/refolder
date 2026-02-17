@@ -11,13 +11,7 @@ import {
 } from "@/components/ui/table";
 import { getDashboardStats } from "@/lib/data/dashboard";
 import { StatusBadge } from "@/components/dashboard/status-badge";
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-ES", {
-    style: "currency",
-    currency: "EUR",
-  }).format(amount);
-}
+import { formatCurrency } from "@/lib/utils/format";
 
 export default async function DashboardPage() {
   const stats = await getDashboardStats();

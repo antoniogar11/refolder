@@ -31,22 +31,6 @@ export type Client = {
   updated_at: string;
 };
 
-export type Supplier = {
-  id: string;
-  user_id: string;
-  name: string;
-  type: "material" | "labor" | "service" | "other";
-  contact_name: string | null;
-  phone: string | null;
-  email: string | null;
-  address: string | null;
-  city: string | null;
-  tax_id: string | null;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
 export type ProjectStatus =
   | "planning"
   | "in_progress"
@@ -85,6 +69,7 @@ export type Estimate = {
   status: EstimateStatus;
   valid_until: string | null;
   notes: string | null;
+  margen_global: number | null;
   created_at: string;
   updated_at: string;
   project?: Pick<Project, "id" | "name"> & {
@@ -101,31 +86,12 @@ export type EstimateItem = {
   descripcion: string;
   unidad: string;
   cantidad: number;
+  precio_coste: number | null;
+  margen: number;
   precio_unitario: number;
   subtotal: number;
   orden: number;
   created_at: string;
-};
-
-export type TransactionType = "income" | "expense";
-
-export type FinanceTransaction = {
-  id: string;
-  user_id: string;
-  project_id: string | null;
-  client_id: string | null;
-  type: TransactionType;
-  category: string;
-  description: string;
-  amount: number;
-  transaction_date: string;
-  payment_method: string | null;
-  reference: string | null;
-  notes: string | null;
-  created_at: string;
-  updated_at: string;
-  project?: Pick<Project, "id" | "name"> | null;
-  client?: Pick<Client, "id" | "name"> | null;
 };
 
 export type CostCategory =
@@ -233,3 +199,16 @@ export type WorkType = {
   is_default: boolean;
   created_at: string;
 };
+
+// Precios de referencia BCCA
+
+export type PrecioReferencia = {
+  id: string;
+  codigo: string;
+  descripcion: string;
+  unidad: string;
+  precio: number;
+  categoria: string;
+  created_at: string;
+};
+

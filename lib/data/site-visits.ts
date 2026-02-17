@@ -1,5 +1,6 @@
+import { throwQueryError } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
-import type { SiteVisit, WorkType } from "@/types";
+import type { SiteVisit, SiteVisitZone, WorkType } from "@/types";
 
 const PAGE_SIZE = 10;
 
@@ -42,13 +43,13 @@ export async function getSiteVisits(
     .order("visit_date", { ascending: false })
     .range(from, to);
 
-  if (error) {
-    console.error("Error fetching site visits", error);
-    return { visits: [], total: 0 };
-  }
+  if (error) throwQueryError("getSiteVisits", error);
 
   return {
-    visits: (data as unknown as SiteVisit[]) ?? [],
+    visits: (data ?? []).map((row) => ({
+      ...row,
+      client: Array.isArray(row.client) ? row.client[0] ?? null : row.client ?? null,
+    })) as SiteVisit[],
     total: count ?? 0,
   };
 }
@@ -69,10 +70,8 @@ export async function getSiteVisitById(id: string): Promise<SiteVisit | null> {
     .eq("user_id", user.id)
     .single();
 
-  if (error || !visit) {
-    console.error("Error fetching site visit", error);
-    return null;
-  }
+  if (error) throwQueryError("getSiteVisitById", error);
+  if (!visit) return null;
 
   // Fetch zones with works
   const { data: zones } = await supabase
@@ -81,10 +80,14 @@ export async function getSiteVisitById(id: string): Promise<SiteVisit | null> {
     .eq("site_visit_id", id)
     .order("sort_order");
 
-  return {
-    ...(visit as unknown as SiteVisit),
-    zones: (zones as unknown as SiteVisit["zones"]) ?? [],
+  const normalizedVisit: SiteVisit = {
+    ...visit,
+    client: Array.isArray(visit.client) ? visit.client[0] ?? null : visit.client ?? null,
+    estimate: Array.isArray(visit.estimate) ? visit.estimate[0] ?? null : visit.estimate ?? null,
+    project: Array.isArray(visit.project) ? visit.project[0] ?? null : visit.project ?? null,
+    zones: (zones ?? []) as SiteVisitZone[],
   };
+  return normalizedVisit;
 }
 
 export async function getWorkTypes(): Promise<WorkType[]> {
@@ -102,10 +105,7 @@ export async function getWorkTypes(): Promise<WorkType[]> {
     .order("is_default", { ascending: false })
     .order("name");
 
-  if (error) {
-    console.error("Error fetching work types", error);
-    return [];
-  }
+  if (error) throwQueryError("getWorkTypes", error);
 
   return (data as WorkType[]) ?? [];
 }

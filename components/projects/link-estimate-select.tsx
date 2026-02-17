@@ -6,15 +6,12 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { toast } from "sonner";
 import { linkEstimateToProjectAction } from "@/app/dashboard/proyectos/cost-actions";
 import { Link2, Loader2 } from "lucide-react";
+import { formatCurrency } from "@/lib/utils/format";
 
 type LinkEstimateSelectProps = {
   projectId: string;
   estimates: { id: string; name: string; total_amount: number }[];
 };
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
 
 export function LinkEstimateSelect({ projectId, estimates }: LinkEstimateSelectProps) {
   const [selectedId, setSelectedId] = useState("");

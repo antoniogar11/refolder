@@ -17,11 +17,7 @@ import { Pagination } from "@/components/dashboard/pagination";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { getProjects } from "@/lib/data/projects";
 import { getAllClients } from "@/lib/data/clients";
-
-function formatCurrency(amount: number | null) {
-  if (!amount) return "-";
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
+import { formatCurrency } from "@/lib/utils/format";
 
 type ProyectosPageProps = {
   searchParams: Promise<{ q?: string; page?: string }>;

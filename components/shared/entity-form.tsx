@@ -35,16 +35,3 @@ export function SubmitButton({ label = "Guardar", pendingLabel = "Guardando..." 
     </Button>
   );
 }
-
-export function DeleteButton({
-  entityId,
-  entityName,
-  onDelete,
-}: {
-  entityId: string;
-  entityName: string;
-  onDelete: (id: string) => Promise<{ success: boolean; message: string }>;
-}) {
-  // This is handled by the DeleteEntityButton component instead
-  return null;
-}

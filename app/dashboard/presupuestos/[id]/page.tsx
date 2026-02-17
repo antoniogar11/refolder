@@ -12,10 +12,8 @@ import { deleteEstimateAction } from "@/app/dashboard/presupuestos/actions";
 import { EstimateItemsEditor } from "@/components/estimates/estimate-items-editor";
 import { EstimateStatusSelect } from "@/components/estimates/estimate-status-select";
 import { ExportPDFButton } from "@/components/estimates/export-pdf-button";
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
+import { formatCurrency } from "@/lib/utils/format";
+import { roundCurrency } from "@/lib/utils";
 
 type EstimateDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -34,8 +32,8 @@ export default async function EstimateDetailPage({ params }: EstimateDetailPageP
   }
 
   const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
-  const iva = Math.round(subtotal * 0.21 * 100) / 100;
-  const total = Math.round((subtotal + iva) * 100) / 100;
+  const iva = roundCurrency(subtotal * 0.21);
+  const total = roundCurrency(subtotal + iva);
 
   return (
     <div className="max-w-5xl">
@@ -85,6 +83,7 @@ export default async function EstimateDetailPage({ params }: EstimateDetailPageP
         estimateId={estimate.id}
         initialItems={items}
         estimateTotal={estimate.total_amount}
+        margenGlobal={estimate.margen_global}
       />
     </div>
   );

@@ -14,12 +14,15 @@ import { createEstimateWithItemsAction } from "@/app/dashboard/presupuestos/acti
 import { Loader2, Sparkles, Save, UserPlus } from "lucide-react";
 import { QuickAddClientDialog } from "@/components/clients/quick-add-client-dialog";
 import { linkEstimateToVisitAction } from "@/app/dashboard/visitas/actions";
+import { formatCurrency } from "@/lib/utils/format";
 
 type Partida = {
   categoria: string;
   descripcion: string;
   unidad: string;
   cantidad: number;
+  precio_coste: number;
+  margen: number;
   precio_unitario: number;
   subtotal: number;
   orden: number;
@@ -32,10 +35,6 @@ type NewEstimateFormProps = {
   visitId?: string;
 };
 
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
-
 export function NewEstimateForm({ clients: initialClients, prefilledDescription, prefilledClientId, visitId }: NewEstimateFormProps) {
   const router = useRouter();
   const [clients, setClients] = useState(initialClients);
@@ -47,6 +46,7 @@ export function NewEstimateForm({ clients: initialClients, prefilledDescription,
   const [isSaving, setIsSaving] = useState(false);
   const [partidas, setPartidas] = useState<Partida[]>([]);
   const [totals, setTotals] = useState({ subtotal: 0, iva: 0, total: 0 });
+  const [margenGlobal, setMargenGlobal] = useState(20);
   const [showNewClient, setShowNewClient] = useState(false);
 
   const selectedClientName = clients.find(c => c.id === clientId)?.name;
@@ -80,6 +80,7 @@ export function NewEstimateForm({ clients: initialClients, prefilledDescription,
 
       setPartidas(data.partidas);
       setTotals({ subtotal: data.subtotal, iva: data.iva, total: data.total });
+      if (data.margen_global) setMargenGlobal(data.margen_global);
 
       if (!nombrePresupuesto) {
         const tipoLabel = tipoObra ? tipoObra.replace(/_/g, " ") : "Presupuesto";
@@ -112,6 +113,7 @@ export function NewEstimateForm({ clients: initialClients, prefilledDescription,
         descripcion,
         partidas,
         totals.total,
+        margenGlobal,
       );
 
       if (result.success && result.estimateId) {
@@ -248,7 +250,9 @@ export function NewEstimateForm({ clients: initialClients, prefilledDescription,
                     <TableHead>Descripcion</TableHead>
                     <TableHead className="text-right">Ud.</TableHead>
                     <TableHead className="text-right">Cant.</TableHead>
-                    <TableHead className="text-right">P. Unit.</TableHead>
+                    <TableHead className="text-right">P. Coste</TableHead>
+                    <TableHead className="text-right">Margen</TableHead>
+                    <TableHead className="text-right">P. Venta</TableHead>
                     <TableHead className="text-right">Subtotal</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -259,6 +263,8 @@ export function NewEstimateForm({ clients: initialClients, prefilledDescription,
                       <TableCell className="text-sm">{p.descripcion}</TableCell>
                       <TableCell className="text-right text-xs">{p.unidad}</TableCell>
                       <TableCell className="text-right">{p.cantidad}</TableCell>
+                      <TableCell className="text-right text-slate-500">{formatCurrency(p.precio_coste)}</TableCell>
+                      <TableCell className="text-right text-slate-500">{p.margen}%</TableCell>
                       <TableCell className="text-right">{formatCurrency(p.precio_unitario)}</TableCell>
                       <TableCell className="text-right font-medium">{formatCurrency(p.subtotal)}</TableCell>
                     </TableRow>

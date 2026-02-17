@@ -1,3 +1,4 @@
+import { throwQueryError } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
 import type { Client } from "@/types";
 
@@ -39,10 +40,7 @@ export async function getClients(
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  if (error) {
-    console.error("Error fetching clients", error);
-    return { clients: [], total: 0 };
-  }
+  if (error) throwQueryError("getClients", error);
 
   return { clients: data ?? [], total: count ?? 0 };
 }
@@ -62,10 +60,7 @@ export async function getClientById(id: string): Promise<Client | null> {
     .eq("user_id", user.id)
     .single();
 
-  if (error) {
-    console.error("Error fetching client", error);
-    return null;
-  }
+  if (error) throwQueryError("getClientById", error);
 
   return data;
 }
@@ -84,10 +79,7 @@ export async function getAllClients(): Promise<Pick<Client, "id" | "name">[]> {
     .eq("user_id", user.id)
     .order("name");
 
-  if (error) {
-    console.error("Error fetching clients", error);
-    return [];
-  }
+  if (error) throwQueryError("getAllClients", error);
 
   return data ?? [];
 }

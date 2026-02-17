@@ -1,5 +1,22 @@
+import { throwQueryError } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
-import type { Project, Estimate } from "@/types";
+
+type RecentProject = {
+  id: string;
+  name: string;
+  status: string;
+  created_at: string;
+  client: { id: string; name: string } | null;
+};
+
+type RecentEstimate = {
+  id: string;
+  name: string;
+  status: string;
+  total_amount: number;
+  created_at: string;
+  client: { id: string; name: string } | null;
+};
 
 export type DashboardStats = {
   totalClients: number;
@@ -8,12 +25,8 @@ export type DashboardStats = {
   activeProjects: number;
   pendingEstimates: number;
   acceptedEstimatesTotal: number;
-  recentProjects: (Pick<Project, "id" | "name" | "status" | "created_at"> & {
-    client?: { id: string; name: string } | null;
-  })[];
-  recentEstimates: (Pick<Estimate, "id" | "name" | "status" | "total_amount" | "created_at"> & {
-    client?: { id: string; name: string } | null;
-  })[];
+  recentProjects: RecentProject[];
+  recentEstimates: RecentEstimate[];
 };
 
 export async function getDashboardStats(): Promise<DashboardStats> {
@@ -62,6 +75,9 @@ export async function getDashboardStats(): Promise<DashboardStats> {
       .limit(5),
   ]);
 
+  if (projectsResult.error) throwQueryError("getDashboardStats:projects", projectsResult.error);
+  if (estimatesResult.error) throwQueryError("getDashboardStats:estimates", estimatesResult.error);
+
   const activeProjects =
     projectsResult.data?.filter((p) => p.status === "in_progress").length ?? 0;
   const pendingEstimates =
@@ -78,7 +94,20 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     activeProjects,
     pendingEstimates,
     acceptedEstimatesTotal,
-    recentProjects: (recentProjectsResult.data as unknown as DashboardStats["recentProjects"]) ?? [],
-    recentEstimates: (recentEstimatesResult.data as unknown as DashboardStats["recentEstimates"]) ?? [],
+    recentProjects: (recentProjectsResult.data ?? []).map((p) => ({
+      id: p.id,
+      name: p.name,
+      status: p.status,
+      created_at: p.created_at,
+      client: Array.isArray(p.client) ? p.client[0] ?? null : p.client ?? null,
+    })),
+    recentEstimates: (recentEstimatesResult.data ?? []).map((e) => ({
+      id: e.id,
+      name: e.name,
+      status: e.status,
+      total_amount: e.total_amount,
+      created_at: e.created_at,
+      client: Array.isArray(e.client) ? e.client[0] ?? null : e.client ?? null,
+    })),
   };
 }

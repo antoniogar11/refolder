@@ -4,16 +4,10 @@ import { revalidatePath } from "next/cache";
 
 import type { FormState } from "@/lib/forms/form-state";
 import { zodErrorsToFormState } from "@/lib/forms/form-state";
+import { parseFormData } from "@/lib/forms/parse";
 import { createClient } from "@/lib/supabase/server";
+import { roundCurrency, computeSellingPrice } from "@/lib/utils";
 import { estimateSchema } from "@/lib/validations/estimate";
-
-function parseFormData(formData: FormData): Record<string, string> {
-  const result: Record<string, string> = {};
-  formData.forEach((value, key) => {
-    result[key] = typeof value === "string" ? value.trim() : "";
-  });
-  return result;
-}
 
 export async function createEstimateAction(
   _: FormState,
@@ -116,8 +110,10 @@ export async function createEstimateWithItemsAction(
   clientId: string | null,
   name: string,
   description: string,
-  items: { categoria: string; descripcion: string; unidad: string; cantidad: number; precio_unitario: number; subtotal: number; orden: number }[],
+  items: { categoria: string; descripcion: string; unidad: string; cantidad: number; precio_coste: number; margen: number; precio_unitario: number; subtotal: number; orden: number }[],
   totalAmount: number,
+  margenGlobal: number = 20,
+  idempotencyKey?: string,
 ): Promise<{ success: boolean; message: string; estimateId?: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -126,24 +122,66 @@ export async function createEstimateWithItemsAction(
     return { success: false, message: "No estás autenticado." };
   }
 
-  // Build insert data - only include non-null foreign keys
+  // Intentar la creación atómica via RPC
+  const { data: rpcResult, error: rpcError } = await supabase.rpc(
+    "create_estimate_with_items",
+    {
+      p_user_id: user.id,
+      p_name: name,
+      p_description: description,
+      p_total_amount: totalAmount,
+      p_client_id: clientId || null,
+      p_project_id: projectId || null,
+      p_idempotency_key: idempotencyKey || null,
+      p_items: JSON.stringify(items),
+      p_margen_global: margenGlobal,
+    },
+  );
+
+  if (rpcError) {
+    console.error("Error creating estimate (RPC)", rpcError);
+
+    // Fallback: creación no-atómica si la función RPC no existe aún
+    if (rpcError.message?.includes("function") && rpcError.message?.includes("does not exist")) {
+      return createEstimateWithItemsFallback(supabase, user.id, projectId, clientId, name, description, items, totalAmount, margenGlobal);
+    }
+
+    return { success: false, message: `No se pudo crear el presupuesto: ${rpcError.message}` };
+  }
+
+  const result = rpcResult as { success: boolean; message: string; estimateId: string };
+
+  revalidatePath("/dashboard/presupuestos");
+  if (projectId) {
+    revalidatePath(`/dashboard/proyectos/${projectId}`);
+  }
+  return { success: result.success, message: result.message, estimateId: result.estimateId };
+}
+
+// Fallback no-atómico para cuando la función RPC aún no se ha desplegado
+async function createEstimateWithItemsFallback(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  projectId: string | null,
+  clientId: string | null,
+  name: string,
+  description: string,
+  items: { categoria: string; descripcion: string; unidad: string; cantidad: number; precio_coste: number; margen: number; precio_unitario: number; subtotal: number; orden: number }[],
+  totalAmount: number,
+  margenGlobal: number = 20,
+): Promise<{ success: boolean; message: string; estimateId?: string }> {
   const insertData: Record<string, unknown> = {
-    user_id: user.id,
+    user_id: userId,
     name,
     description,
     total_amount: totalAmount,
     status: "draft",
+    margen_global: margenGlobal,
   };
 
-  if (clientId) {
-    insertData.client_id = clientId;
-  }
+  if (clientId) insertData.client_id = clientId;
+  if (projectId) insertData.project_id = projectId;
 
-  if (projectId) {
-    insertData.project_id = projectId;
-  }
-
-  // Create estimate header
   const { data: estimate, error: estimateError } = await supabase
     .from("estimates")
     .insert(insertData)
@@ -151,11 +189,10 @@ export async function createEstimateWithItemsAction(
     .single();
 
   if (estimateError || !estimate) {
-    console.error("Error creating estimate", estimateError);
+    console.error("Error creating estimate (fallback)", estimateError);
     return { success: false, message: `No se pudo crear el presupuesto: ${estimateError?.message}` };
   }
 
-  // Create items
   if (items.length > 0) {
     const rows = items.map((item, index) => ({
       estimate_id: estimate.id,
@@ -163,6 +200,8 @@ export async function createEstimateWithItemsAction(
       descripcion: item.descripcion,
       unidad: item.unidad,
       cantidad: item.cantidad,
+      precio_coste: item.precio_coste,
+      margen: item.margen,
       precio_unitario: item.precio_unitario,
       subtotal: item.subtotal,
       orden: item.orden ?? index,
@@ -170,8 +209,7 @@ export async function createEstimateWithItemsAction(
 
     const { error: itemsError } = await supabase.from("estimate_items").insert(rows);
     if (itemsError) {
-      console.error("Error creating estimate items", itemsError);
-      // Delete the estimate if items failed
+      console.error("Error creating estimate items (fallback)", itemsError);
       await supabase.from("estimates").delete().eq("id", estimate.id);
       return { success: false, message: "Error al guardar las partidas del presupuesto." };
     }
@@ -186,14 +224,23 @@ export async function createEstimateWithItemsAction(
 
 export async function updateEstimateItemAction(
   itemId: string,
-  data: { cantidad?: number; precio_unitario?: number; descripcion?: string; categoria?: string; unidad?: string },
+  data: { cantidad?: number; precio_unitario?: number; precio_coste?: number; margen?: number; descripcion?: string; categoria?: string; unidad?: string },
 ): Promise<{ success: boolean; message: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, message: "No estás autenticado." };
 
-  const subtotal = (data.cantidad ?? 0) * (data.precio_unitario ?? 0);
-  const updateData = { ...data, subtotal: Math.round(subtotal * 100) / 100 };
+  // Si se actualiza precio_coste o margen, recalcular precio_unitario
+  const updateData: Record<string, unknown> = { ...data };
+  if (data.precio_coste !== undefined || data.margen !== undefined) {
+    const coste = data.precio_coste ?? 0;
+    const margen = data.margen ?? 0;
+    updateData.precio_unitario = computeSellingPrice(coste, margen);
+  }
+
+  const cantidad = (data.cantidad ?? 0);
+  const precioUnitario = (updateData.precio_unitario as number) ?? (data.precio_unitario ?? 0);
+  updateData.subtotal = roundCurrency(cantidad * precioUnitario);
 
   const { error } = await supabase
     .from("estimate_items")
@@ -210,13 +257,13 @@ export async function updateEstimateItemAction(
 
 export async function addEstimateItemAction(
   estimateId: string,
-  item: { categoria: string; descripcion: string; unidad: string; cantidad: number; precio_unitario: number; orden: number },
+  item: { categoria: string; descripcion: string; unidad: string; cantidad: number; precio_coste: number; margen: number; precio_unitario: number; orden: number },
 ): Promise<{ success: boolean; message: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, message: "No estás autenticado." };
 
-  const subtotal = Math.round(item.cantidad * item.precio_unitario * 100) / 100;
+  const subtotal = roundCurrency(item.cantidad * item.precio_unitario);
 
   const { error } = await supabase.from("estimate_items").insert({
     estimate_id: estimateId,
@@ -292,4 +339,65 @@ export async function updateEstimateTotalAction(
 
   if (error) return { success: false, message: error.message };
   return { success: true, message: "Total actualizado." };
+}
+
+export async function updateGlobalMarginAction(
+  estimateId: string,
+  margenGlobal: number,
+): Promise<{ success: boolean; message: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No estás autenticado." };
+
+  // 1. Actualizar margen_global en el presupuesto
+  const { error: estimateError } = await supabase
+    .from("estimates")
+    .update({ margen_global: margenGlobal, updated_at: new Date().toISOString() })
+    .eq("id", estimateId)
+    .eq("user_id", user.id);
+
+  if (estimateError) {
+    console.error("Error updating global margin", estimateError);
+    return { success: false, message: estimateError.message };
+  }
+
+  // 2. Obtener todos los items del presupuesto
+  const { data: items, error: itemsError } = await supabase
+    .from("estimate_items")
+    .select("id, precio_coste, cantidad")
+    .eq("estimate_id", estimateId);
+
+  if (itemsError) {
+    console.error("Error fetching items for margin update", itemsError);
+    return { success: false, message: itemsError.message };
+  }
+
+  // 3. Actualizar cada item con el nuevo margen
+  let newTotal = 0;
+  for (const item of items ?? []) {
+    const coste = Number(item.precio_coste) || 0;
+    const newPrecioUnitario = computeSellingPrice(coste, margenGlobal);
+    const newSubtotal = roundCurrency(Number(item.cantidad) * newPrecioUnitario);
+    newTotal += newSubtotal;
+
+    await supabase
+      .from("estimate_items")
+      .update({
+        margen: margenGlobal,
+        precio_unitario: newPrecioUnitario,
+        subtotal: newSubtotal,
+      })
+      .eq("id", item.id);
+  }
+
+  // 4. Actualizar el total del presupuesto
+  const totalWithIva = roundCurrency(newTotal + roundCurrency(newTotal * 0.21));
+  await supabase
+    .from("estimates")
+    .update({ total_amount: roundCurrency(newTotal + roundCurrency(newTotal * 0.21)), updated_at: new Date().toISOString() })
+    .eq("id", estimateId)
+    .eq("user_id", user.id);
+
+  revalidatePath(`/dashboard/presupuestos/${estimateId}`);
+  return { success: true, message: `Margen global actualizado a ${margenGlobal}%.` };
 }

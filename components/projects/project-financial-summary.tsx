@@ -1,10 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { FinancialSummary } from "@/lib/data/project-costs";
 import { Wallet, TrendingDown, TrendingUp, Clock } from "lucide-react";
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
+import { formatCurrency } from "@/lib/utils/format";
 
 type Props = {
   summary: FinancialSummary;

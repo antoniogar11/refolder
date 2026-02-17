@@ -1,3 +1,4 @@
+import { throwQueryError } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
 import type { Project } from "@/types";
 
@@ -42,10 +43,7 @@ export async function getProjects(
     .order("created_at", { ascending: false })
     .range(from, to);
 
-  if (error) {
-    console.error("Error fetching projects", error);
-    return { projects: [], total: 0 };
-  }
+  if (error) throwQueryError("getProjects", error);
 
   return { projects: (data as Project[]) ?? [], total: count ?? 0 };
 }
@@ -65,10 +63,7 @@ export async function getProjectById(id: string): Promise<Project | null> {
     .eq("user_id", user.id)
     .single();
 
-  if (error) {
-    console.error("Error fetching project", error);
-    return null;
-  }
+  if (error) throwQueryError("getProjectById", error);
 
   return data as Project;
 }
@@ -87,10 +82,7 @@ export async function getAllProjects(): Promise<Pick<Project, "id" | "name">[]> 
     .eq("user_id", user.id)
     .order("name");
 
-  if (error) {
-    console.error("Error fetching projects", error);
-    return [];
-  }
+  if (error) throwQueryError("getAllProjects", error);
 
   return data ?? [];
 }
@@ -110,10 +102,7 @@ export async function getProjectsByClientId(clientId: string): Promise<Project[]
     .eq("client_id", clientId)
     .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error("Error fetching projects by client", error);
-    return [];
-  }
+  if (error) throwQueryError("getProjectsByClientId", error);
 
   return (data as Project[]) ?? [];
 }

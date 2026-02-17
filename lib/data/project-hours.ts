@@ -1,4 +1,6 @@
+import { throwQueryError } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
+import { roundCurrency } from "@/lib/utils";
 import type { ProjectHour } from "@/types";
 
 export async function getHoursByProjectId(projectId: string): Promise<ProjectHour[]> {
@@ -13,10 +15,7 @@ export async function getHoursByProjectId(projectId: string): Promise<ProjectHou
     .eq("user_id", user.id)
     .order("fecha", { ascending: false });
 
-  if (error) {
-    console.error("Error fetching project hours", error);
-    return [];
-  }
+  if (error) throwQueryError("getHoursByProjectId", error);
 
   return data ?? [];
 }
@@ -34,17 +33,14 @@ export async function getHoursSummary(
     .eq("project_id", projectId)
     .eq("user_id", user.id);
 
-  if (error) {
-    console.error("Error fetching hours summary", error);
-    return { totalHours: 0, totalCost: 0, count: 0 };
-  }
+  if (error) throwQueryError("getHoursSummary", error);
 
   const totalHours = data?.reduce((sum, h) => sum + Number(h.horas), 0) ?? 0;
   const totalCost = data?.reduce((sum, h) => sum + Number(h.coste_total), 0) ?? 0;
 
   return {
-    totalHours: Math.round(totalHours * 100) / 100,
-    totalCost: Math.round(totalCost * 100) / 100,
+    totalHours: roundCurrency(totalHours),
+    totalCost: roundCurrency(totalCost),
     count: data?.length ?? 0,
   };
 }

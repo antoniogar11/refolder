@@ -9,8 +9,7 @@ const labelMap: Record<string, string> = {
   clientes: "Clientes",
   proyectos: "Proyectos",
   presupuestos: "Presupuestos",
-  proveedores: "Proveedores",
-  finanzas: "Finanzas",
+  visitas: "Visitas",
 };
 
 export function Breadcrumbs() {

@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import { generateEstimatePDF } from "@/lib/pdf/generate-estimate-pdf";
+import { roundCurrency } from "@/lib/utils";
 import type { Estimate, EstimateItem, Company } from "@/types";
 
 type ExportPDFButtonProps = {
@@ -14,8 +15,8 @@ type ExportPDFButtonProps = {
 export function ExportPDFButton({ estimate, items, company }: ExportPDFButtonProps) {
   function handleExport() {
     const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
-    const iva = Math.round(subtotal * 0.21 * 100) / 100;
-    const total = Math.round((subtotal + iva) * 100) / 100;
+    const iva = roundCurrency(subtotal * 0.21);
+    const total = roundCurrency(subtotal + iva);
 
     const estimateDate = new Date(estimate.created_at);
     const validUntilDate = estimate.valid_until

@@ -1,13 +1,10 @@
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils/format";
 
 type CostComparisonProps = {
   budgeted: number;
   spent: number;
 };
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
 
 export function CostComparison({ budgeted, spent }: CostComparisonProps) {
   const difference = budgeted - spent;

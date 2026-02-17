@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { deleteCostAction } from "@/app/dashboard/proyectos/cost-actions";
 import { Trash2, Loader2 } from "lucide-react";
 import type { ProjectCost } from "@/types";
+import { formatCurrency } from "@/lib/utils/format";
 
 const categoryLabels: Record<string, string> = {
   pago_cliente: "Pago de cliente",
@@ -19,10 +20,6 @@ const categoryColors: Record<string, string> = {
   certificacion: "bg-blue-100 text-blue-700",
   otros: "bg-slate-100 text-slate-700",
 };
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(amount);
-}
 
 type IncomeTableProps = {
   incomes: ProjectCost[];
