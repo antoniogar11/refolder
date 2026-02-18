@@ -79,7 +79,7 @@ export default async function VisitasPage({ searchParams }: PageProps) {
           <CardContent className="py-12 text-center">
             <ClipboardList className="mx-auto h-12 w-12 text-slate-300 mb-4" />
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
-              No hay visitas todavia
+              No hay visitas todavía
             </h3>
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
               Registra tu primera visita de obra para empezar a generar presupuestos
@@ -98,7 +98,7 @@ export default async function VisitasPage({ searchParams }: PageProps) {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Direccion</TableHead>
+                  <TableHead>Dirección</TableHead>
                   <TableHead>Cliente</TableHead>
                   <TableHead>Fecha</TableHead>
                   <TableHead>Estado</TableHead>
@@ -108,11 +108,11 @@ export default async function VisitasPage({ searchParams }: PageProps) {
                 {visits.map((visit) => {
                   const config = statusConfig[visit.status];
                   return (
-                    <TableRow key={visit.id}>
+                    <TableRow key={visit.id} className="group relative">
                       <TableCell>
                         <Link
                           href={`/dashboard/visitas/${visit.id}`}
-                          className="font-medium hover:text-amber-600"
+                          className="font-medium hover:text-amber-600 after:absolute after:inset-0"
                         >
                           {visit.address}
                         </Link>

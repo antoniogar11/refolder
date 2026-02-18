@@ -12,14 +12,21 @@ type EstimateData = {
   companyTaxId: string | null;
   companyAddress: string | null;
   companyCity: string | null;
+  companyProvince: string | null;
+  companyPostalCode: string | null;
   companyPhone: string | null;
   companyEmail: string | null;
   // Datos de cliente
   clientName: string;
   clientAddress: string | null;
+  clientCity: string | null;
+  clientProvince: string | null;
+  clientPostalCode: string | null;
   clientTaxId: string | null;
+  // Datos de obra/proyecto
   projectName: string;
   projectAddress: string | null;
+  // Partidas
   items: {
     categoria: string;
     descripcion: string;
@@ -29,246 +36,375 @@ type EstimateData = {
     subtotal: number;
   }[];
   subtotal: number;
+  ivaPorcentaje: number;
   iva: number;
   total: number;
+  notes: string | null;
 };
+
+// Colors
+const DARK_BLUE: [number, number, number] = [30, 58, 95]; // #1e3a5f
+const MEDIUM_BLUE: [number, number, number] = [44, 82, 130];
+const LIGHT_BLUE_BG: [number, number, number] = [235, 241, 250];
+const DARK_TEXT: [number, number, number] = [30, 30, 30];
+const MEDIUM_TEXT: [number, number, number] = [80, 80, 80];
+const LIGHT_TEXT: [number, number, number] = [130, 130, 130];
+const WHITE: [number, number, number] = [255, 255, 255];
+
+function formatCurrency(amount: number): string {
+  return amount.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
+}
+
+type Chapter = {
+  name: string;
+  number: number;
+  items: {
+    code: string;
+    descripcion: string;
+    unidad: string;
+    cantidad: number;
+    precio_unitario: number;
+    subtotal: number;
+  }[];
+  subtotal: number;
+};
+
+function groupItemsByChapter(items: EstimateData["items"]): Chapter[] {
+  const chapters: Chapter[] = [];
+  const categoryMap = new Map<string, number>();
+
+  for (const item of items) {
+    const cat = item.categoria || "General";
+    if (!categoryMap.has(cat)) {
+      categoryMap.set(cat, chapters.length + 1);
+      chapters.push({ name: cat.toUpperCase(), number: chapters.length + 1, items: [], subtotal: 0 });
+    }
+    const chapterIndex = categoryMap.get(cat)! - 1;
+    const chapter = chapters[chapterIndex];
+    const itemNumber = chapter.items.length + 1;
+    chapter.items.push({
+      code: `${chapter.number}.${itemNumber}`,
+      descripcion: item.descripcion,
+      unidad: item.unidad,
+      cantidad: item.cantidad,
+      precio_unitario: item.precio_unitario,
+      subtotal: Math.round(item.cantidad * item.precio_unitario * 100) / 100,
+    });
+    chapter.subtotal = Math.round((chapter.subtotal + chapter.items[chapter.items.length - 1].subtotal) * 100) / 100;
+  }
+
+  return chapters;
+}
 
 export function generateEstimatePDF(data: EstimateData) {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 20;
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 15;
+  const contentWidth = pageWidth - 2 * margin;
 
-  // Header - Company info
-  doc.setFontSize(24);
+  // === HEADER: Blue banner with title ===
+  doc.setFillColor(...DARK_BLUE);
+  doc.rect(0, 0, pageWidth, 38, "F");
+
+  doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(15, 23, 42); // slate-900
-  doc.text(data.companyName || "Refolder", margin, 30);
+  doc.setTextColor(...WHITE);
+  doc.text(data.estimateName.toUpperCase(), margin, 18);
+
+  // Subtitle with project/work info
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "italic");
+  doc.setTextColor(200, 210, 230);
+  const subtitleParts = [data.projectName !== "Sin obra asociada" ? data.projectName : null, data.projectAddress].filter(Boolean);
+  if (subtitleParts.length > 0) {
+    doc.text(subtitleParts.join(" · "), margin, 26);
+  }
+
+  // Estimate number in top-right
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...WHITE);
+  doc.text(`N.º ${data.estimateNumber}`, pageWidth - margin, 14, { align: "right" });
+
+  // Client | Date | Validez line below banner
+  const yBannerInfo = 34;
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(200, 210, 230);
+  const infoLine = [`Cliente: ${data.clientName}`, `Fecha: ${data.date}`, `Validez: 30 días`].join("  |  ");
+  doc.text(infoLine, margin, yBannerInfo);
+
+  let yPos = 46;
+
+  // === COMPANY AND CLIENT INFO BOXES ===
+  const boxWidth = (contentWidth - 8) / 2;
+
+  // Company box
+  doc.setFillColor(...LIGHT_BLUE_BG);
+  doc.roundedRect(margin, yPos, boxWidth, 32, 2, 2, "F");
+
+  doc.setFontSize(7);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...MEDIUM_BLUE);
+  doc.text("DATOS DEL PROFESIONAL", margin + 5, yPos + 6);
 
   doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(100, 100, 100);
-  doc.text(data.companySubtitle || "Gestión de Obras y Reformas", margin, 37);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...DARK_TEXT);
+  doc.text(data.companyName, margin + 5, yPos + 13);
 
-  // Company contact details under the name
-  let companyY = 42;
-  doc.setFontSize(8);
+  doc.setFontSize(7.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...MEDIUM_TEXT);
+  let companyLineY = yPos + 18;
   if (data.companyTaxId) {
-    doc.text(`CIF/NIF: ${data.companyTaxId}`, margin, companyY);
-    companyY += 4;
+    doc.text(`CIF/NIF: ${data.companyTaxId}`, margin + 5, companyLineY);
+    companyLineY += 4;
   }
-  if (data.companyAddress) {
-    const addressParts = [data.companyAddress, data.companyCity].filter(Boolean).join(", ");
-    doc.text(addressParts, margin, companyY);
-    companyY += 4;
+  const companyAddrParts = [data.companyAddress, data.companyPostalCode, data.companyCity, data.companyProvince].filter(Boolean);
+  if (companyAddrParts.length > 0) {
+    doc.text(companyAddrParts.join(", "), margin + 5, companyLineY, { maxWidth: boxWidth - 10 });
+    companyLineY += 4;
   }
-  if (data.companyPhone || data.companyEmail) {
-    const contactParts = [data.companyPhone, data.companyEmail].filter(Boolean).join(" · ");
-    doc.text(contactParts, margin, companyY);
+  const companyContactParts = [data.companyPhone, data.companyEmail].filter(Boolean);
+  if (companyContactParts.length > 0) {
+    doc.text(companyContactParts.join(" · "), margin + 5, companyLineY, { maxWidth: boxWidth - 10 });
   }
 
-  // Estimate number and date - right aligned
-  doc.setFontSize(11);
+  // Client box
+  const clientBoxX = margin + boxWidth + 8;
+  doc.setFillColor(...LIGHT_BLUE_BG);
+  doc.roundedRect(clientBoxX, yPos, boxWidth, 32, 2, 2, "F");
+
+  doc.setFontSize(7);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(30, 41, 59); // slate-800
-  doc.text(`PRESUPUESTO`, pageWidth - margin, 25, { align: "right" });
+  doc.setTextColor(...MEDIUM_BLUE);
+  doc.text("DATOS DEL CLIENTE", clientBoxX + 5, yPos + 6);
 
   doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(100, 100, 100);
-  doc.text(`Nº: ${data.estimateNumber}`, pageWidth - margin, 32, {
-    align: "right",
-  });
-  doc.text(`Fecha: ${data.date}`, pageWidth - margin, 38, { align: "right" });
-  doc.text(`Válido hasta: ${data.validUntil}`, pageWidth - margin, 44, {
-    align: "right",
-  });
-
-  // Horizontal line
-  const lineY = Math.max(companyY + 4, 52);
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(0.5);
-  doc.line(margin, lineY, pageWidth - margin, lineY);
-
-  // Client info box
-  let yPos = lineY + 8;
-  doc.setFillColor(248, 250, 252); // gray-50
-  doc.roundedRect(
-    margin,
-    yPos - 3,
-    (pageWidth - 2 * margin) / 2 - 5,
-    35,
-    2,
-    2,
-    "F"
-  );
-
-  doc.setFontSize(8);
   doc.setFont("helvetica", "bold");
-  doc.setTextColor(100, 100, 100);
-  doc.text("CLIENTE", margin + 5, yPos + 3);
+  doc.setTextColor(...DARK_TEXT);
+  doc.text(data.clientName, clientBoxX + 5, yPos + 13);
 
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(30, 30, 30);
-  doc.text(data.clientName, margin + 5, yPos + 11);
-
-  doc.setFontSize(9);
+  doc.setFontSize(7.5);
   doc.setFont("helvetica", "normal");
-  doc.setTextColor(80, 80, 80);
-  if (data.clientAddress) {
-    doc.text(data.clientAddress, margin + 5, yPos + 18);
-  }
+  doc.setTextColor(...MEDIUM_TEXT);
+  let clientLineY = yPos + 18;
   if (data.clientTaxId) {
-    doc.text(`CIF/NIF: ${data.clientTaxId}`, margin + 5, yPos + 25);
+    doc.text(`CIF/NIF: ${data.clientTaxId}`, clientBoxX + 5, clientLineY);
+    clientLineY += 4;
+  }
+  const clientAddrParts = [data.clientAddress, data.clientPostalCode, data.clientCity, data.clientProvince].filter(Boolean);
+  if (clientAddrParts.length > 0) {
+    doc.text(clientAddrParts.join(", "), clientBoxX + 5, clientLineY, { maxWidth: boxWidth - 10 });
   }
 
-  // Project info box
-  const rightBoxX = margin + (pageWidth - 2 * margin) / 2 + 5;
-  doc.setFillColor(248, 250, 252);
-  doc.roundedRect(
-    rightBoxX,
-    yPos - 3,
-    (pageWidth - 2 * margin) / 2 - 5,
-    35,
-    2,
-    2,
-    "F"
-  );
+  yPos += 38;
 
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(100, 100, 100);
-  doc.text("OBRA", rightBoxX + 5, yPos + 3);
+  // === CHAPTERS TABLE ===
+  const chapters = groupItemsByChapter(data.items);
 
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(30, 30, 30);
-  doc.text(data.projectName, rightBoxX + 5, yPos + 11);
+  // Build table rows with chapter headers and subtotals
+  type CellDef = { content: string; colSpan?: number; styles?: Record<string, unknown> };
+  const tableBody: (string | CellDef)[][] = [];
 
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(80, 80, 80);
-  if (data.projectAddress) {
-    doc.text(data.projectAddress, rightBoxX + 5, yPos + 18);
+  for (const chapter of chapters) {
+    // Chapter header row
+    tableBody.push([
+      {
+        content: `CAPÍTULO ${chapter.number}: ${chapter.name}`,
+        colSpan: 6,
+        styles: {
+          fillColor: DARK_BLUE,
+          textColor: WHITE,
+          fontStyle: "bold",
+          fontSize: 8,
+          cellPadding: { top: 3, bottom: 3, left: 4, right: 4 },
+        },
+      },
+    ]);
+
+    // Chapter items
+    for (const item of chapter.items) {
+      tableBody.push([
+        item.code,
+        item.descripcion,
+        item.unidad,
+        item.cantidad.toFixed(2),
+        formatCurrency(item.precio_unitario),
+        formatCurrency(item.subtotal),
+      ]);
+    }
+
+    // Chapter subtotal row
+    tableBody.push([
+      {
+        content: `Total ${chapter.name}`,
+        colSpan: 5,
+        styles: {
+          fontStyle: "bold",
+          halign: "right" as const,
+          fillColor: [245, 247, 250],
+          fontSize: 8,
+        },
+      },
+      {
+        content: formatCurrency(chapter.subtotal),
+        styles: {
+          fontStyle: "bold",
+          halign: "right" as const,
+          fillColor: [245, 247, 250],
+          fontSize: 8,
+        },
+      },
+    ]);
   }
-
-  // Estimate name
-  yPos = yPos + 40;
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(30, 30, 30);
-  doc.text(data.estimateName, margin, yPos);
-
-  // Items table
-  yPos += 8;
-
-  const tableData = data.items.map((item) => [
-    item.categoria,
-    item.descripcion,
-    item.unidad,
-    item.cantidad.toFixed(2),
-    `${item.precio_unitario.toFixed(2)} €`,
-    `${item.subtotal.toFixed(2)} €`,
-  ]);
 
   autoTable(doc, {
     startY: yPos,
-    head: [["Categoría", "Descripción", "Ud.", "Cant.", "P. Unit.", "Subtotal"]],
-    body: tableData,
+    head: [["Cód.", "Descripción", "Ud.", "Cantidad", "Precio Ud.", "Importe"]],
+    body: tableBody,
     margin: { left: margin, right: margin },
-    theme: "striped",
+    theme: "grid",
     headStyles: {
-      fillColor: [30, 41, 59],
-      textColor: [255, 255, 255],
-      fontSize: 8,
+      fillColor: MEDIUM_BLUE,
+      textColor: WHITE,
+      fontSize: 7.5,
       fontStyle: "bold",
+      cellPadding: { top: 3, bottom: 3, left: 3, right: 3 },
     },
     bodyStyles: {
-      fontSize: 8,
-      textColor: [50, 50, 50],
+      fontSize: 7.5,
+      textColor: DARK_TEXT,
+      cellPadding: { top: 2.5, bottom: 2.5, left: 3, right: 3 },
     },
     columnStyles: {
-      0: { cellWidth: 25 },
+      0: { cellWidth: 14, halign: "center" },
       1: { cellWidth: "auto" },
-      2: { cellWidth: 15, halign: "center" },
+      2: { cellWidth: 12, halign: "center" },
       3: { cellWidth: 18, halign: "right" },
-      4: { cellWidth: 22, halign: "right" },
-      5: { cellWidth: 25, halign: "right", fontStyle: "bold" },
+      4: { cellWidth: 24, halign: "right" },
+      5: { cellWidth: 26, halign: "right" },
+    },
+    styles: {
+      lineColor: [200, 210, 220],
+      lineWidth: 0.3,
+      overflow: "linebreak",
     },
     alternateRowStyles: {
-      fillColor: [248, 250, 252],
+      fillColor: [250, 251, 253],
     },
   });
 
-  // Totals — jspdf-autotable adds lastAutoTable dynamically
+  // === TOTALS SECTION ===
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const finalY = ((doc as any).lastAutoTable?.finalY ?? yPos + 40) + 10;
+  let finalY = ((doc as any).lastAutoTable?.finalY ?? yPos + 40) + 8;
 
-  const totalsX = pageWidth - margin - 60;
-
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(100, 100, 100);
-  doc.text("Subtotal:", totalsX, finalY);
-  doc.setTextColor(30, 30, 30);
-  doc.text(`${data.subtotal.toFixed(2)} €`, pageWidth - margin, finalY, {
-    align: "right",
-  });
-
-  doc.setTextColor(100, 100, 100);
-  doc.text("IVA (21%):", totalsX, finalY + 7);
-  doc.setTextColor(30, 30, 30);
-  doc.text(`${data.iva.toFixed(2)} €`, pageWidth - margin, finalY + 7, {
-    align: "right",
-  });
-
-  doc.setDrawColor(217, 119, 6); // amber-600
-  doc.setLineWidth(0.5);
-  doc.line(totalsX - 5, finalY + 11, pageWidth - margin, finalY + 11);
-
-  doc.setFontSize(12);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(217, 119, 6); // amber-600
-  doc.text("TOTAL:", totalsX, finalY + 19);
-  doc.text(`${data.total.toFixed(2)} €`, pageWidth - margin, finalY + 19, {
-    align: "right",
-  });
-
-  // Footer with conditions
-  const footerY = finalY + 35;
-  if (footerY < 260) {
-    doc.setDrawColor(200, 200, 200);
-    doc.setLineWidth(0.3);
-    doc.line(margin, footerY, pageWidth - margin, footerY);
-
-    doc.setFontSize(7);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(130, 130, 130);
-    doc.text("CONDICIONES:", margin, footerY + 6);
-    doc.text(
-      "• Presupuesto válido por 30 días desde la fecha de emisión. • Los precios incluyen materiales y mano de obra salvo indicación contraria.",
-      margin,
-      footerY + 11
-    );
-    doc.text(
-      "• Plazo de ejecución a convenir. • No incluye trabajos no especificados en las partidas anteriores.",
-      margin,
-      footerY + 16
-    );
+  // Check if we need a new page for totals
+  if (finalY + 60 > pageHeight - 30) {
+    doc.addPage();
+    finalY = 20;
   }
 
-  // Page footer
+  const totalsBoxX = pageWidth - margin - 80;
+  const totalsBoxWidth = 80;
+
+  // Subtotal (Ejecución Material)
+  doc.setFontSize(8.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...MEDIUM_TEXT);
+  doc.text("TOTAL EJECUCIÓN MATERIAL", totalsBoxX, finalY);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...DARK_TEXT);
+  doc.text(formatCurrency(data.subtotal), totalsBoxX + totalsBoxWidth, finalY, { align: "right" });
+
+  // IVA
+  finalY += 7;
+  const ivaLabel = data.ivaPorcentaje === 10 ? "IVA 10% (Reducido)" : `IVA ${data.ivaPorcentaje}%`;
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...MEDIUM_TEXT);
+  doc.text(ivaLabel, totalsBoxX, finalY);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...DARK_TEXT);
+  doc.text(formatCurrency(data.iva), totalsBoxX + totalsBoxWidth, finalY, { align: "right" });
+
+  // Total line
+  finalY += 4;
+  doc.setDrawColor(...DARK_BLUE);
+  doc.setLineWidth(0.8);
+  doc.line(totalsBoxX, finalY, totalsBoxX + totalsBoxWidth, finalY);
+
+  // TOTAL PRESUPUESTO - highlighted
+  finalY += 8;
+  doc.setFillColor(...DARK_BLUE);
+  doc.roundedRect(totalsBoxX - 5, finalY - 5, totalsBoxWidth + 10, 14, 2, 2, "F");
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...WHITE);
+  doc.text("TOTAL PRESUPUESTO", totalsBoxX, finalY + 3);
+  doc.text(formatCurrency(data.total), totalsBoxX + totalsBoxWidth, finalY + 3, { align: "right" });
+
+  // === NOTES SECTION ===
+  finalY += 20;
+
+  if (finalY + 40 > pageHeight - 30) {
+    doc.addPage();
+    finalY = 20;
+  }
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(...DARK_BLUE);
+  doc.text("NOTAS:", margin, finalY);
+
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(...MEDIUM_TEXT);
+  doc.setFontSize(7);
+  finalY += 5;
+
+  const notes: string[] = [];
+  notes.push("• Presupuesto válido por 30 días desde la fecha de emisión.");
+  notes.push("• Los precios incluyen materiales y mano de obra salvo indicación contraria.");
+  notes.push("• No incluye trabajos no especificados en las partidas anteriores.");
+  notes.push("• Plazo de ejecución a convenir tras la aceptación del presupuesto.");
+
+  if (data.ivaPorcentaje === 10) {
+    notes.push("• IVA reducido del 10% aplicado según Art. 91.Uno.2.10.º Ley 37/1992 (reformas de vivienda habitual > 2 años, materiales < 40% del total).");
+  }
+
+  if (data.notes) {
+    notes.push(`• ${data.notes}`);
+  }
+
+  for (const note of notes) {
+    doc.text(note, margin, finalY, { maxWidth: contentWidth });
+    finalY += 4;
+  }
+
+  // === PAGE FOOTER ===
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
-    doc.setFontSize(7);
-    doc.setTextColor(150, 150, 150);
-    doc.text(
-      `Generado con Refolder · Página ${i} de ${pageCount}`,
-      pageWidth / 2,
-      doc.internal.pageSize.getHeight() - 10,
-      { align: "center" }
-    );
+    const footerYPos = pageHeight - 10;
+
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+    doc.line(margin, footerYPos - 4, pageWidth - margin, footerYPos - 4);
+
+    doc.setFontSize(6.5);
+    doc.setTextColor(...LIGHT_TEXT);
+    doc.setFont("helvetica", "normal");
+
+    // Left: date
+    doc.text(data.date, margin, footerYPos);
+
+    // Center: company name
+    doc.text(data.companyName, pageWidth / 2, footerYPos, { align: "center" });
+
+    // Right: page number
+    doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, footerYPos, { align: "right" });
   }
 
   // Download

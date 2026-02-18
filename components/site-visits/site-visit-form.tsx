@@ -86,7 +86,7 @@ export function SiteVisitForm({ clients: initialClients, workTypes, visit }: Sit
 
   async function handleSave(andGenerate = false) {
     if (!address.trim()) {
-      toast.error("La direccion es obligatoria.");
+      toast.error("La dirección es obligatoria.");
       return;
     }
 
@@ -181,12 +181,12 @@ export function SiteVisitForm({ clients: initialClients, workTypes, visit }: Sit
             </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="sv-address">Direccion de la obra *</Label>
+            <Label htmlFor="sv-address">Dirección de la obra *</Label>
             <Input
               id="sv-address"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="Calle, numero, piso"
+              placeholder="Calle, número, piso"
             />
           </div>
         </CardContent>
@@ -198,7 +198,7 @@ export function SiteVisitForm({ clients: initialClients, workTypes, visit }: Sit
           <h3 className="text-lg font-semibold">Zonas ({zones.length})</h3>
           <Button type="button" onClick={() => addZone()} size="sm">
             <Plus className="mr-1 h-4 w-4" />
-            Anadir zona
+            Añadir zona
           </Button>
         </div>
 
@@ -210,7 +210,7 @@ export function SiteVisitForm({ clients: initialClients, workTypes, visit }: Sit
         {zones.length === 0 && (
           <Card>
             <CardContent className="py-8 text-center text-sm text-slate-500">
-              Anade zonas para registrar medidas y trabajos necesarios
+              Añade zonas para registrar medidas y trabajos necesarios
             </CardContent>
           </Card>
         )}
@@ -236,7 +236,7 @@ export function SiteVisitForm({ clients: initialClients, workTypes, visit }: Sit
           <Textarea
             value={generalNotes}
             onChange={(e) => setGeneralNotes(e.target.value)}
-            placeholder="Estado de la instalacion electrica, acceso para material, necesidad de licencias, etc."
+            placeholder="Estado de la instalación eléctrica, acceso para material, necesidad de licencias, etc."
             rows={3}
           />
         </CardContent>

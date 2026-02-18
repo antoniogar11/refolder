@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 
 import { createClientAction } from "@/app/dashboard/clientes/actions";
 import { Input } from "@/components/ui/input";
@@ -9,8 +9,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { FieldError, FormMessage, SubmitButton } from "@/components/shared/entity-form";
 import { initialFormState } from "@/lib/forms/form-state";
 
-export function NewClientForm() {
+type NewClientFormProps = {
+  onSuccess?: () => void;
+};
+
+export function NewClientForm({ onSuccess }: NewClientFormProps) {
   const [state, formAction] = useActionState(createClientAction, initialFormState);
+
+  useEffect(() => {
+    if (state.status === "success" && onSuccess) {
+      const timer = setTimeout(() => onSuccess(), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [state.status, onSuccess]);
 
   return (
     <form action={formAction} className="space-y-4" noValidate>

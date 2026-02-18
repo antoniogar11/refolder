@@ -3,9 +3,9 @@
 import { Button } from "@/components/ui/button";
 
 const SUGGESTED_ZONES = [
-  "Bano",
+  "Baño",
   "Cocina",
-  "Salon",
+  "Salón",
   "Dormitorio",
   "Pasillo",
   "Terraza",

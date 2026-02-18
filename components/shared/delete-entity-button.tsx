@@ -3,7 +3,19 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { Trash2, Loader2 } from "lucide-react";
 
 type DeleteEntityButtonProps = {
   entityId: string;
@@ -20,7 +32,7 @@ export function DeleteEntityButton({
 }: DeleteEntityButtonProps) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [open, setOpen] = useState(false);
 
   async function handleDelete() {
     setIsDeleting(true);
@@ -33,43 +45,43 @@ export function DeleteEntityButton({
     } else {
       toast.error(result.message);
       setIsDeleting(false);
-      setShowConfirm(false);
+      setOpen(false);
     }
   }
 
-  if (showConfirm) {
-    return (
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-600 dark:text-gray-400">
-          ¿Eliminar {entityName}?
-        </span>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowConfirm(false)}
-          disabled={isDeleting}
-        >
-          Cancelar
-        </Button>
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={handleDelete}
-          disabled={isDeleting}
-        >
-          {isDeleting ? "Eliminando..." : "Eliminar"}
-        </Button>
-      </div>
-    );
-  }
-
   return (
-    <Button
-      variant="destructive"
-      size="sm"
-      onClick={() => setShowConfirm(true)}
-    >
-      Eliminar
-    </Button>
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger asChild>
+        <Button variant="destructive" size="sm">
+          <Trash2 className="mr-1 h-4 w-4" />
+          Eliminar
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+          <AlertDialogDescription>
+            ¿Quieres eliminar <span className="font-medium">{entityName}</span>? Esta acción no se puede deshacer.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="bg-red-600 hover:bg-red-700 text-white"
+          >
+            {isDeleting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Eliminando...
+              </>
+            ) : (
+              "Eliminar"
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

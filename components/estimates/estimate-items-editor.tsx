@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import { Trash2, Plus, Percent } from "lucide-react";
 import {
@@ -15,6 +17,7 @@ import {
   deleteEstimateItemAction,
   updateEstimateTotalAction,
   updateGlobalMarginAction,
+  updateEstimateIvaAction,
 } from "@/app/dashboard/presupuestos/actions";
 import { formatCurrency } from "@/lib/utils/format";
 import { roundCurrency, computeSellingPrice } from "@/lib/utils";
@@ -25,16 +28,22 @@ type EstimateItemsEditorProps = {
   initialItems: EstimateItem[];
   estimateTotal: number;
   margenGlobal: number | null;
+  ivaPorcentaje?: number;
 };
 
-export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal, margenGlobal }: EstimateItemsEditorProps) {
+export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal, margenGlobal, ivaPorcentaje = 21 }: EstimateItemsEditorProps) {
   const router = useRouter();
   const [items, setItems] = useState(initialItems);
   const [globalMargin, setGlobalMargin] = useState(margenGlobal ?? 20);
   const [isApplyingMargin, startApplyingMargin] = useTransition();
+  const [ivaRate, setIvaRate] = useState(ivaPorcentaje);
 
-  const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.subtotal, 0), [items]);
-  const iva = useMemo(() => roundCurrency(subtotal * 0.21), [subtotal]);
+  // Recalculate subtotal from cantidad * precio_unitario to fix any stale DB values
+  const subtotal = useMemo(
+    () => items.reduce((sum, item) => sum + roundCurrency(item.cantidad * item.precio_unitario), 0),
+    [items],
+  );
+  const iva = useMemo(() => roundCurrency(subtotal * (ivaRate / 100)), [subtotal, ivaRate]);
   const total = useMemo(() => roundCurrency(subtotal + iva), [subtotal, iva]);
 
   const handleUpdateItem = useCallback(async (itemId: string, field: string, value: string) => {
@@ -67,13 +76,14 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal, m
       update.margen = item.margen;
     }
 
-    const newSubtotal = roundCurrency(
-      (update.cantidad as number) * (update.precio_unitario as number)
-    );
-
-    setItems(prev => prev.map(i =>
-      i.id === itemId ? { ...i, ...update, subtotal: newSubtotal } as EstimateItem : i
-    ));
+    setItems(prev => prev.map(i => {
+      if (i.id !== itemId) return i;
+      const updated = { ...i, ...update };
+      const newSubtotal = roundCurrency(
+        (updated.cantidad as number) * (updated.precio_unitario as number)
+      );
+      return { ...updated, subtotal: newSubtotal } as EstimateItem;
+    }));
 
     if (field === "precio_coste" || field === "margen") {
       await updateEstimateItemAction(itemId, {
@@ -146,6 +156,16 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal, m
     });
   }
 
+  async function handleIvaChange(newRate: number) {
+    setIvaRate(newRate);
+    const result = await updateEstimateIvaAction(estimateId, newRate);
+    if (result.success) {
+      toast.success(`IVA actualizado a ${newRate}%`);
+    } else {
+      toast.error(result.message);
+    }
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -187,91 +207,100 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal, m
           </p>
         ) : (
           <div className="overflow-x-auto rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[120px]">Categoría</TableHead>
-                  <TableHead>Descripción</TableHead>
-                  <TableHead className="w-[60px] text-right">Ud.</TableHead>
-                  <TableHead className="w-[80px] text-right">Cant.</TableHead>
-                  <TableHead className="w-[100px] text-right">P. Coste</TableHead>
-                  <TableHead className="w-[80px] text-right">Margen %</TableHead>
-                  <TableHead className="w-[100px] text-right">P. Venta</TableHead>
-                  <TableHead className="w-[100px] text-right">Subtotal</TableHead>
-                  <TableHead className="w-[40px]"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {items.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell>
-                      <Input
-                        defaultValue={item.categoria}
-                        onBlur={(e) => handleUpdateItem(item.id, "categoria", e.target.value)}
-                        className="h-8 text-xs"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        defaultValue={item.descripcion}
-                        onBlur={(e) => handleUpdateItem(item.id, "descripcion", e.target.value)}
-                        className="h-8 text-sm"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        defaultValue={item.unidad}
-                        onBlur={(e) => handleUpdateItem(item.id, "unidad", e.target.value)}
-                        className="h-8 text-xs text-right w-14"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        defaultValue={item.cantidad}
-                        onBlur={(e) => handleUpdateItem(item.id, "cantidad", e.target.value)}
-                        className="h-8 text-right w-20"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        defaultValue={item.precio_coste ?? 0}
-                        onBlur={(e) => handleUpdateItem(item.id, "precio_coste", e.target.value)}
-                        className="h-8 text-right w-24"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        step="1"
-                        defaultValue={item.margen}
-                        onBlur={(e) => handleUpdateItem(item.id, "margen", e.target.value)}
-                        className="h-8 text-right w-20"
-                      />
-                    </TableCell>
-                    <TableCell className="text-right text-sm font-medium text-slate-600 dark:text-slate-300">
-                      {formatCurrency(item.precio_unitario)}
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {formatCurrency(item.subtotal)}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteItem(item.id)}
-                        className="h-8 w-8 p-0 text-rose-500 hover:text-rose-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
+            <TooltipProvider>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="min-w-[150px]">Categoría</TableHead>
+                    <TableHead>Descripción</TableHead>
+                    <TableHead className="w-[60px] text-right">Ud.</TableHead>
+                    <TableHead className="w-[80px] text-right">Cant.</TableHead>
+                    <TableHead className="w-[100px] text-right">P. Coste</TableHead>
+                    <TableHead className="w-[80px] text-right">Margen %</TableHead>
+                    <TableHead className="w-[100px] text-right">P. Venta</TableHead>
+                    <TableHead className="w-[100px] text-right">Subtotal</TableHead>
+                    <TableHead className="w-[40px]"></TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {items.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Input
+                              defaultValue={item.categoria}
+                              onBlur={(e) => handleUpdateItem(item.id, "categoria", e.target.value)}
+                              className="h-8 text-xs"
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{item.categoria}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          defaultValue={item.descripcion}
+                          onBlur={(e) => handleUpdateItem(item.id, "descripcion", e.target.value)}
+                          className="h-8 text-sm"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          defaultValue={item.unidad}
+                          onBlur={(e) => handleUpdateItem(item.id, "unidad", e.target.value)}
+                          className="h-8 text-xs text-right w-14"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          defaultValue={item.cantidad}
+                          onBlur={(e) => handleUpdateItem(item.id, "cantidad", e.target.value)}
+                          className="h-8 text-right w-20"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          defaultValue={item.precio_coste ?? 0}
+                          onBlur={(e) => handleUpdateItem(item.id, "precio_coste", e.target.value)}
+                          className="h-8 text-right w-24"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          step="1"
+                          defaultValue={item.margen}
+                          onBlur={(e) => handleUpdateItem(item.id, "margen", e.target.value)}
+                          className="h-8 text-right w-20"
+                        />
+                      </TableCell>
+                      <TableCell className="text-right text-sm font-medium text-slate-600 dark:text-slate-300">
+                        {formatCurrency(item.precio_unitario)}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatCurrency(roundCurrency(item.cantidad * item.precio_unitario))}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteItem(item.id)}
+                          className="h-8 w-8 p-0 text-rose-500 hover:text-rose-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TooltipProvider>
           </div>
         )}
 
@@ -279,8 +308,16 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal, m
           <div className="text-sm text-slate-600 dark:text-slate-400">
             Subtotal: <span className="font-medium text-slate-900 dark:text-white">{formatCurrency(subtotal)}</span>
           </div>
-          <div className="text-sm text-slate-600 dark:text-slate-400">
-            IVA (21%): <span className="font-medium text-slate-900 dark:text-white">{formatCurrency(iva)}</span>
+          <div className="flex items-center justify-end gap-2 text-sm text-slate-600 dark:text-slate-400">
+            <NativeSelect
+              value={ivaRate.toString()}
+              onChange={(e) => handleIvaChange(Number(e.target.value))}
+              className="w-auto h-8 text-sm"
+            >
+              <option value="21">IVA 21% (General)</option>
+              <option value="10">IVA 10% (Reducido - Reformas)</option>
+            </NativeSelect>
+            <span className="font-medium text-slate-900 dark:text-white">{formatCurrency(iva)}</span>
           </div>
           <div className="text-lg font-bold text-slate-900 dark:text-white">
             Total: {formatCurrency(total)}

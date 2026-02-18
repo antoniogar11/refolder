@@ -110,7 +110,7 @@ export function ZoneCard({ zone, index, workTypes, onChange, onRemove }: ZoneCar
             <Input
               value={zone.name}
               onChange={(e) => onChange({ ...zone, name: e.target.value })}
-              placeholder="Ej: Bano principal"
+              placeholder="Ej: Baño principal"
             />
           </div>
 
@@ -169,10 +169,10 @@ export function ZoneCard({ zone, index, workTypes, onChange, onRemove }: ZoneCar
               type="button"
               variant="outline"
               className="w-full"
-              onClick={() => toast.info("Fotos disponible proximamente.")}
+              onClick={() => toast.info("Fotos disponible próximamente.")}
             >
               <Camera className="mr-2 h-4 w-4" />
-              Anadir foto
+              Añadir foto
             </Button>
           </div>
 

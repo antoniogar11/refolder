@@ -65,7 +65,7 @@ export async function getEstimateById(id: string): Promise<Estimate | null> {
 
   const { data, error } = await supabase
     .from("estimates")
-    .select("*, project:projects!estimates_project_id_fkey(id, name, client:clients(id, name)), client:clients!estimates_client_id_fkey(id, name)")
+    .select("*, project:projects!estimates_project_id_fkey(id, name, address, client:clients(id, name, address, city, province, postal_code, tax_id)), client:clients!estimates_client_id_fkey(id, name, address, city, province, postal_code, tax_id)")
     .eq("id", id)
     .eq("user_id", user.id)
     .single();

@@ -59,15 +59,15 @@ export default async function ClientesPage({ searchParams }: ClientesPageProps) 
         </Card>
       ) : (
         <>
-          <div className="mt-6 overflow-hidden rounded-lg border bg-white dark:bg-slate-900">
+          <div className="mt-6 overflow-x-auto rounded-lg border bg-white dark:bg-slate-900">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nombre</TableHead>
-                  <TableHead>Email</TableHead>
+                  <TableHead className="hidden sm:table-cell">Email</TableHead>
                   <TableHead>Teléfono</TableHead>
-                  <TableHead>Localidad</TableHead>
-                  <TableHead>CIF/NIF</TableHead>
+                  <TableHead className="hidden md:table-cell">Localidad</TableHead>
+                  <TableHead className="hidden md:table-cell">CIF/NIF</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -81,18 +81,18 @@ export default async function ClientesPage({ searchParams }: ClientesPageProps) 
                         {client.name}
                       </Link>
                     </TableCell>
-                    <TableCell className="text-slate-500 dark:text-slate-400">
+                    <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
                       {client.email || "-"}
                     </TableCell>
                     <TableCell className="text-slate-500 dark:text-slate-400">
                       {client.phone || "-"}
                     </TableCell>
-                    <TableCell className="text-slate-500 dark:text-slate-400">
+                    <TableCell className="hidden md:table-cell text-slate-500 dark:text-slate-400">
                       {[client.postal_code, client.city, client.province]
                         .filter(Boolean)
                         .join(", ") || "-"}
                     </TableCell>
-                    <TableCell className="text-slate-500 dark:text-slate-400">
+                    <TableCell className="hidden md:table-cell text-slate-500 dark:text-slate-400">
                       {client.tax_id || "-"}
                     </TableCell>
                   </TableRow>

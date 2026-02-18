@@ -66,16 +66,17 @@ export type Estimate = {
   name: string;
   description: string | null;
   total_amount: number;
+  iva_porcentaje: number;
   status: EstimateStatus;
   valid_until: string | null;
   notes: string | null;
   margen_global: number | null;
   created_at: string;
   updated_at: string;
-  project?: Pick<Project, "id" | "name"> & {
-    client?: Pick<Client, "id" | "name">;
+  project?: Pick<Project, "id" | "name" | "address"> & {
+    client?: Pick<Client, "id" | "name" | "address" | "city" | "province" | "postal_code" | "tax_id">;
   };
-  client?: Pick<Client, "id" | "name">;
+  client?: Pick<Client, "id" | "name" | "address" | "city" | "province" | "postal_code" | "tax_id">;
   items?: EstimateItem[];
 };
 

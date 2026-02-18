@@ -76,6 +76,49 @@ export async function loginAction(
   redirect("/dashboard");
 }
 
+export async function resetPasswordAction(
+  _: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const email = formData.get("email");
+  if (!email || typeof email !== "string" || !email.trim()) {
+    return { status: "error", message: "Introduce tu email.", errors: { email: ["El email es obligatorio"] } };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"}/auth/update-password`,
+  });
+
+  if (error) {
+    return { status: "error", message: error.message };
+  }
+
+  return {
+    status: "success",
+    message: "Si el email existe, recibirás un enlace para restablecer tu contraseña.",
+  };
+}
+
+export async function updatePasswordAction(
+  _: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const password = formData.get("password");
+  if (!password || typeof password !== "string" || password.length < 6) {
+    return { status: "error", message: "La contraseña debe tener al menos 6 caracteres.", errors: { password: ["Mínimo 6 caracteres"] } };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({ password: password.trim() });
+
+  if (error) {
+    return { status: "error", message: error.message };
+  }
+
+  redirect("/dashboard");
+}
+
 export async function logoutAction() {
   const supabase = await createClient();
   await supabase.auth.signOut();

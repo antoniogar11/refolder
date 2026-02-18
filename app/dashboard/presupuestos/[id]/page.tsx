@@ -35,8 +35,21 @@ export default async function EstimateDetailPage({ params }: EstimateDetailPageP
   const iva = roundCurrency(subtotal * 0.21);
   const total = roundCurrency(subtotal + iva);
 
+  const companyNeedsSetup = !company?.tax_id && !company?.address;
+
   return (
     <div className="max-w-5xl">
+      {companyNeedsSetup && (
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
+          <p className="text-sm text-amber-800 dark:text-amber-300">
+            Completa los datos de tu empresa en{" "}
+            <Link href="/dashboard/configuracion" className="font-medium underline hover:text-amber-900">
+              Configuración
+            </Link>{" "}
+            para que aparezcan en tus presupuestos y PDFs.
+          </p>
+        </div>
+      )}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
@@ -84,6 +97,7 @@ export default async function EstimateDetailPage({ params }: EstimateDetailPageP
         initialItems={items}
         estimateTotal={estimate.total_amount}
         margenGlobal={estimate.margen_global}
+        ivaPorcentaje={estimate.iva_porcentaje ?? 21}
       />
     </div>
   );

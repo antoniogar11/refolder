@@ -230,7 +230,7 @@ export async function updateEstimateItemAction(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, message: "No estás autenticado." };
 
-  // Si se actualiza precio_coste o margen, recalcular precio_unitario
+  // Si se actualiza precio_coste o margen, recalcular precio_unitario y subtotal
   const updateData: Record<string, unknown> = { ...data };
   if (data.precio_coste !== undefined || data.margen !== undefined) {
     const coste = data.precio_coste ?? 0;
@@ -238,9 +238,12 @@ export async function updateEstimateItemAction(
     updateData.precio_unitario = computeSellingPrice(coste, margen);
   }
 
-  const cantidad = (data.cantidad ?? 0);
-  const precioUnitario = (updateData.precio_unitario as number) ?? (data.precio_unitario ?? 0);
-  updateData.subtotal = roundCurrency(cantidad * precioUnitario);
+  // Recalculate subtotal when cantidad or precio_unitario change
+  if (data.cantidad !== undefined || data.precio_unitario !== undefined || data.precio_coste !== undefined || data.margen !== undefined) {
+    const cantidad = (data.cantidad ?? 0);
+    const precioUnitario = (updateData.precio_unitario as number) ?? (data.precio_unitario ?? 0);
+    updateData.subtotal = roundCurrency(cantidad * precioUnitario);
+  }
 
   const { error } = await supabase
     .from("estimate_items")
@@ -321,6 +324,24 @@ export async function updateEstimateStatusAction(
   revalidatePath("/dashboard/presupuestos");
   revalidatePath(`/dashboard/presupuestos/${estimateId}`);
   return { success: true, message: "Estado actualizado." };
+}
+
+export async function updateEstimateIvaAction(
+  estimateId: string,
+  ivaPorcentaje: number,
+): Promise<{ success: boolean; message: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No estás autenticado." };
+
+  const { error } = await supabase
+    .from("estimates")
+    .update({ iva_porcentaje: ivaPorcentaje, updated_at: new Date().toISOString() })
+    .eq("id", estimateId)
+    .eq("user_id", user.id);
+
+  if (error) return { success: false, message: error.message };
+  return { success: true, message: "IVA actualizado." };
 }
 
 export async function updateEstimateTotalAction(

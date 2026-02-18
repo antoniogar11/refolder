@@ -1,15 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, isValidElement, cloneElement } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Plus, X } from "lucide-react";
 
 type NewClientToggleProps = {
-  children: React.ReactNode;
+  children: React.ReactElement<{ onSuccess?: () => void }>;
 };
 
 export function NewClientToggle({ children }: NewClientToggleProps) {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
+
+  function handleSuccess() {
+    setOpen(false);
+    router.refresh();
+  }
 
   if (!open) {
     return (
@@ -38,7 +45,7 @@ export function NewClientToggle({ children }: NewClientToggleProps) {
           <X className="h-4 w-4" />
         </Button>
       </div>
-      {children}
+      {isValidElement(children) ? cloneElement(children, { onSuccess: handleSuccess }) : children}
     </div>
   );
 }

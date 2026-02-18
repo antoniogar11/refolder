@@ -90,7 +90,7 @@ export function NewEstimateForm({ clients: initialClients, prefilledDescription,
       toast.success(`Se generaron ${data.partidas.length} partidas.`);
     } catch (error) {
       console.error("Generate error:", error);
-      toast.error("Error de conexion. Intentalo de nuevo.");
+      toast.error("Error de conexión. Inténtalo de nuevo.");
     } finally {
       setIsGenerating(false);
     }
@@ -151,7 +151,7 @@ export function NewEstimateForm({ clients: initialClients, prefilledDescription,
                 id="nombre_presupuesto"
                 value={nombrePresupuesto}
                 onChange={(e) => setNombrePresupuesto(e.target.value)}
-                placeholder="Se genera automaticamente"
+                placeholder="Se genera automáticamente"
               />
             </div>
             <div className="space-y-2">
@@ -192,25 +192,25 @@ export function NewEstimateForm({ clients: initialClients, prefilledDescription,
             >
               <option value="">Sin especificar</option>
               <option value="reforma_integral">Reforma integral</option>
-              <option value="reforma_bano">Reforma de bano</option>
+              <option value="reforma_bano">Reforma de baño</option>
               <option value="reforma_cocina">Reforma de cocina</option>
               <option value="pintura">Pintura</option>
-              <option value="fontaneria">Fontaneria</option>
+              <option value="fontaneria">Fontanería</option>
               <option value="electricidad">Electricidad</option>
-              <option value="albanileria">Albanileria</option>
-              <option value="carpinteria">Carpinteria</option>
+              <option value="albanileria">Albañilería</option>
+              <option value="carpinteria">Carpintería</option>
               <option value="obra_nueva">Obra nueva</option>
               <option value="otro">Otro</option>
             </NativeSelect>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="descripcion">Descripcion del trabajo *</Label>
+            <Label htmlFor="descripcion">Descripción del trabajo *</Label>
             <Textarea
               id="descripcion"
               value={descripcion}
               onChange={(e) => setDescripcion(e.target.value)}
-              placeholder="Describe detalladamente el trabajo a realizar. Ejemplo: Reforma completa de bano de 6m2, cambio de plato de ducha, alicatado completo, instalacion de mueble de bano y espejo, nueva griferia..."
+              placeholder="Describe detalladamente el trabajo a realizar. Ejemplo: Reforma completa de baño de 6m², cambio de plato de ducha, alicatado completo, instalación de mueble de baño y espejo, nueva grifería..."
               rows={5}
             />
           </div>
@@ -246,8 +246,8 @@ export function NewEstimateForm({ clients: initialClients, prefilledDescription,
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Categoria</TableHead>
-                    <TableHead>Descripcion</TableHead>
+                    <TableHead>Categoría</TableHead>
+                    <TableHead>Descripción</TableHead>
                     <TableHead className="text-right">Ud.</TableHead>
                     <TableHead className="text-right">Cant.</TableHead>
                     <TableHead className="text-right">P. Coste</TableHead>

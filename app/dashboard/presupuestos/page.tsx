@@ -57,16 +57,16 @@ export default async function PresupuestosPage({ searchParams }: PresupuestosPag
         </Card>
       ) : (
         <>
-          <div className="mt-6 overflow-hidden rounded-lg border bg-white dark:bg-slate-900">
+          <div className="mt-6 overflow-x-auto rounded-lg border bg-white dark:bg-slate-900">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nombre</TableHead>
-                  <TableHead>Proyecto</TableHead>
-                  <TableHead>Cliente</TableHead>
+                  <TableHead className="hidden sm:table-cell">Proyecto</TableHead>
+                  <TableHead className="hidden sm:table-cell">Cliente</TableHead>
                   <TableHead className="text-right">Total</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead>Fecha</TableHead>
+                  <TableHead className="hidden md:table-cell">Fecha</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -80,10 +80,10 @@ export default async function PresupuestosPage({ searchParams }: PresupuestosPag
                         {estimate.name}
                       </Link>
                     </TableCell>
-                    <TableCell className="text-slate-500 dark:text-slate-400">
+                    <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
                       {estimate.project?.name || "-"}
                     </TableCell>
-                    <TableCell className="text-slate-500 dark:text-slate-400">
+                    <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
                       {estimate.client?.name || estimate.project?.client?.name || "-"}
                     </TableCell>
                     <TableCell className="text-right font-medium">
@@ -92,7 +92,7 @@ export default async function PresupuestosPage({ searchParams }: PresupuestosPag
                     <TableCell>
                       <StatusBadge type="estimate" status={estimate.status} />
                     </TableCell>
-                    <TableCell className="text-slate-500 dark:text-slate-400">
+                    <TableCell className="hidden md:table-cell text-slate-500 dark:text-slate-400">
                       {new Date(estimate.created_at).toLocaleDateString("es-ES")}
                     </TableCell>
                   </TableRow>
