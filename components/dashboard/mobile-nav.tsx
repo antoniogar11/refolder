@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, LayoutDashboard, Users, Building2, FileText, ClipboardList } from "lucide-react";
+import { Menu, LayoutDashboard, Users, Building2, FileText, ClipboardList, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -60,6 +60,21 @@ export function MobileNav() {
               </Link>
             );
           })}
+          <div className="border-t border-slate-800 mt-4 pt-4">
+            <Link
+              href="/dashboard/configuracion"
+              onClick={() => setOpen(false)}
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                pathname.startsWith("/dashboard/configuracion")
+                  ? "bg-slate-800 text-white border-l-2 border-amber-500"
+                  : "text-slate-400 hover:bg-slate-800 hover:text-white transition-colors",
+              )}
+            >
+              <Settings className="h-5 w-5" />
+              Configuración
+            </Link>
+          </div>
         </nav>
       </SheetContent>
     </Sheet>
