@@ -30,9 +30,9 @@ refolder/
 │   │   └── callback/
 │   ├── dashboard/                # Dashboard principal
 │   │   ├── clientes/             # Gestión de clientes
-│   │   ├── presupuestos/         # Presupuestos (con generación IA)
-│   │   ├── proyectos/            # Proyectos (costes, horas, ingresos)
-│   │   └── visitas/              # Visitas de obra
+│   │   ├── configuracion/        # Datos de empresa
+│   │   ├── presupuestos/         # Presupuestos (zonas + generación IA)
+│   │   └── proyectos/            # Proyectos (costes, horas, ingresos, resumen financiero)
 │   ├── layout.tsx
 │   ├── page.tsx                  # Landing page
 │   ├── not-found.tsx
@@ -44,7 +44,7 @@ refolder/
 │   ├── estimates/                # Editor de presupuestos, exportación PDF
 │   ├── projects/                 # Gestión de proyectos y finanzas
 │   ├── shared/                   # Componentes reutilizables
-│   ├── site-visits/              # Formularios de visitas de obra
+│   │   └── zones/                # Zonas con medidas y trabajos (compartido)
 │   └── ui/                       # Componentes shadcn/ui
 ├── lib/                          # Utilidades y lógica de negocio
 │   ├── auth/                     # Roles y permisos
@@ -63,6 +63,14 @@ refolder/
 ├── supabase/                     # Migraciones de Supabase
 └── public/                       # Archivos estáticos (PWA)
 ```
+
+## Funcionalidades Principales
+
+- **Presupuestos con IA** - Crea presupuestos añadiendo zonas (Baño, Cocina, Salón...) con medidas y tipos de trabajo, y genera partidas detalladas con IA (Google Gemini). Vista previa editable con márgenes y precios.
+- **Proyectos** - Gestión de obras con seguimiento financiero: gastos, ingresos, horas de mano de obra y resumen financiero global (presupuestado, gastado, cobrado, beneficio).
+- **Clientes** - CRUD completo con historial de presupuestos y proyectos asociados.
+- **PDF profesional** - Exportación de presupuestos en PDF con datos de empresa personalizables.
+- **Configuración** - Datos de empresa (nombre, CIF, dirección, logo) para personalizar los PDFs.
 
 ## Instalación
 
