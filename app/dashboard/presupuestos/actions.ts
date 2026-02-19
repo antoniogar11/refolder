@@ -133,7 +133,7 @@ export async function createEstimateWithItemsAction(
       p_client_id: clientId || null,
       p_project_id: projectId || null,
       p_idempotency_key: idempotencyKey || null,
-      p_items: JSON.stringify(items),
+      p_items: items,
       p_margen_global: margenGlobal,
     },
   );
