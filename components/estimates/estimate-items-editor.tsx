@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import { Trash2, Plus, Percent } from "lucide-react";
+import { Trash2, Plus, Percent, Loader2 } from "lucide-react";
 import {
   updateEstimateItemAction,
   addEstimateItemAction,
@@ -37,6 +37,10 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal, m
   const [globalMargin, setGlobalMargin] = useState(margenGlobal ?? 20);
   const [isApplyingMargin, startApplyingMargin] = useTransition();
   const [ivaRate, setIvaRate] = useState(ivaPorcentaje);
+  const [savingItems, setSavingItems] = useState<Set<string>>(new Set());
+  const [deletingItem, setDeletingItem] = useState<string | null>(null);
+  const [isAddingItem, setIsAddingItem] = useState(false);
+  const [isSyncingTotal, setIsSyncingTotal] = useState(false);
 
   // Recalculate subtotal from cantidad * precio_unitario to fix any stale DB values
   const subtotal = useMemo(
@@ -45,6 +49,15 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal, m
   );
   const iva = useMemo(() => roundCurrency(subtotal * (ivaRate / 100)), [subtotal, ivaRate]);
   const total = useMemo(() => roundCurrency(subtotal + iva), [subtotal, iva]);
+
+  const markSaving = useCallback((itemId: string, saving: boolean) => {
+    setSavingItems(prev => {
+      const next = new Set(prev);
+      if (saving) next.add(itemId);
+      else next.delete(itemId);
+      return next;
+    });
+  }, []);
 
   const handleUpdateItem = useCallback(async (itemId: string, field: string, value: string) => {
     const item = items.find(i => i.id === itemId);
@@ -76,6 +89,8 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal, m
       update.margen = item.margen;
     }
 
+    // Optimistic update
+    const previousItems = items;
     setItems(prev => prev.map(i => {
       if (i.id !== itemId) return i;
       const updated = { ...i, ...update };
@@ -85,23 +100,33 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal, m
       return { ...updated, subtotal: newSubtotal } as EstimateItem;
     }));
 
-    if (field === "precio_coste" || field === "margen") {
-      await updateEstimateItemAction(itemId, {
-        precio_coste: update.precio_coste as number,
-        margen: update.margen as number,
-        cantidad: update.cantidad as number,
-      });
-    } else if (field === "cantidad") {
-      await updateEstimateItemAction(itemId, {
-        cantidad: update.cantidad as number,
-        precio_unitario: update.precio_unitario as number,
-        precio_coste: update.precio_coste as number | undefined,
-        margen: update.margen as number | undefined,
-      });
-    } else {
-      await updateEstimateItemAction(itemId, { [field]: value });
+    markSaving(itemId, true);
+
+    try {
+      if (field === "precio_coste" || field === "margen") {
+        await updateEstimateItemAction(itemId, {
+          precio_coste: update.precio_coste as number,
+          margen: update.margen as number,
+          cantidad: update.cantidad as number,
+        });
+      } else if (field === "cantidad") {
+        await updateEstimateItemAction(itemId, {
+          cantidad: update.cantidad as number,
+          precio_unitario: update.precio_unitario as number,
+          precio_coste: update.precio_coste as number | undefined,
+          margen: update.margen as number | undefined,
+        });
+      } else {
+        await updateEstimateItemAction(itemId, { [field]: value });
+      }
+    } catch {
+      // Rollback on error
+      setItems(previousItems);
+      toast.error("Error al guardar el cambio. Comprueba tu conexión e inténtalo de nuevo.");
+    } finally {
+      markSaving(itemId, false);
     }
-  }, [items]);
+  }, [items, markSaving]);
 
   async function handleAddItem() {
     const defaultMargin = globalMargin;
@@ -116,53 +141,92 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal, m
       orden: items.length,
     };
 
-    const result = await addEstimateItemAction(estimateId, newItem);
-    if (result.success) {
-      toast.success("Partida añadida");
-      router.refresh();
-    } else {
-      toast.error(result.message);
+    setIsAddingItem(true);
+    try {
+      const result = await addEstimateItemAction(estimateId, newItem);
+      if (result.success) {
+        toast.success("Partida añadida");
+        router.refresh();
+      } else {
+        toast.error(result.message || "Error al añadir la partida.");
+      }
+    } catch {
+      toast.error("Error de conexión al añadir la partida. Inténtalo de nuevo.");
+    } finally {
+      setIsAddingItem(false);
     }
   }
 
   async function handleDeleteItem(itemId: string) {
-    const result = await deleteEstimateItemAction(itemId, estimateId);
-    if (result.success) {
-      setItems(prev => prev.filter(i => i.id !== itemId));
-      toast.success("Partida eliminada");
-    } else {
-      toast.error(result.message);
+    // Optimistic delete
+    const previousItems = items;
+    setItems(prev => prev.filter(i => i.id !== itemId));
+    setDeletingItem(itemId);
+
+    try {
+      const result = await deleteEstimateItemAction(itemId, estimateId);
+      if (result.success) {
+        toast.success("Partida eliminada");
+      } else {
+        // Rollback
+        setItems(previousItems);
+        toast.error(result.message || "Error al eliminar la partida.");
+      }
+    } catch {
+      // Rollback
+      setItems(previousItems);
+      toast.error("Error de conexión al eliminar la partida. Inténtalo de nuevo.");
+    } finally {
+      setDeletingItem(null);
     }
   }
 
   async function handleSyncTotal() {
-    const result = await updateEstimateTotalAction(estimateId, total);
-    if (result.success) {
-      toast.success("Total del presupuesto actualizado");
-    } else {
-      toast.error(result.message);
+    setIsSyncingTotal(true);
+    try {
+      const result = await updateEstimateTotalAction(estimateId, total);
+      if (result.success) {
+        toast.success("Total del presupuesto actualizado");
+      } else {
+        toast.error(result.message || "Error al actualizar el total.");
+      }
+    } catch {
+      toast.error("Error de conexión al actualizar el total. Inténtalo de nuevo.");
+    } finally {
+      setIsSyncingTotal(false);
     }
   }
 
   function handleApplyGlobalMargin() {
     startApplyingMargin(async () => {
-      const result = await updateGlobalMarginAction(estimateId, globalMargin);
-      if (result.success) {
-        toast.success(result.message);
-        router.refresh();
-      } else {
-        toast.error(result.message);
+      try {
+        const result = await updateGlobalMarginAction(estimateId, globalMargin);
+        if (result.success) {
+          toast.success(result.message);
+          router.refresh();
+        } else {
+          toast.error(result.message || "Error al aplicar el margen global.");
+        }
+      } catch {
+        toast.error("Error de conexión al aplicar el margen. Inténtalo de nuevo.");
       }
     });
   }
 
   async function handleIvaChange(newRate: number) {
+    const previousRate = ivaRate;
     setIvaRate(newRate);
-    const result = await updateEstimateIvaAction(estimateId, newRate);
-    if (result.success) {
-      toast.success(`IVA actualizado a ${newRate}%`);
-    } else {
-      toast.error(result.message);
+    try {
+      const result = await updateEstimateIvaAction(estimateId, newRate);
+      if (result.success) {
+        toast.success(`IVA actualizado a ${newRate}%`);
+      } else {
+        setIvaRate(previousRate);
+        toast.error(result.message || "Error al actualizar el IVA.");
+      }
+    } catch {
+      setIvaRate(previousRate);
+      toast.error("Error de conexión al actualizar el IVA. Inténtalo de nuevo.");
     }
   }
 
@@ -192,11 +256,24 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal, m
               onClick={handleApplyGlobalMargin}
               disabled={isApplyingMargin}
             >
-              {isApplyingMargin ? "Aplicando..." : "Aplicar"}
+              {isApplyingMargin ? (
+                <><Loader2 className="mr-1 h-3 w-3 animate-spin" /> Aplicando...</>
+              ) : (
+                "Aplicar"
+              )}
             </Button>
           </div>
-          <Button variant="outline" size="sm" onClick={handleAddItem}>
-            <Plus className="mr-1 h-4 w-4" /> Añadir partida
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleAddItem}
+            disabled={isAddingItem}
+          >
+            {isAddingItem ? (
+              <><Loader2 className="mr-1 h-4 w-4 animate-spin" /> Añadiendo...</>
+            ) : (
+              <><Plus className="mr-1 h-4 w-4" /> Añadir partida</>
+            )}
           </Button>
         </div>
       </CardHeader>
@@ -223,81 +300,98 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal, m
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {items.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Input
-                              defaultValue={item.categoria}
-                              onBlur={(e) => handleUpdateItem(item.id, "categoria", e.target.value)}
-                              className="h-8 text-xs"
-                            />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>{item.categoria}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          defaultValue={item.descripcion}
-                          onBlur={(e) => handleUpdateItem(item.id, "descripcion", e.target.value)}
-                          className="h-8 text-sm"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          defaultValue={item.unidad}
-                          onBlur={(e) => handleUpdateItem(item.id, "unidad", e.target.value)}
-                          className="h-8 text-xs text-right w-14"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          defaultValue={item.cantidad}
-                          onBlur={(e) => handleUpdateItem(item.id, "cantidad", e.target.value)}
-                          className="h-8 text-right w-20"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          defaultValue={item.precio_coste ?? 0}
-                          onBlur={(e) => handleUpdateItem(item.id, "precio_coste", e.target.value)}
-                          className="h-8 text-right w-24"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          step="1"
-                          defaultValue={item.margen}
-                          onBlur={(e) => handleUpdateItem(item.id, "margen", e.target.value)}
-                          className="h-8 text-right w-20"
-                        />
-                      </TableCell>
-                      <TableCell className="text-right text-sm font-medium text-slate-600 dark:text-slate-300">
-                        {formatCurrency(item.precio_unitario)}
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatCurrency(roundCurrency(item.cantidad * item.precio_unitario))}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteItem(item.id)}
-                          className="h-8 w-8 p-0 text-rose-500 hover:text-rose-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {items.map((item) => {
+                    const isSaving = savingItems.has(item.id);
+                    return (
+                      <TableRow key={item.id} className={isSaving ? "opacity-70" : ""}>
+                        <TableCell>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Input
+                                defaultValue={item.categoria}
+                                onBlur={(e) => handleUpdateItem(item.id, "categoria", e.target.value)}
+                                className="h-8 text-xs"
+                                disabled={isSaving}
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{item.categoria}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            defaultValue={item.descripcion}
+                            onBlur={(e) => handleUpdateItem(item.id, "descripcion", e.target.value)}
+                            className="h-8 text-sm"
+                            disabled={isSaving}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            defaultValue={item.unidad}
+                            onBlur={(e) => handleUpdateItem(item.id, "unidad", e.target.value)}
+                            className="h-8 text-xs text-right w-14"
+                            disabled={isSaving}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            defaultValue={item.cantidad}
+                            onBlur={(e) => handleUpdateItem(item.id, "cantidad", e.target.value)}
+                            className="h-8 text-right w-20"
+                            disabled={isSaving}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            defaultValue={item.precio_coste ?? 0}
+                            onBlur={(e) => handleUpdateItem(item.id, "precio_coste", e.target.value)}
+                            className="h-8 text-right w-24"
+                            disabled={isSaving}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            type="number"
+                            step="1"
+                            defaultValue={item.margen}
+                            onBlur={(e) => handleUpdateItem(item.id, "margen", e.target.value)}
+                            className="h-8 text-right w-20"
+                            disabled={isSaving}
+                          />
+                        </TableCell>
+                        <TableCell className="text-right text-sm font-medium text-slate-600 dark:text-slate-300">
+                          <div className="flex items-center justify-end gap-1">
+                            {isSaving && <Loader2 className="h-3 w-3 animate-spin text-amber-500" />}
+                            {formatCurrency(item.precio_unitario)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          {formatCurrency(roundCurrency(item.cantidad * item.precio_unitario))}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteItem(item.id)}
+                            disabled={!!deletingItem || isSaving}
+                            className="h-8 w-8 p-0 text-rose-500 hover:text-rose-700"
+                          >
+                            {deletingItem === item.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </TooltipProvider>
@@ -323,8 +417,17 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal, m
             Total: {formatCurrency(total)}
           </div>
           {Math.abs(total - estimateTotal) > 0.01 && (
-            <Button variant="outline" size="sm" onClick={handleSyncTotal}>
-              Actualizar total del presupuesto
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSyncTotal}
+              disabled={isSyncingTotal}
+            >
+              {isSyncingTotal ? (
+                <><Loader2 className="mr-1 h-3 w-3 animate-spin" /> Actualizando...</>
+              ) : (
+                "Actualizar total del presupuesto"
+              )}
             </Button>
           )}
         </div>
