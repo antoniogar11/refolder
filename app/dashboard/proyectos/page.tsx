@@ -17,6 +17,8 @@ import { Pagination } from "@/components/dashboard/pagination";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { getProjects } from "@/lib/data/projects";
 import { getAllClients } from "@/lib/data/clients";
+import { getGlobalFinancialSummary } from "@/lib/data/project-costs";
+import { ProjectFinancialSummary } from "@/components/projects/project-financial-summary";
 import { formatCurrency } from "@/lib/utils/format";
 
 type ProyectosPageProps = {
@@ -26,9 +28,10 @@ type ProyectosPageProps = {
 export default async function ProyectosPage({ searchParams }: ProyectosPageProps) {
   const params = await searchParams;
   const page = Number(params.page) || 1;
-  const [{ projects, total }, clients] = await Promise.all([
+  const [{ projects, total }, clients, financialSummary] = await Promise.all([
     getProjects({ query: params.q, page }),
     getAllClients(),
+    getGlobalFinancialSummary(),
   ]);
   const totalPages = Math.ceil(total / 20);
 
@@ -45,6 +48,12 @@ export default async function ProyectosPage({ searchParams }: ProyectosPageProps
           <NewProjectForm clients={clients} />
         </NewProjectToggle>
       </div>
+
+      {total > 0 && (
+        <div className="mb-6">
+          <ProjectFinancialSummary summary={financialSummary} />
+        </div>
+      )}
 
       <Suspense>
         <SearchInput placeholder="Buscar proyectos..." />

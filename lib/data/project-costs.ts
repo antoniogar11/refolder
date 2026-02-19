@@ -114,3 +114,53 @@ export async function getFinancialSummary(projectId: string): Promise<FinancialS
     beneficio,
   };
 }
+
+export async function getGlobalFinancialSummary(): Promise<FinancialSummary> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { presupuestado: 0, gastado: 0, cobrado: 0, costeManoObra: 0, beneficio: 0 };
+
+  const [projectsRes, costsRes, hoursRes] = await Promise.all([
+    supabase
+      .from("projects")
+      .select("total_budget")
+      .eq("user_id", user.id),
+    supabase
+      .from("project_costs")
+      .select("importe, tipo")
+      .eq("user_id", user.id),
+    supabase
+      .from("project_hours")
+      .select("coste_total")
+      .eq("user_id", user.id),
+  ]);
+
+  if (projectsRes.error) throwQueryError("getGlobalFinancialSummary:projects", projectsRes.error);
+  if (costsRes.error) throwQueryError("getGlobalFinancialSummary:costs", costsRes.error);
+  if (hoursRes.error) throwQueryError("getGlobalFinancialSummary:hours", hoursRes.error);
+
+  const presupuestado = projectsRes.data
+    ?.reduce((sum, p) => sum + (Number(p.total_budget) || 0), 0) ?? 0;
+
+  const gastos = costsRes.data
+    ?.filter((c) => c.tipo === "gasto")
+    .reduce((sum, c) => sum + Number(c.importe), 0) ?? 0;
+
+  const cobrado = costsRes.data
+    ?.filter((c) => c.tipo === "ingreso")
+    .reduce((sum, c) => sum + Number(c.importe), 0) ?? 0;
+
+  const costeManoObra = hoursRes.data
+    ?.reduce((sum, h) => sum + Number(h.coste_total), 0) ?? 0;
+
+  const gastadoTotal = roundCurrency(gastos + costeManoObra);
+  const beneficio = roundCurrency(cobrado - gastadoTotal);
+
+  return {
+    presupuestado: roundCurrency(presupuestado),
+    gastado: gastadoTotal,
+    cobrado: roundCurrency(cobrado),
+    costeManoObra: roundCurrency(costeManoObra),
+    beneficio,
+  };
+}
