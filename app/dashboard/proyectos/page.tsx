@@ -49,7 +49,7 @@ export default async function ProyectosPage({ searchParams }: ProyectosPageProps
         </NewProjectToggle>
       </div>
 
-      {total > 0 && (
+      {total > 0 && (financialSummary.presupuestado > 0 || financialSummary.gastado > 0 || financialSummary.cobrado > 0) && (
         <div className="mb-6">
           <ProjectFinancialSummary summary={financialSummary} />
         </div>
