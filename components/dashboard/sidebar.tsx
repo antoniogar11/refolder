@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Building2, FileText, ClipboardList, Settings } from "lucide-react";
+import { LayoutDashboard, Users, Building2, FileText, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/visitas", label: "Visitas", icon: ClipboardList },
   { href: "/dashboard/presupuestos", label: "Presupuestos", icon: FileText },
   { href: "/dashboard/proyectos", label: "Proyectos", icon: Building2 },
   { href: "/dashboard/clientes", label: "Clientes", icon: Users },

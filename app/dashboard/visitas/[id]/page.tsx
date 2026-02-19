@@ -82,7 +82,7 @@ export default async function VisitaDetailPage({ params }: Props) {
               </Button>
             </Link>
             {visit.status === "pendiente" && (
-              <Link href={`/dashboard/presupuestos/nuevo?visitId=${visit.id}`}>
+              <Link href="/dashboard/presupuestos/nuevo">
                 <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-white">
                   <Sparkles className="mr-1 h-4 w-4" />
                   Generar presupuesto

@@ -10,37 +10,58 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NativeSelect } from "@/components/ui/native-select";
 import { toast } from "sonner";
 import { createEstimateWithItemsAction } from "@/app/dashboard/presupuestos/actions";
-import { Loader2, Sparkles, Save, UserPlus } from "lucide-react";
+import { Loader2, Sparkles, Save, UserPlus, Plus } from "lucide-react";
 import { QuickAddClientDialog } from "@/components/clients/quick-add-client-dialog";
-import { linkEstimateToVisitAction } from "@/app/dashboard/visitas/actions";
 import { EstimatePreviewEditor, type Partida } from "@/components/estimates/estimate-preview-editor";
+import { ZoneCard, type ZoneData } from "@/components/shared/zones/zone-card";
+import { ZoneSuggestions } from "@/components/shared/zones/zone-suggestions";
+import { buildDescriptionFromZones } from "@/lib/utils/build-description";
 import { roundCurrency } from "@/lib/utils";
 
 type NewEstimateFormProps = {
   clients: { id: string; name: string }[];
-  prefilledDescription?: string;
-  prefilledClientId?: string;
-  visitId?: string;
+  workTypes: string[];
 };
 
-export function NewEstimateForm({ clients: initialClients, prefilledDescription, prefilledClientId, visitId }: NewEstimateFormProps) {
+function emptyZone(name = ""): ZoneData {
+  return { name, largo: "", ancho: "", alto: "", notes: "", works: [] };
+}
+
+export function NewEstimateForm({ clients: initialClients, workTypes }: NewEstimateFormProps) {
   const router = useRouter();
   const [clients, setClients] = useState(initialClients);
-  const [clientId, setClientId] = useState(prefilledClientId ?? "");
-  const [descripcion, setDescripcion] = useState(prefilledDescription ?? "");
-  const [tipoObra, setTipoObra] = useState("");
+  const [clientId, setClientId] = useState("");
   const [nombrePresupuesto, setNombrePresupuesto] = useState("");
+  const [address, setAddress] = useState("");
+  const [generalNotes, setGeneralNotes] = useState("");
+  const [zones, setZones] = useState<ZoneData[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [partidas, setPartidas] = useState<Partida[]>([]);
   const [margenGlobal, setMargenGlobal] = useState(20);
   const [showNewClient, setShowNewClient] = useState(false);
 
-  const selectedClientName = clients.find(c => c.id === clientId)?.name;
+  const selectedClientName = clients.find((c) => c.id === clientId)?.name;
+
+  function addZone(name = "") {
+    setZones((prev) => [...prev, emptyZone(name)]);
+  }
+
+  function updateZone(index: number, zone: ZoneData) {
+    setZones((prev) => prev.map((z, i) => (i === index ? zone : z)));
+  }
+
+  function removeZone(index: number) {
+    setZones((prev) => prev.filter((_, i) => i !== index));
+  }
 
   async function handleGenerate() {
-    if (!descripcion.trim()) {
-      toast.error("Describe el trabajo a presupuestar.");
+    if (!address.trim()) {
+      toast.error("La dirección es obligatoria.");
+      return;
+    }
+    if (zones.filter((z) => z.name.trim()).length === 0) {
+      toast.error("Añade al menos una zona.");
       return;
     }
 
@@ -48,12 +69,13 @@ export function NewEstimateForm({ clients: initialClients, prefilledDescription,
     setPartidas([]);
 
     try {
+      const descripcion = buildDescriptionFromZones(address, zones, generalNotes);
+
       const response = await fetch("/api/generate-estimate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          descripcion: descripcion.trim(),
-          tipo_obra: tipoObra || undefined,
+          descripcion,
           client_name: selectedClientName || undefined,
         }),
       });
@@ -69,13 +91,13 @@ export function NewEstimateForm({ clients: initialClients, prefilledDescription,
       if (data.margen_global) setMargenGlobal(data.margen_global);
 
       if (!nombrePresupuesto) {
-        const tipoLabel = tipoObra ? tipoObra.replace(/_/g, " ") : "Presupuesto";
-        setNombrePresupuesto(`${tipoLabel.charAt(0).toUpperCase() + tipoLabel.slice(1)}${selectedClientName ? ` - ${selectedClientName}` : ""}`);
+        setNombrePresupuesto(
+          `Presupuesto${selectedClientName ? ` - ${selectedClientName}` : ""} - ${address}`,
+        );
       }
 
       toast.success(`Se generaron ${data.partidas.length} partidas.`);
-    } catch (error) {
-      console.error("Generate error:", error);
+    } catch {
       toast.error("Error de conexión. Inténtalo de nuevo.");
     } finally {
       setIsGenerating(false);
@@ -89,6 +111,7 @@ export function NewEstimateForm({ clients: initialClients, prefilledDescription,
     }
 
     const name = nombrePresupuesto.trim() || "Presupuesto sin nombre";
+    const descripcion = buildDescriptionFromZones(address, zones, generalNotes);
     setIsSaving(true);
 
     try {
@@ -105,10 +128,6 @@ export function NewEstimateForm({ clients: initialClients, prefilledDescription,
       );
 
       if (result.success && result.estimateId) {
-        // Link estimate to visit if coming from a visit
-        if (visitId) {
-          await linkEstimateToVisitAction(visitId, result.estimateId);
-        }
         toast.success(result.message);
         router.push(`/dashboard/presupuestos/${result.estimateId}`);
       } else {
@@ -116,23 +135,23 @@ export function NewEstimateForm({ clients: initialClients, prefilledDescription,
       }
     } catch (error) {
       console.error("Save error:", error);
-      toast.error("Error al guardar el presupuesto. Revisa la consola para más detalles.");
+      toast.error("Error al guardar el presupuesto.");
     } finally {
       setIsSaving(false);
     }
   }
 
+  const hasZonesWithNames = zones.filter((z) => z.name.trim()).length > 0;
+
   return (
     <div className="space-y-6">
+      {/* Datos del presupuesto */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-amber-500" />
-            Generar Presupuesto con IA
-          </CardTitle>
+          <CardTitle>Datos del presupuesto</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="nombre_presupuesto">Nombre del presupuesto</Label>
               <Input
@@ -153,7 +172,9 @@ export function NewEstimateForm({ clients: initialClients, prefilledDescription,
                   >
                     <option value="">Sin cliente</option>
                     {clients.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
                     ))}
                   </NativeSelect>
                 </div>
@@ -170,60 +191,89 @@ export function NewEstimateForm({ clients: initialClients, prefilledDescription,
               </div>
             </div>
           </div>
-
           <div className="space-y-2">
-            <Label htmlFor="tipo_obra">Tipo de trabajo</Label>
-            <NativeSelect
-              id="tipo_obra"
-              value={tipoObra}
-              onChange={(e) => setTipoObra(e.target.value)}
-            >
-              <option value="">Sin especificar</option>
-              <option value="reforma_integral">Reforma integral</option>
-              <option value="reforma_bano">Reforma de baño</option>
-              <option value="reforma_cocina">Reforma de cocina</option>
-              <option value="pintura">Pintura</option>
-              <option value="fontaneria">Fontanería</option>
-              <option value="electricidad">Electricidad</option>
-              <option value="albanileria">Albañilería</option>
-              <option value="carpinteria">Carpintería</option>
-              <option value="obra_nueva">Obra nueva</option>
-              <option value="otro">Otro</option>
-            </NativeSelect>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="descripcion">Descripción del trabajo *</Label>
-            <Textarea
-              id="descripcion"
-              value={descripcion}
-              onChange={(e) => setDescripcion(e.target.value)}
-              placeholder="Describe detalladamente el trabajo a realizar. Ejemplo: Reforma completa de baño de 6m², cambio de plato de ducha, alicatado completo, instalación de mueble de baño y espejo, nueva grifería..."
-              rows={5}
+            <Label htmlFor="address">Dirección de la obra *</Label>
+            <Input
+              id="address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              placeholder="Calle, número, piso"
             />
           </div>
-
-          <Button
-            onClick={handleGenerate}
-            disabled={isGenerating || !descripcion.trim()}
-            className="w-full bg-amber-500 hover:bg-amber-600 text-white"
-            size="lg"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generando presupuesto... (puede tardar 15-20s)
-              </>
-            ) : (
-              <>
-                <Sparkles className="mr-2 h-4 w-4" />
-                Generar con IA
-              </>
-            )}
-          </Button>
         </CardContent>
       </Card>
 
+      {/* Zonas */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">Zonas ({zones.length})</h3>
+          <Button type="button" onClick={() => addZone()} size="sm">
+            <Plus className="mr-1 h-4 w-4" />
+            Añadir zona
+          </Button>
+        </div>
+
+        <ZoneSuggestions
+          onSelect={(name) => addZone(name)}
+          existingNames={zones.map((z) => z.name)}
+        />
+
+        {zones.length === 0 && (
+          <Card>
+            <CardContent className="py-8 text-center text-sm text-slate-500">
+              Añade zonas para registrar medidas y trabajos necesarios
+            </CardContent>
+          </Card>
+        )}
+
+        {zones.map((zone, i) => (
+          <ZoneCard
+            key={i}
+            zone={zone}
+            index={i}
+            workTypes={workTypes}
+            onChange={(z) => updateZone(i, z)}
+            onRemove={() => removeZone(i)}
+          />
+        ))}
+      </div>
+
+      {/* Observaciones generales */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Observaciones generales</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            value={generalNotes}
+            onChange={(e) => setGeneralNotes(e.target.value)}
+            placeholder="Estado de la instalación eléctrica, acceso para material, necesidad de licencias, etc."
+            rows={3}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Generar con IA */}
+      <Button
+        onClick={handleGenerate}
+        disabled={isGenerating || !address.trim() || !hasZonesWithNames}
+        className="w-full bg-amber-500 hover:bg-amber-600 text-white"
+        size="lg"
+      >
+        {isGenerating ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Generando presupuesto... (puede tardar 15-20s)
+          </>
+        ) : (
+          <>
+            <Sparkles className="mr-2 h-4 w-4" />
+            Generar con IA
+          </>
+        )}
+      </Button>
+
+      {/* Vista previa */}
       {partidas.length > 0 && (
         <Card>
           <CardHeader>
@@ -245,7 +295,9 @@ export function NewEstimateForm({ clients: initialClients, prefilledDescription,
                 className="flex-1"
               >
                 {isGenerating ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Regenerando...</>
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Regenerando...
+                  </>
                 ) : (
                   "Regenerar con IA"
                 )}
@@ -257,15 +309,20 @@ export function NewEstimateForm({ clients: initialClients, prefilledDescription,
                 size="lg"
               >
                 {isSaving ? (
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Guardando...</>
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Guardando...
+                  </>
                 ) : (
-                  <><Save className="mr-2 h-4 w-4" /> Guardar Presupuesto</>
+                  <>
+                    <Save className="mr-2 h-4 w-4" /> Guardar Presupuesto
+                  </>
                 )}
               </Button>
             </div>
           </CardContent>
         </Card>
       )}
+
       <QuickAddClientDialog
         open={showNewClient}
         onOpenChange={setShowNewClient}

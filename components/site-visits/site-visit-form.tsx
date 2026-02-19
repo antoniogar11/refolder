@@ -11,8 +11,8 @@ import { NativeSelect } from "@/components/ui/native-select";
 import { toast } from "sonner";
 import { Loader2, Plus, Save, Sparkles, UserPlus } from "lucide-react";
 import { QuickAddClientDialog } from "@/components/clients/quick-add-client-dialog";
-import { ZoneCard, type ZoneData } from "./zone-card";
-import { ZoneSuggestions } from "./zone-suggestions";
+import { ZoneCard, type ZoneData } from "@/components/shared/zones/zone-card";
+import { ZoneSuggestions } from "@/components/shared/zones/zone-suggestions";
 import { createSiteVisitAction, updateSiteVisitAction } from "@/app/dashboard/visitas/actions";
 import type { SiteVisit } from "@/types";
 
@@ -104,7 +104,7 @@ export function SiteVisitForm({ clients: initialClients, workTypes, visit }: Sit
         if (result.success) {
           toast.success(result.message);
           if (andGenerate) {
-            router.push(`/dashboard/presupuestos/nuevo?visitId=${visit.id}`);
+            router.push("/dashboard/presupuestos/nuevo");
           } else {
             router.push(`/dashboard/visitas/${visit.id}`);
           }
@@ -116,7 +116,7 @@ export function SiteVisitForm({ clients: initialClients, workTypes, visit }: Sit
         if (result.success && result.visitId) {
           toast.success(result.message);
           if (andGenerate) {
-            router.push(`/dashboard/presupuestos/nuevo?visitId=${result.visitId}`);
+            router.push("/dashboard/presupuestos/nuevo");
           } else {
             router.push(`/dashboard/visitas/${result.visitId}`);
           }
