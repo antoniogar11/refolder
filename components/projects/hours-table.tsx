@@ -51,6 +51,7 @@ export function HoursTable({ hours, projectId }: HoursTableProps) {
           <TableHeader>
             <TableRow>
               <TableHead>Descripci&oacute;n</TableHead>
+              <TableHead>Tarea</TableHead>
               <TableHead>Trabajador</TableHead>
               <TableHead className="text-right">Tarifa/h</TableHead>
               <TableHead className="text-right">Horas</TableHead>
@@ -63,6 +64,15 @@ export function HoursTable({ hours, projectId }: HoursTableProps) {
             {hours.map((hour) => (
               <TableRow key={hour.id}>
                 <TableCell className="font-medium">{hour.descripcion}</TableCell>
+                <TableCell>
+                  {hour.task?.nombre ? (
+                    <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-amber-100 text-amber-700">
+                      {hour.task.nombre}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-slate-400">—</span>
+                  )}
+                </TableCell>
                 <TableCell>
                   <span className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-violet-100 text-violet-700">
                     {hour.categoria_trabajador}

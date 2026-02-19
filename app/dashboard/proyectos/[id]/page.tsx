@@ -17,6 +17,7 @@ import { getAllClients } from "@/lib/data/clients";
 import { getEstimates, getAllEstimates } from "@/lib/data/estimates";
 import { getCostsByProjectId, getFinancialSummary } from "@/lib/data/project-costs";
 import { getHoursByProjectId } from "@/lib/data/project-hours";
+import { getTasksByProjectId } from "@/lib/data/project-tasks";
 import { getWorkerRates } from "@/lib/data/worker-rates";
 import { DeleteEntityButton } from "@/components/shared/delete-entity-button";
 import { StatusBadge } from "@/components/dashboard/status-badge";
@@ -25,6 +26,8 @@ import { ProjectFinancialSummary } from "@/components/projects/project-financial
 import { ProjectDetailTabs } from "@/components/projects/project-detail-tabs";
 import { LinkEstimateSelect } from "@/components/projects/link-estimate-select";
 import { CostComparison } from "@/components/projects/cost-comparison";
+import { TasksList } from "@/components/projects/tasks-list";
+import { AddTaskForm } from "@/components/projects/add-task-form";
 import { ProjectPageTabs } from "@/components/projects/project-page-tabs";
 
 type ProjectEditPageProps = {
@@ -34,7 +37,7 @@ type ProjectEditPageProps = {
 export default async function ProjectEditPage({ params }: ProjectEditPageProps) {
   const { id } = await params;
 
-  const [project, clients, { estimates }, allEstimates, gastos, ingresos, hours, workerRates, financialSummary] = await Promise.all([
+  const [project, clients, { estimates }, allEstimates, gastos, ingresos, hours, workerRates, financialSummary, tasks] = await Promise.all([
     getProjectById(id),
     getAllClients(),
     getEstimates({ projectId: id }),
@@ -44,6 +47,7 @@ export default async function ProjectEditPage({ params }: ProjectEditPageProps) 
     getHoursByProjectId(id),
     getWorkerRates(),
     getFinancialSummary(id),
+    getTasksByProjectId(id),
   ]);
 
   if (!project) {
@@ -127,6 +131,7 @@ export default async function ProjectEditPage({ params }: ProjectEditPageProps) 
                   ingresos={ingresos}
                   hours={hours}
                   workerRates={workerRates}
+                  tasks={tasks}
                 />
               </CardContent>
             </Card>
@@ -187,6 +192,20 @@ export default async function ProjectEditPage({ params }: ProjectEditPageProps) 
 
             {/* Generar presupuesto con IA */}
             <GenerateEstimateForm projectId={project.id} projectName={project.name} />
+          </>
+        }
+        tareasTab={
+          <>
+            <Card>
+              <CardHeader>
+                <CardTitle>Tareas ({tasks.length})</CardTitle>
+                <CardDescription>Organiza el trabajo del proyecto en tareas</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <AddTaskForm projectId={project.id} />
+                <TasksList tasks={tasks} projectId={project.id} />
+              </CardContent>
+            </Card>
           </>
         }
         datosTab={

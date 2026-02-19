@@ -12,6 +12,7 @@ export async function createHourAction(
     horas: string;
     fecha: string;
     notas: string;
+    task_id?: string;
   },
 ): Promise<{ success: boolean; message: string }> {
   const supabase = await createClient();
@@ -37,6 +38,7 @@ export async function createHourAction(
     horas,
     fecha: data.fecha,
     notas: data.notas || null,
+    task_id: data.task_id || null,
   });
 
   if (error) {

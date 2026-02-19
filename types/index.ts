@@ -127,6 +127,21 @@ export type WorkerRate = {
   created_at: string;
 };
 
+// Project Tasks
+
+export type TaskStatus = "pendiente" | "en_progreso" | "completada";
+
+export type ProjectTask = {
+  id: string;
+  project_id: string;
+  user_id: string;
+  nombre: string;
+  descripcion: string | null;
+  estado: TaskStatus;
+  orden: number;
+  created_at: string;
+};
+
 export type ProjectHour = {
   id: string;
   project_id: string;
@@ -138,6 +153,8 @@ export type ProjectHour = {
   coste_total: number;
   fecha: string;
   notas: string | null;
+  task_id?: string | null;
+  task?: Pick<ProjectTask, "id" | "nombre"> | null;
   created_at: string;
 };
 

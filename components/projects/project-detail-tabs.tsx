@@ -8,7 +8,7 @@ import { AddIncomeForm } from "@/components/projects/add-income-form";
 import { HoursTable } from "@/components/projects/hours-table";
 import { AddHoursForm } from "@/components/projects/add-hours-form";
 import { WorkerRatesManager } from "@/components/projects/worker-rates-manager";
-import type { ProjectCost, ProjectHour, WorkerRate } from "@/types";
+import type { ProjectCost, ProjectHour, ProjectTask, WorkerRate } from "@/types";
 
 type ProjectDetailTabsProps = {
   projectId: string;
@@ -16,6 +16,7 @@ type ProjectDetailTabsProps = {
   ingresos: ProjectCost[];
   hours: ProjectHour[];
   workerRates: WorkerRate[];
+  tasks?: ProjectTask[];
 };
 
 export function ProjectDetailTabs({
@@ -24,6 +25,7 @@ export function ProjectDetailTabs({
   ingresos,
   hours,
   workerRates,
+  tasks = [],
 }: ProjectDetailTabsProps) {
   return (
     <Tabs defaultValue="gastos" className="w-full">
@@ -51,7 +53,7 @@ export function ProjectDetailTabs({
 
       <TabsContent value="horas" className="space-y-4 mt-4">
         <div className="flex flex-col sm:flex-row gap-3">
-          <AddHoursForm projectId={projectId} workerRates={workerRates} />
+          <AddHoursForm projectId={projectId} workerRates={workerRates} tasks={tasks} />
           <WorkerRatesManager rates={workerRates} />
         </div>
         <HoursTable hours={hours} projectId={projectId} />

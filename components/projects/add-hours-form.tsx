@@ -11,17 +11,19 @@ import { createHourAction } from "@/app/dashboard/proyectos/hour-actions";
 import { Plus, Loader2 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils/format";
 import { roundCurrency } from "@/lib/utils";
-import type { WorkerRate } from "@/types";
+import type { WorkerRate, ProjectTask } from "@/types";
 
 type AddHoursFormProps = {
   projectId: string;
   workerRates: WorkerRate[];
+  tasks?: ProjectTask[];
 };
 
-export function AddHoursForm({ projectId, workerRates }: AddHoursFormProps) {
+export function AddHoursForm({ projectId, workerRates, tasks = [] }: AddHoursFormProps) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [selectedRate, setSelectedRate] = useState("");
+  const [selectedTask, setSelectedTask] = useState("");
   const [tarifa, setTarifa] = useState("");
   const [horas, setHoras] = useState("");
 
@@ -58,6 +60,7 @@ export function AddHoursForm({ projectId, workerRates }: AddHoursFormProps) {
       horas,
       fecha: formData.get("fecha") as string,
       notas: formData.get("notas") as string,
+      task_id: selectedTask || undefined,
     };
 
     try {
@@ -66,6 +69,7 @@ export function AddHoursForm({ projectId, workerRates }: AddHoursFormProps) {
         toast.success(result.message);
         setOpen(false);
         setSelectedRate("");
+        setSelectedTask("");
         setTarifa("");
         setHoras("");
         (e.target as HTMLFormElement).reset();
@@ -120,6 +124,24 @@ export function AddHoursForm({ projectId, workerRates }: AddHoursFormProps) {
               </NativeSelect>
             </div>
           </div>
+
+          {tasks.length > 0 && (
+            <div className="space-y-1">
+              <Label htmlFor="hours-task" className="text-sm">Tarea</Label>
+              <NativeSelect
+                id="hours-task"
+                value={selectedTask}
+                onChange={(e) => setSelectedTask(e.target.value)}
+              >
+                <option value="">Sin tarea específica</option>
+                {tasks.map((task) => (
+                  <option key={task.id} value={task.id}>
+                    {task.nombre}
+                  </option>
+                ))}
+              </NativeSelect>
+            </div>
+          )}
 
           {selectedRate === "custom" && (
             <div className="grid gap-3 md:grid-cols-2">
@@ -177,7 +199,7 @@ export function AddHoursForm({ projectId, workerRates }: AddHoursFormProps) {
           )}
 
           <div className="flex gap-2 pt-1">
-            <Button type="button" variant="ghost" size="sm" onClick={() => { setOpen(false); setSelectedRate(""); setTarifa(""); setHoras(""); }}>
+            <Button type="button" variant="ghost" size="sm" onClick={() => { setOpen(false); setSelectedRate(""); setSelectedTask(""); setTarifa(""); setHoras(""); }}>
               Cancelar
             </Button>
             <Button type="submit" size="sm" disabled={saving}>

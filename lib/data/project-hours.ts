@@ -10,7 +10,7 @@ export async function getHoursByProjectId(projectId: string): Promise<ProjectHou
 
   const { data, error } = await supabase
     .from("project_hours")
-    .select("*")
+    .select("*, task:project_tasks(id, nombre)")
     .eq("project_id", projectId)
     .eq("user_id", user.id)
     .order("fecha", { ascending: false });

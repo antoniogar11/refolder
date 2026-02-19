@@ -12,6 +12,7 @@ import { deleteEstimateAction } from "@/app/dashboard/presupuestos/actions";
 import { EstimateItemsEditor } from "@/components/estimates/estimate-items-editor";
 import { EstimateStatusSelect } from "@/components/estimates/estimate-status-select";
 import { ExportPDFButton } from "@/components/estimates/export-pdf-button";
+import { CreateProjectFromEstimateButton } from "@/components/estimates/create-project-from-estimate-button";
 import { formatCurrency } from "@/lib/utils/format";
 import { roundCurrency } from "@/lib/utils";
 
@@ -81,6 +82,9 @@ export default async function EstimateDetailPage({ params }: EstimateDetailPageP
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {!estimate.project_id && (
+            <CreateProjectFromEstimateButton estimateId={estimate.id} />
+          )}
           <ExportPDFButton estimate={estimate} items={items} company={company} />
           <EstimateStatusSelect estimateId={estimate.id} currentStatus={estimate.status} />
           <DeleteEntityButton
