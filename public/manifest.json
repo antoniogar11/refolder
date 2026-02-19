@@ -5,7 +5,7 @@
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#2563eb",
+  "theme_color": "#f59e0b",
   "orientation": "portrait-primary",
   "icons": [
     {
@@ -24,20 +24,18 @@
   "categories": ["business", "productivity"],
   "shortcuts": [
     {
-      "name": "Nueva Obra",
-      "short_name": "Obra",
-      "description": "Crear una nueva obra",
-      "url": "/dashboard/obras?action=new",
+      "name": "Nuevo Presupuesto",
+      "short_name": "Presupuesto",
+      "description": "Crear un nuevo presupuesto",
+      "url": "/dashboard/presupuestos/nuevo",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "name": "Nueva Factura",
-      "short_name": "Factura",
-      "description": "Crear una nueva factura",
-      "url": "/dashboard/facturas?action=new",
+      "name": "Nuevo Proyecto",
+      "short_name": "Proyecto",
+      "description": "Crear un nuevo proyecto",
+      "url": "/dashboard/proyectos/nuevo",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }
-
-

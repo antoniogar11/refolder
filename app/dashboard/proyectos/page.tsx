@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { SearchInput } from "@/components/dashboard/search-input";
+import { StatusFilter } from "@/components/dashboard/status-filter";
 import { Pagination } from "@/components/dashboard/pagination";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { getProjects } from "@/lib/data/projects";
@@ -21,15 +22,23 @@ import { getGlobalFinancialSummary } from "@/lib/data/project-costs";
 import { ProjectFinancialSummary } from "@/components/projects/project-financial-summary";
 import { formatCurrency } from "@/lib/utils/format";
 
+const projectStatusOptions = [
+  { value: "planning", label: "Planificando" },
+  { value: "in_progress", label: "En curso" },
+  { value: "paused", label: "Pausado" },
+  { value: "completed", label: "Completado" },
+  { value: "cancelled", label: "Cancelado" },
+];
+
 type ProyectosPageProps = {
-  searchParams: Promise<{ q?: string; page?: string }>;
+  searchParams: Promise<{ q?: string; status?: string; page?: string }>;
 };
 
 export default async function ProyectosPage({ searchParams }: ProyectosPageProps) {
   const params = await searchParams;
   const page = Number(params.page) || 1;
   const [{ projects, total }, clients, financialSummary] = await Promise.all([
-    getProjects({ query: params.q, page }),
+    getProjects({ query: params.q, status: params.status, page }),
     getAllClients(),
     getGlobalFinancialSummary(),
   ]);
@@ -55,19 +64,26 @@ export default async function ProyectosPage({ searchParams }: ProyectosPageProps
         </div>
       )}
 
-      <Suspense>
-        <SearchInput placeholder="Buscar proyectos..." />
-      </Suspense>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <Suspense>
+          <SearchInput placeholder="Buscar proyectos..." />
+        </Suspense>
+        <Suspense>
+          <StatusFilter options={projectStatusOptions} />
+        </Suspense>
+      </div>
 
       {projects.length === 0 ? (
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>
-              {params.q ? "Sin resultados" : "No tienes proyectos todavía"}
+              {params.q || params.status ? "Sin resultados" : "No tienes proyectos todavía"}
             </CardTitle>
             <CardDescription>
               {params.q
                 ? `No se encontraron proyectos para "${params.q}".`
+                : params.status
+                ? "No hay proyectos con este estado."
                 : "Crea tu primer proyecto para empezar."}
             </CardDescription>
           </CardHeader>

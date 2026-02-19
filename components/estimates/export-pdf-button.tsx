@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import { generateEstimatePDF } from "@/lib/pdf/generate-estimate-pdf";
 import { roundCurrency } from "@/lib/utils";
+import { formatDate } from "@/lib/utils/format";
 import type { Estimate, EstimateItem, Company } from "@/types";
 
 type ExportPDFButtonProps = {
@@ -33,8 +34,8 @@ export function ExportPDFButton({ estimate, items, company }: ExportPDFButtonPro
     generateEstimatePDF({
       estimateName: estimate.name,
       estimateNumber,
-      date: estimateDate.toLocaleDateString("es-ES"),
-      validUntil: validUntilDate.toLocaleDateString("es-ES"),
+      date: formatDate(estimateDate.toISOString(), { style: "medium" }),
+      validUntil: formatDate(validUntilDate.toISOString(), { style: "medium" }),
       companyName: company?.name || "Refolder",
       companySubtitle: company?.subtitle || null,
       companyTaxId: company?.tax_id || null,

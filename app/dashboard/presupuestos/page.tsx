@@ -8,10 +8,18 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { SearchInput } from "@/components/dashboard/search-input";
+import { StatusFilter } from "@/components/dashboard/status-filter";
 import { Pagination } from "@/components/dashboard/pagination";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { getEstimates } from "@/lib/data/estimates";
-import { formatCurrency } from "@/lib/utils/format";
+import { formatCurrency, formatDate } from "@/lib/utils/format";
+
+const estimateStatusOptions = [
+  { value: "draft", label: "Borrador" },
+  { value: "sent", label: "Enviado" },
+  { value: "accepted", label: "Aceptado" },
+  { value: "rejected", label: "Rechazado" },
+];
 
 type PresupuestosPageProps = {
   searchParams: Promise<{ q?: string; status?: string; page?: string }>;
@@ -40,9 +48,14 @@ export default async function PresupuestosPage({ searchParams }: PresupuestosPag
         </Link>
       </div>
 
-      <Suspense>
-        <SearchInput placeholder="Buscar presupuestos..." />
-      </Suspense>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <Suspense>
+          <SearchInput placeholder="Buscar presupuestos..." />
+        </Suspense>
+        <Suspense>
+          <StatusFilter options={estimateStatusOptions} />
+        </Suspense>
+      </div>
 
       {estimates.length === 0 ? (
         <Card className="mt-6">
@@ -93,7 +106,7 @@ export default async function PresupuestosPage({ searchParams }: PresupuestosPag
                       <StatusBadge type="estimate" status={estimate.status} />
                     </TableCell>
                     <TableCell className="hidden md:table-cell text-slate-500 dark:text-slate-400">
-                      {new Date(estimate.created_at).toLocaleDateString("es-ES")}
+                      {formatDate(estimate.created_at)}
                     </TableCell>
                   </TableRow>
                 ))}

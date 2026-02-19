@@ -245,6 +245,17 @@ export async function updateEstimateItemAction(
     updateData.subtotal = roundCurrency(cantidad * precioUnitario);
   }
 
+  // Verificar que el item pertenece a un presupuesto del usuario
+  const { data: ownership } = await supabase
+    .from("estimate_items")
+    .select("id, estimate:estimates!inner(user_id)")
+    .eq("id", itemId)
+    .single();
+
+  if (!ownership || (ownership.estimate as unknown as { user_id: string }).user_id !== user.id) {
+    return { success: false, message: "No tienes permiso para editar esta partida." };
+  }
+
   const { error } = await supabase
     .from("estimate_items")
     .update(updateData)
@@ -290,6 +301,17 @@ export async function deleteEstimateItemAction(
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, message: "No estás autenticado." };
+
+  // Verificar que el item pertenece a un presupuesto del usuario
+  const { data: ownership } = await supabase
+    .from("estimate_items")
+    .select("id, estimate:estimates!inner(user_id)")
+    .eq("id", itemId)
+    .single();
+
+  if (!ownership || (ownership.estimate as unknown as { user_id: string }).user_id !== user.id) {
+    return { success: false, message: "No tienes permiso para eliminar esta partida." };
+  }
 
   const { error } = await supabase.from("estimate_items").delete().eq("id", itemId);
 
@@ -393,29 +415,25 @@ export async function updateGlobalMarginAction(
     return { success: false, message: itemsError.message };
   }
 
-  // 3. Actualizar cada item con el nuevo margen
+  // 3. Calcular nuevos valores y actualizar todos los items en paralelo
   let newTotal = 0;
-  for (const item of items ?? []) {
+  const updates = (items ?? []).map((item) => {
     const coste = Number(item.precio_coste) || 0;
     const newPrecioUnitario = computeSellingPrice(coste, margenGlobal);
     const newSubtotal = roundCurrency(Number(item.cantidad) * newPrecioUnitario);
     newTotal += newSubtotal;
-
-    await supabase
+    return supabase
       .from("estimate_items")
-      .update({
-        margen: margenGlobal,
-        precio_unitario: newPrecioUnitario,
-        subtotal: newSubtotal,
-      })
+      .update({ margen: margenGlobal, precio_unitario: newPrecioUnitario, subtotal: newSubtotal })
       .eq("id", item.id);
-  }
+  });
+  await Promise.all(updates);
 
   // 4. Actualizar el total del presupuesto
   const totalWithIva = roundCurrency(newTotal + roundCurrency(newTotal * 0.21));
   await supabase
     .from("estimates")
-    .update({ total_amount: roundCurrency(newTotal + roundCurrency(newTotal * 0.21)), updated_at: new Date().toISOString() })
+    .update({ total_amount: totalWithIva, updated_at: new Date().toISOString() })
     .eq("id", estimateId)
     .eq("user_id", user.id);
 

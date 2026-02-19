@@ -1,14 +1,11 @@
 // Service Worker para PWA
-const CACHE_NAME = 'refolder-v1';
+const CACHE_NAME = 'refolder-v2';
 const urlsToCache = [
   '/',
   '/dashboard',
-  '/dashboard/obras',
-  '/dashboard/clientes',
   '/dashboard/presupuestos',
-  '/dashboard/facturas',
-  '/dashboard/finanzas',
-  '/dashboard/control-horario',
+  '/dashboard/proyectos',
+  '/dashboard/clientes',
 ];
 
 // Instalación del Service Worker
@@ -43,11 +40,11 @@ self.addEventListener('fetch', (event) => {
       .then((response) => {
         // Clonar la respuesta
         const responseToCache = response.clone();
-        
+
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseToCache);
         });
-        
+
         return response;
       })
       .catch(() => {
@@ -55,5 +52,3 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
-
-

@@ -1,5 +1,5 @@
 import { getAllClients } from "@/lib/data/clients";
-import { getWorkTypes } from "@/lib/data/site-visits";
+import { getWorkTypes } from "@/lib/data/work-types";
 import { NewEstimateForm } from "@/components/estimates/new-estimate-form";
 
 export default async function NuevoPresupuestoPage() {

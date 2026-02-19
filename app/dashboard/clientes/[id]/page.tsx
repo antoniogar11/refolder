@@ -17,6 +17,7 @@ import { StatusBadge } from "@/components/dashboard/status-badge";
 import { getClientById } from "@/lib/data/clients";
 import { getProjectsByClientId } from "@/lib/data/projects";
 import { DeleteEntityButton } from "@/components/shared/delete-entity-button";
+import { formatCurrency } from "@/lib/utils/format";
 
 type ClientEditPageProps = {
   params: Promise<{ id: string }>;
@@ -104,12 +105,7 @@ export default async function ClientEditPage({ params }: ClientEditPageProps) {
                       <StatusBadge type="project" status={project.status} />
                     </TableCell>
                     <TableCell className="text-slate-500 dark:text-slate-400">
-                      {project.total_budget
-                        ? new Intl.NumberFormat("es-ES", {
-                            style: "currency",
-                            currency: "EUR",
-                          }).format(project.total_budget)
-                        : "-"}
+                      {formatCurrency(project.total_budget)}
                     </TableCell>
                     <TableCell className="text-slate-500 dark:text-slate-400">
                       {project.start_date || "-"}

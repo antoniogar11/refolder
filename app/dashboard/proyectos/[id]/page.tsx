@@ -29,6 +29,7 @@ import { CostComparison } from "@/components/projects/cost-comparison";
 import { TasksList } from "@/components/projects/tasks-list";
 import { AddTaskForm } from "@/components/projects/add-task-form";
 import { ProjectPageTabs } from "@/components/projects/project-page-tabs";
+import { formatCurrency, formatDate } from "@/lib/utils/format";
 
 type ProjectEditPageProps = {
   params: Promise<{ id: string }>;
@@ -171,16 +172,13 @@ export default async function ProjectEditPage({ params }: ProjectEditPageProps) 
                             </Link>
                           </TableCell>
                           <TableCell className="text-right font-medium">
-                            {new Intl.NumberFormat("es-ES", {
-                              style: "currency",
-                              currency: "EUR",
-                            }).format(estimate.total_amount)}
+                            {formatCurrency(estimate.total_amount)}
                           </TableCell>
                           <TableCell>
                             <StatusBadge type="estimate" status={estimate.status} />
                           </TableCell>
                           <TableCell className="text-slate-500 dark:text-slate-400">
-                            {new Date(estimate.created_at).toLocaleDateString("es-ES")}
+                            {formatDate(estimate.created_at)}
                           </TableCell>
                         </TableRow>
                       ))}

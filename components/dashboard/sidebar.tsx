@@ -2,15 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Building2, FileText, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/presupuestos", label: "Presupuestos", icon: FileText },
-  { href: "/dashboard/proyectos", label: "Proyectos", icon: Building2 },
-  { href: "/dashboard/clientes", label: "Clientes", icon: Users },
-];
+import { navItems, settingsItem } from "@/lib/nav-items";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -50,16 +43,16 @@ export function Sidebar() {
       </nav>
       <div className="px-3 pb-4 mt-auto border-t border-slate-800 pt-4">
         <Link
-          href="/dashboard/configuracion"
+          href={settingsItem.href}
           className={cn(
             "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-            pathname.startsWith("/dashboard/configuracion")
+            pathname.startsWith(settingsItem.href)
               ? "bg-slate-800 text-white border-l-2 border-amber-500"
               : "text-slate-400 hover:bg-slate-800 hover:text-white transition-colors",
           )}
         >
-          <Settings className="h-5 w-5" />
-          Configuración
+          <settingsItem.icon className="h-5 w-5" />
+          {settingsItem.label}
         </Link>
       </div>
     </aside>

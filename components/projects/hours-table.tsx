@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { deleteHourAction } from "@/app/dashboard/proyectos/hour-actions";
 import { Trash2, Loader2 } from "lucide-react";
 import type { ProjectHour } from "@/types";
-import { formatCurrency } from "@/lib/utils/format";
+import { formatCurrency, formatDate } from "@/lib/utils/format";
 
 type HoursTableProps = {
   hours: ProjectHour[];
@@ -88,7 +88,7 @@ export function HoursTable({ hours, projectId }: HoursTableProps) {
                   {formatCurrency(hour.coste_total)}
                 </TableCell>
                 <TableCell className="text-slate-500">
-                  {new Date(hour.fecha).toLocaleDateString("es-ES")}
+                  {formatDate(hour.fecha)}
                 </TableCell>
                 <TableCell>
                   <Button

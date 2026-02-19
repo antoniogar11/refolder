@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { deleteCostAction } from "@/app/dashboard/proyectos/cost-actions";
 import { Trash2, Loader2 } from "lucide-react";
 import type { ProjectCost } from "@/types";
-import { formatCurrency } from "@/lib/utils/format";
+import { formatCurrency, formatDate } from "@/lib/utils/format";
 
 const categoryLabels: Record<string, string> = {
   material: "Material",
@@ -86,7 +86,7 @@ export function CostsTable({ costs, projectId }: CostsTableProps) {
                 {formatCurrency(cost.importe)}
               </TableCell>
               <TableCell className="text-slate-500">
-                {new Date(cost.fecha).toLocaleDateString("es-ES")}
+                {formatDate(cost.fecha)}
               </TableCell>
               <TableCell>
                 <Button

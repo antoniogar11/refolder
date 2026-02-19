@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { deleteCostAction } from "@/app/dashboard/proyectos/cost-actions";
 import { Trash2, Loader2 } from "lucide-react";
 import type { ProjectCost } from "@/types";
-import { formatCurrency } from "@/lib/utils/format";
+import { formatCurrency, formatDate } from "@/lib/utils/format";
 
 const categoryLabels: Record<string, string> = {
   pago_cliente: "Pago de cliente",
@@ -81,7 +81,7 @@ export function IncomeTable({ incomes, projectId }: IncomeTableProps) {
                   +{formatCurrency(income.importe)}
                 </TableCell>
                 <TableCell className="text-slate-500">
-                  {new Date(income.fecha).toLocaleDateString("es-ES")}
+                  {formatDate(income.fecha)}
                 </TableCell>
                 <TableCell>
                   <Button
