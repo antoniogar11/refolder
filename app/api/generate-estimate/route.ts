@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate limiting per user
-    const { success } = await ratelimit.limit(user.id);
+    const { success } = await ratelimit(user.id);
     if (!success) {
       return NextResponse.json(
         { error: "Has alcanzado el límite de generaciones por hora. Espera un poco e inténtalo de nuevo." },

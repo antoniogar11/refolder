@@ -298,7 +298,6 @@ export function generateEstimatePDF(data: EstimateData) {
   });
 
   // === TOTALS SECTION ===
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let finalY = ((doc as any).lastAutoTable?.finalY ?? yPos + 40) + 8;
 
   // Check if we need a new page for totals

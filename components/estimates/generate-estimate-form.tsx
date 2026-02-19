@@ -7,24 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { NativeSelect } from "@/components/ui/native-select";
 import { toast } from "sonner";
 import { createEstimateWithItemsAction } from "@/app/dashboard/presupuestos/actions";
 import { Loader2, Sparkles, Save } from "lucide-react";
-import { formatCurrency } from "@/lib/utils/format";
-
-type Partida = {
-  categoria: string;
-  descripcion: string;
-  unidad: string;
-  cantidad: number;
-  precio_coste: number;
-  margen: number;
-  precio_unitario: number;
-  subtotal: number;
-  orden: number;
-};
+import { EstimatePreviewEditor, type Partida } from "@/components/estimates/estimate-preview-editor";
+import { roundCurrency } from "@/lib/utils";
 
 type GenerateEstimateFormProps = {
   projectId: string;
@@ -39,7 +27,6 @@ export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimat
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [partidas, setPartidas] = useState<Partida[]>([]);
-  const [totals, setTotals] = useState({ subtotal: 0, iva: 0, total: 0 });
   const [margenGlobal, setMargenGlobal] = useState(20);
 
   async function handleGenerate() {
@@ -70,7 +57,6 @@ export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimat
       }
 
       setPartidas(data.partidas);
-      setTotals({ subtotal: data.subtotal, iva: data.iva, total: data.total });
       if (data.margen_global) setMargenGlobal(data.margen_global);
 
       if (!nombrePresupuesto) {
@@ -96,13 +82,15 @@ export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimat
     setIsSaving(true);
 
     try {
+      const sub = roundCurrency(partidas.reduce((sum, p) => sum + p.subtotal, 0));
+      const totalAmount = roundCurrency(sub + roundCurrency(sub * 0.21));
       const result = await createEstimateWithItemsAction(
         projectId,
         null,
         name,
         descripcion,
         partidas,
-        totals.total,
+        totalAmount,
         margenGlobal,
       );
 
@@ -199,48 +187,12 @@ export function GenerateEstimateForm({ projectId, projectName }: GenerateEstimat
             <CardTitle>Vista previa del presupuesto</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-hidden rounded-lg border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Categoría</TableHead>
-                    <TableHead>Descripción</TableHead>
-                    <TableHead className="text-right">Ud.</TableHead>
-                    <TableHead className="text-right">Cant.</TableHead>
-                    <TableHead className="text-right">P. Coste</TableHead>
-                    <TableHead className="text-right">Margen</TableHead>
-                    <TableHead className="text-right">P. Venta</TableHead>
-                    <TableHead className="text-right">Subtotal</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {partidas.map((p, i) => (
-                    <TableRow key={i}>
-                      <TableCell className="font-medium text-xs">{p.categoria}</TableCell>
-                      <TableCell className="text-sm">{p.descripcion}</TableCell>
-                      <TableCell className="text-right text-xs">{p.unidad}</TableCell>
-                      <TableCell className="text-right">{p.cantidad}</TableCell>
-                      <TableCell className="text-right text-slate-500">{formatCurrency(p.precio_coste)}</TableCell>
-                      <TableCell className="text-right text-slate-500">{p.margen}%</TableCell>
-                      <TableCell className="text-right">{formatCurrency(p.precio_unitario)}</TableCell>
-                      <TableCell className="text-right font-medium">{formatCurrency(p.subtotal)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-
-            <div className="mt-4 space-y-2 text-right">
-              <div className="text-sm text-slate-600">
-                Subtotal: <span className="font-medium text-slate-900">{formatCurrency(totals.subtotal)}</span>
-              </div>
-              <div className="text-sm text-slate-600">
-                IVA (21%): <span className="font-medium text-slate-900">{formatCurrency(totals.iva)}</span>
-              </div>
-              <div className="text-lg font-bold text-slate-900">
-                Total: {formatCurrency(totals.total)}
-              </div>
-            </div>
+            <EstimatePreviewEditor
+              partidas={partidas}
+              onPartidasChange={setPartidas}
+              margenGlobal={margenGlobal}
+              onMargenGlobalChange={setMargenGlobal}
+            />
 
             <div className="mt-6 flex gap-3">
               <Button
