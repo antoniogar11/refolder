@@ -32,7 +32,7 @@ refolder/
 │   │   ├── clientes/             # Gestión de clientes
 │   │   ├── configuracion/        # Datos de empresa
 │   │   ├── presupuestos/         # Presupuestos (zonas + generación IA)
-│   │   └── proyectos/            # Proyectos (costes, horas, ingresos, resumen financiero)
+│   │   └── proyectos/            # Proyectos (costes, horas, tareas, ingresos, resumen financiero)
 │   ├── layout.tsx
 │   ├── page.tsx                  # Landing page
 │   ├── not-found.tsx
@@ -40,14 +40,14 @@ refolder/
 ├── components/                   # Componentes React
 │   ├── auth/                     # Login, registro, logout
 │   ├── clients/                  # CRUD de clientes
-│   ├── dashboard/                # Sidebar, breadcrumbs, paginación
+│   ├── dashboard/                # Sidebar, breadcrumbs, paginación, filtros
 │   ├── estimates/                # Editor de presupuestos, exportación PDF
-│   ├── projects/                 # Gestión de proyectos y finanzas
+│   ├── projects/                 # Gestión de proyectos, tareas y finanzas
 │   ├── shared/                   # Componentes reutilizables
 │   │   └── zones/                # Zonas con medidas y trabajos (compartido)
 │   └── ui/                       # Componentes shadcn/ui
 ├── lib/                          # Utilidades y lógica de negocio
-│   ├── auth/                     # Roles y permisos
+│   ├── auth/                     # Autenticación
 │   ├── data/                     # Acceso a datos (queries)
 │   │   └── seed/                 # Datos semilla (precios BCCA)
 │   ├── forms/                    # Estado de formularios
@@ -66,11 +66,13 @@ refolder/
 
 ## Funcionalidades Principales
 
-- **Presupuestos con IA** - Crea presupuestos añadiendo zonas (Baño, Cocina, Salón...) con medidas y tipos de trabajo, y genera partidas detalladas con IA (Google Gemini). Vista previa editable con márgenes y precios.
-- **Proyectos** - Gestión de obras con seguimiento financiero: gastos, ingresos, horas de mano de obra y resumen financiero global (presupuestado, gastado, cobrado, beneficio).
+- **Presupuestos con IA** - Crea presupuestos añadiendo zonas (Baño, Cocina, Salón...) con medidas y tipos de trabajo, y genera partidas detalladas con IA (Google Gemini). Vista previa editable con márgenes y precios. Filtros por estado (borrador, enviado, aceptado, rechazado).
+- **Proyectos** - Gestión de obras con seguimiento financiero: gastos, ingresos, horas de mano de obra, tareas y resumen financiero global (presupuestado, gastado, cobrado, beneficio). Filtros por estado. Creación de proyecto desde presupuesto con generación automática de tareas.
+- **Tareas de proyecto** - Sistema de tareas por proyecto con estados (pendiente, en progreso, completada). Las horas se pueden asignar a tareas específicas.
 - **Clientes** - CRUD completo con historial de presupuestos y proyectos asociados.
 - **PDF profesional** - Exportación de presupuestos en PDF con datos de empresa personalizables.
 - **Configuración** - Datos de empresa (nombre, CIF, dirección, logo) para personalizar los PDFs.
+- **PWA** - Instalable como app nativa en móvil y escritorio.
 
 ## Instalación
 
@@ -122,7 +124,7 @@ Abre [http://localhost:3000](http://localhost:3000) en tu navegador.
 ## Configuración de Supabase
 
 Este proyecto utiliza Supabase para:
-- Autenticación de usuarios (con sistema de roles)
+- Autenticación de usuarios
 - Base de datos PostgreSQL
 - Almacenamiento de archivos
 - Row Level Security (RLS)
@@ -146,7 +148,7 @@ Los estilos se pueden personalizar en:
 ## Documentación
 
 Consulta la carpeta `docs/` para guías detalladas:
-- `docs/setup/` - Configuración de entorno, roles, empresa
+- `docs/setup/` - Configuración de entorno, empresa
 - `docs/deploy/` - Guía de despliegue
 - `docs/git/` - Flujo de trabajo Git
 - `docs/troubleshooting/` - FAQ de errores comunes
