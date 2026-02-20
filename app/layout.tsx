@@ -18,6 +18,13 @@ export const metadata: Metadata = {
   description: "SaaS de presupuestos profesionales con IA para el sector de la construcción",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{

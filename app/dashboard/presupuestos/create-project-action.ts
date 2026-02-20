@@ -40,7 +40,7 @@ export async function createProjectFromEstimateAction(
   }
 
   // 3. Crear proyecto
-  const address = estimate.client?.address || "Sin dirección";
+  const address = estimate.client?.address || null;
   const { data: project, error: projectError } = await supabase
     .from("projects")
     .insert({

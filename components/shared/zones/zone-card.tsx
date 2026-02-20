@@ -1,14 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronDown, ChevronUp, Trash2, Camera } from "lucide-react";
+import { ChevronDown, ChevronUp, Trash2, Camera, X } from "lucide-react";
 import { WorkTypeCheckbox } from "./work-type-checkbox";
 import { toast } from "sonner";
+
+export type ZonePhoto = {
+  base64: string;
+  mimeType: string;
+};
 
 export type ZoneWork = {
   work_type: string;
@@ -22,6 +27,7 @@ export type ZoneData = {
   alto: string;
   notes: string;
   works: ZoneWork[];
+  photos: ZonePhoto[];
 };
 
 type ZoneCardProps = {
@@ -32,8 +38,51 @@ type ZoneCardProps = {
   onRemove: () => void;
 };
 
+const MAX_PHOTOS = 3;
+const MAX_DIMENSION = 1600; // px máximo por lado
+const JPEG_QUALITY = 0.7;
+
+function compressImage(file: File): Promise<{ base64: string; mimeType: string }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+
+      // Redimensionar si supera el máximo
+      if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+        if (width > height) {
+          height = Math.round((height * MAX_DIMENSION) / width);
+          width = MAX_DIMENSION;
+        } else {
+          width = Math.round((width * MAX_DIMENSION) / height);
+          height = MAX_DIMENSION;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const dataUrl = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
+      const base64 = dataUrl.split(",")[1];
+      resolve({ base64, mimeType: "image/jpeg" });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("No se pudo leer la imagen."));
+    };
+    img.src = url;
+  });
+}
+
 export function ZoneCard({ zone, index, workTypes, onChange, onRemove }: ZoneCardProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [showAllWorks, setShowAllWorks] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const activeWorksCount = zone.works.length;
   const dimensions = [zone.largo, zone.ancho, zone.alto].filter(Boolean).join("x");
@@ -64,6 +113,43 @@ export function ZoneCard({ zone, index, workTypes, onChange, onRemove }: ZoneCar
       works: zone.works.map((w) =>
         w.work_type === workType ? { ...w, notes } : w,
       ),
+    });
+  }
+
+  async function handlePhotos(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files) return;
+
+    const currentCount = zone.photos?.length ?? 0;
+    const remaining = MAX_PHOTOS - currentCount;
+
+    if (remaining <= 0) {
+      toast.error(`Máximo ${MAX_PHOTOS} fotos por zona.`);
+      return;
+    }
+
+    const filesToProcess = Array.from(files).slice(0, remaining);
+
+    for (const file of filesToProcess) {
+      try {
+        const photo = await compressImage(file);
+        onChange({
+          ...zone,
+          photos: [...(zone.photos ?? []), photo],
+        });
+      } catch {
+        toast.error(`No se pudo procesar "${file.name}".`);
+      }
+    }
+
+    // Reset input so the same file can be re-selected
+    e.target.value = "";
+  }
+
+  function removePhoto(photoIndex: number) {
+    onChange({
+      ...zone,
+      photos: (zone.photos ?? []).filter((_, i) => i !== photoIndex),
     });
   }
 
@@ -145,35 +231,98 @@ export function ZoneCard({ zone, index, workTypes, onChange, onRemove }: ZoneCar
           {/* Trabajos */}
           <div className="space-y-2">
             <Label>Trabajos necesarios</Label>
-            <div className="grid gap-2 sm:grid-cols-2">
-              {workTypes.map((wt) => {
-                const existing = zone.works.find((w) => w.work_type === wt);
-                return (
-                  <WorkTypeCheckbox
-                    key={wt}
-                    workType={wt}
-                    checked={!!existing}
-                    notes={existing?.notes ?? ""}
-                    onToggle={(checked) => toggleWork(wt, checked)}
-                    onNotesChange={(notes) => updateWorkNotes(wt, notes)}
-                  />
-                );
-              })}
-            </div>
-          </div>
 
-          {/* Fotos - placeholder */}
-          <div className="space-y-2">
-            <Label>Fotos</Label>
+            {/* Trabajos seleccionados siempre visibles */}
+            {zone.works.length > 0 && (
+              <div className="grid gap-2 sm:grid-cols-2">
+                {zone.works.map((w) => (
+                  <WorkTypeCheckbox
+                    key={w.work_type}
+                    workType={w.work_type}
+                    checked
+                    notes={w.notes}
+                    onToggle={() => toggleWork(w.work_type, false)}
+                    onNotesChange={(notes) => updateWorkNotes(w.work_type, notes)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Botón para mostrar/ocultar todos los trabajos */}
             <Button
               type="button"
               variant="outline"
+              size="sm"
               className="w-full"
-              onClick={() => toast.info("Fotos disponible próximamente.")}
+              onClick={() => setShowAllWorks(!showAllWorks)}
             >
-              <Camera className="mr-2 h-4 w-4" />
-              Añadir foto
+              {showAllWorks ? "Ocultar lista" : `Añadir trabajos (${workTypes.length} disponibles)`}
             </Button>
+
+            {/* Lista completa de no seleccionados */}
+            {showAllWorks && (
+              <div className="grid gap-2 sm:grid-cols-2">
+                {workTypes
+                  .filter((wt) => !zone.works.some((w) => w.work_type === wt))
+                  .map((wt) => (
+                    <WorkTypeCheckbox
+                      key={wt}
+                      workType={wt}
+                      checked={false}
+                      notes=""
+                      onToggle={(checked) => toggleWork(wt, checked)}
+                      onNotesChange={() => {}}
+                    />
+                  ))}
+              </div>
+            )}
+          </div>
+
+          {/* Fotos */}
+          <div className="space-y-2">
+            <Label>Fotos de la zona</Label>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handlePhotos}
+            />
+            {(zone.photos?.length ?? 0) > 0 && (
+              <div className="flex gap-3 flex-wrap">
+                {zone.photos.map((photo, i) => (
+                  <div key={i} className="relative">
+                    <img
+                      src={`data:${photo.mimeType};base64,${photo.base64}`}
+                      alt={`Foto ${i + 1} de ${zone.name}`}
+                      className="h-24 w-24 sm:h-20 sm:w-20 rounded-md object-cover border"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(i)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {(zone.photos?.length ?? 0) < MAX_PHOTOS && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Camera className="mr-2 h-4 w-4" />
+                Añadir foto ({zone.photos?.length ?? 0}/{MAX_PHOTOS})
+              </Button>
+            )}
+            <p className="text-xs text-slate-500">
+              La IA analizará las fotos para generar un presupuesto más preciso.
+            </p>
           </div>
 
           {/* Notas de zona */}

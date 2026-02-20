@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NativeSelect } from "@/components/ui/native-select";
 import { toast } from "sonner";
 import { createEstimateWithItemsAction } from "@/app/dashboard/presupuestos/actions";
-import { Loader2, Sparkles, Save, UserPlus, Plus } from "lucide-react";
+import { Loader2, Sparkles, Save, UserPlus, ChevronDown } from "lucide-react";
 import { QuickAddClientDialog } from "@/components/clients/quick-add-client-dialog";
 import { EstimatePreviewEditor, type Partida } from "@/components/estimates/estimate-preview-editor";
 import { ZoneCard, type ZoneData } from "@/components/shared/zones/zone-card";
@@ -24,7 +24,7 @@ type NewEstimateFormProps = {
 };
 
 function emptyZone(name = ""): ZoneData {
-  return { name, largo: "", ancho: "", alto: "", notes: "", works: [] };
+  return { name, largo: "", ancho: "", alto: "", notes: "", works: [], photos: [] };
 }
 
 export function NewEstimateForm({ clients: initialClients, workTypes }: NewEstimateFormProps) {
@@ -40,6 +40,8 @@ export function NewEstimateForm({ clients: initialClients, workTypes }: NewEstim
   const [partidas, setPartidas] = useState<Partida[]>([]);
   const [margenGlobal, setMargenGlobal] = useState(20);
   const [showNewClient, setShowNewClient] = useState(false);
+  const [showDatos, setShowDatos] = useState(false);
+  const [showObservaciones, setShowObservaciones] = useState(false);
 
   const selectedClientName = clients.find((c) => c.id === clientId)?.name;
 
@@ -56,10 +58,6 @@ export function NewEstimateForm({ clients: initialClients, workTypes }: NewEstim
   }
 
   async function handleGenerate() {
-    if (!address.trim()) {
-      toast.error("La dirección es obligatoria.");
-      return;
-    }
     if (zones.filter((z) => z.name.trim()).length === 0) {
       toast.error("Añade al menos una zona.");
       return;
@@ -71,12 +69,22 @@ export function NewEstimateForm({ clients: initialClients, workTypes }: NewEstim
     try {
       const descripcion = buildDescriptionFromZones(address, zones, generalNotes);
 
+      // Recoger fotos de todas las zonas con su nombre de zona
+      const photos = zones.flatMap((z) =>
+        (z.photos ?? []).map((p) => ({
+          base64: p.base64,
+          mimeType: p.mimeType,
+          zoneName: z.name,
+        })),
+      );
+
       const response = await fetch("/api/generate-estimate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           descripcion,
           client_name: selectedClientName || undefined,
+          photos: photos.length > 0 ? photos : undefined,
         }),
       });
 
@@ -145,78 +153,81 @@ export function NewEstimateForm({ clients: initialClients, workTypes }: NewEstim
 
   return (
     <div className="space-y-6">
-      {/* Datos del presupuesto */}
+      {/* Datos del presupuesto (colapsable) */}
       <Card>
-        <CardHeader>
-          <CardTitle>Datos del presupuesto</CardTitle>
+        <CardHeader className="cursor-pointer" onClick={() => setShowDatos(!showDatos)}>
+          <div className="flex items-center justify-between">
+            <CardTitle>Datos del presupuesto</CardTitle>
+            <ChevronDown className={`h-5 w-5 text-slate-400 transition-transform ${showDatos ? "rotate-180" : ""}`} />
+          </div>
+          {!showDatos && (
+            <p className="text-sm text-slate-500 mt-1">Nombre, cliente, dirección (opcional)</p>
+          )}
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="nombre_presupuesto">Nombre del presupuesto</Label>
-              <Input
-                id="nombre_presupuesto"
-                value={nombrePresupuesto}
-                onChange={(e) => setNombrePresupuesto(e.target.value)}
-                placeholder="Se genera automáticamente"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="client_id">Cliente (opcional)</Label>
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <NativeSelect
-                    id="client_id"
-                    value={clientId}
-                    onChange={(e) => setClientId(e.target.value)}
+        {showDatos && (
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="nombre_presupuesto">Nombre del presupuesto</Label>
+                <Input
+                  id="nombre_presupuesto"
+                  value={nombrePresupuesto}
+                  onChange={(e) => setNombrePresupuesto(e.target.value)}
+                  placeholder="Se genera automáticamente"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="client_id">Cliente (opcional)</Label>
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <NativeSelect
+                      id="client_id"
+                      value={clientId}
+                      onChange={(e) => setClientId(e.target.value)}
+                    >
+                      <option value="">Sin cliente</option>
+                      {clients.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </NativeSelect>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="shrink-0"
+                    onClick={(e) => { e.stopPropagation(); setShowNewClient(true); }}
+                    title="Nuevo cliente"
                   >
-                    <option value="">Sin cliente</option>
-                    {clients.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </NativeSelect>
+                    <UserPlus className="h-4 w-4" />
+                  </Button>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="shrink-0"
-                  onClick={() => setShowNewClient(true)}
-                  title="Nuevo cliente"
-                >
-                  <UserPlus className="h-4 w-4" />
-                </Button>
               </div>
             </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="address">Dirección de la obra *</Label>
-            <Input
-              id="address"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Calle, número, piso"
-            />
-          </div>
-        </CardContent>
+            <div className="space-y-2">
+              <Label htmlFor="address">Dirección de la obra</Label>
+              <Input
+                id="address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Calle, número, piso"
+              />
+            </div>
+          </CardContent>
+        )}
       </Card>
 
       {/* Zonas */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-semibold">Zonas ({zones.length})</h3>
-          <Button type="button" onClick={() => addZone()} size="sm">
-            <Plus className="mr-1 h-4 w-4" />
-            Añadir zona
-          </Button>
+          <ZoneSuggestions
+            onSelect={(name) => addZone(name)}
+            existingNames={zones.map((z) => z.name)}
+          />
         </div>
-
-        <ZoneSuggestions
-          onSelect={(name) => addZone(name)}
-          existingNames={zones.map((z) => z.name)}
-        />
 
         {zones.length === 0 && (
           <Card>
@@ -238,26 +249,35 @@ export function NewEstimateForm({ clients: initialClients, workTypes }: NewEstim
         ))}
       </div>
 
-      {/* Observaciones generales */}
+      {/* Observaciones generales (colapsable) */}
       <Card>
-        <CardHeader>
-          <CardTitle>Observaciones generales</CardTitle>
+        <CardHeader className="cursor-pointer" onClick={() => setShowObservaciones(!showObservaciones)}>
+          <div className="flex items-center justify-between">
+            <CardTitle>Observaciones generales</CardTitle>
+            <ChevronDown className={`h-5 w-5 text-slate-400 transition-transform ${showObservaciones ? "rotate-180" : ""}`} />
+          </div>
+          {!showObservaciones && (
+            <p className="text-sm text-slate-500 mt-1">Instalaciones, accesos, licencias... (opcional)</p>
+          )}
         </CardHeader>
-        <CardContent>
-          <Textarea
-            value={generalNotes}
-            onChange={(e) => setGeneralNotes(e.target.value)}
-            placeholder="Estado de la instalación eléctrica, acceso para material, necesidad de licencias, etc."
-            rows={3}
-          />
-        </CardContent>
+        {showObservaciones && (
+          <CardContent>
+            <Textarea
+              value={generalNotes}
+              onChange={(e) => setGeneralNotes(e.target.value)}
+              placeholder="Estado de la instalación eléctrica, acceso para material, necesidad de licencias, etc."
+              rows={3}
+            />
+          </CardContent>
+        )}
       </Card>
 
-      {/* Generar con IA */}
+      {/* Generar con IA — sticky en móvil */}
+      <div className="sticky bottom-4 z-40">
       <Button
         onClick={handleGenerate}
-        disabled={isGenerating || !address.trim() || !hasZonesWithNames}
-        className="w-full bg-amber-500 hover:bg-amber-600 text-white"
+        disabled={isGenerating || !hasZonesWithNames}
+        className="w-full bg-amber-500 hover:bg-amber-600 text-white shadow-lg"
         size="lg"
       >
         {isGenerating ? (
@@ -272,6 +292,7 @@ export function NewEstimateForm({ clients: initialClients, workTypes }: NewEstim
           </>
         )}
       </Button>
+      </div>
 
       {/* Vista previa */}
       {partidas.length > 0 && (

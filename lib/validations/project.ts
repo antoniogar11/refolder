@@ -1,12 +1,12 @@
 import { z } from "zod";
 
 export const projectSchema = z.object({
-  name: z.string().min(1, "El nombre es obligatorio."),
-  client_id: z.string().min(1, "Selecciona un cliente."),
+  name: z.string().transform((v) => v || "Proyecto sin nombre"),
+  client_id: z.string().transform((v) => v || null).nullable().optional(),
   description: z
     .string()
     .transform((v) => v || null),
-  address: z.string().min(1, "La dirección es obligatoria."),
+  address: z.string().transform((v) => v || null).nullable().optional(),
   status: z.enum(["planning", "in_progress", "paused", "completed", "cancelled"], {
     error: "Selecciona un estado.",
   }),

@@ -89,7 +89,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { project_id, descripcion, tipo_obra, client_name } = body;
+    const { project_id, descripcion, tipo_obra, client_name, photos } = body as {
+      project_id?: string;
+      descripcion?: string;
+      tipo_obra?: string;
+      client_name?: string;
+      photos?: { base64: string; mimeType: string; zoneName: string }[];
+    };
 
     if (!descripcion) {
       return NextResponse.json(
@@ -138,6 +144,7 @@ REGLAS:
 - El subtotal de cada partida = cantidad × precio_coste
 - Calcula el subtotal general, IVA al 21%, y total (basado en precio_coste, sin margen)
 - Sé exhaustivo: incluye preparación, materiales, mano de obra, limpieza final
+- Si se incluyen fotos de las zonas, analízalas para identificar el estado actual, materiales existentes, trabajos necesarios y posibles complicaciones. Usa esta información visual para ajustar cantidades y partidas de forma más precisa
 ${referenceSection}
 Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin markdown, sin texto adicional):
 {
@@ -175,6 +182,31 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin markdow
 
     userMessage += `\nDescripción del trabajo:\n${descripcion}\n\nGenera todas las partidas necesarias con precios de COSTE realistas del mercado español. Responde SOLO con el JSON, sin texto adicional.`;
 
+    // Build user message parts: text + optional photos
+    const userParts: Record<string, unknown>[] = [{ text: userMessage }];
+
+    if (photos && photos.length > 0) {
+      // Group photos by zone for context
+      const zoneGroups = new Map<string, typeof photos>();
+      for (const photo of photos) {
+        const existing = zoneGroups.get(photo.zoneName) ?? [];
+        existing.push(photo);
+        zoneGroups.set(photo.zoneName, existing);
+      }
+
+      for (const [zoneName, zonePhotos] of zoneGroups) {
+        userParts.push({ text: `\nFotos de la zona "${zoneName}":` });
+        for (const photo of zonePhotos) {
+          userParts.push({
+            inlineData: {
+              mimeType: photo.mimeType,
+              data: photo.base64,
+            },
+          });
+        }
+      }
+    }
+
     // Call Google Gemini API
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
@@ -191,7 +223,7 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin markdow
         contents: [
           {
             role: "user",
-            parts: [{ text: userMessage }],
+            parts: userParts,
           },
         ],
         generationConfig: {

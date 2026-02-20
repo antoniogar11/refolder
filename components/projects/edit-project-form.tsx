@@ -32,12 +32,11 @@ export function EditProjectForm({ project, clients }: EditProjectFormProps) {
   return (
     <form action={formAction} className="space-y-4" noValidate>
       <div className="space-y-2">
-        <Label htmlFor="name">Nombre del proyecto *</Label>
+        <Label htmlFor="name">Nombre del proyecto</Label>
         <Input
           id="name"
           name="name"
           type="text"
-          required
           placeholder="Ej. Reforma integral piso"
           defaultValue={project.name}
         />
@@ -46,14 +45,13 @@ export function EditProjectForm({ project, clients }: EditProjectFormProps) {
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="client_id">Cliente *</Label>
+          <Label htmlFor="client_id">Cliente</Label>
           <NativeSelect
             id="client_id"
             name="client_id"
-            required
             defaultValue={project.client_id}
           >
-            <option value="">Seleccionar cliente...</option>
+            <option value="">Sin cliente</option>
             {clients.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
@@ -88,14 +86,13 @@ export function EditProjectForm({ project, clients }: EditProjectFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="address">Dirección *</Label>
+        <Label htmlFor="address">Dirección</Label>
         <Input
           id="address"
           name="address"
           type="text"
-          required
           placeholder="Calle, número, piso"
-          defaultValue={project.address}
+          defaultValue={project.address || ""}
         />
         <FieldError messages={state.errors?.address} />
       </div>
