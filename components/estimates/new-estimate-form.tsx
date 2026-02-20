@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NativeSelect } from "@/components/ui/native-select";
 import { toast } from "sonner";
 import { createEstimateWithItemsAction } from "@/app/dashboard/presupuestos/actions";
-import { Loader2, Sparkles, Save, UserPlus, ChevronDown } from "lucide-react";
+import { Loader2, Sparkles, Save, UserPlus, ChevronDown, Send } from "lucide-react";
 import { QuickAddClientDialog } from "@/components/clients/quick-add-client-dialog";
 import { EstimatePreviewEditor, type Partida } from "@/components/estimates/estimate-preview-editor";
 import { ZoneCard, type ZoneData } from "@/components/shared/zones/zone-card";
@@ -42,6 +42,8 @@ export function NewEstimateForm({ clients: initialClients, workTypes }: NewEstim
   const [showNewClient, setShowNewClient] = useState(false);
   const [showDatos, setShowDatos] = useState(false);
   const [showObservaciones, setShowObservaciones] = useState(false);
+  const [aiInstruction, setAiInstruction] = useState("");
+  const [isModifying, setIsModifying] = useState(false);
 
   const selectedClientName = clients.find((c) => c.id === clientId)?.name;
 
@@ -109,6 +111,39 @@ export function NewEstimateForm({ clients: initialClients, workTypes }: NewEstim
       toast.error("Error de conexión. Inténtalo de nuevo.");
     } finally {
       setIsGenerating(false);
+    }
+  }
+
+  async function handleModify() {
+    if (!aiInstruction.trim()) return;
+
+    setIsModifying(true);
+    try {
+      const response = await fetch("/api/modify-estimate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          partidas,
+          instruccion: aiInstruction,
+          margen_global: margenGlobal,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error(data.error || "Error al modificar el presupuesto.");
+        return;
+      }
+
+      setPartidas(data.partidas);
+      if (data.margen_global) setMargenGlobal(data.margen_global);
+      setAiInstruction("");
+      toast.success("Presupuesto modificado.");
+    } catch {
+      toast.error("Error de conexión.");
+    } finally {
+      setIsModifying(false);
     }
   }
 
@@ -307,6 +342,35 @@ export function NewEstimateForm({ clients: initialClients, workTypes }: NewEstim
               margenGlobal={margenGlobal}
               onMargenGlobalChange={setMargenGlobal}
             />
+
+            {/* Modificar con IA */}
+            <div className="mt-6 space-y-3">
+              <Label className="text-sm font-medium">Modificar con IA</Label>
+              <form
+                onSubmit={(e) => { e.preventDefault(); handleModify(); }}
+                className="flex gap-2"
+              >
+                <Input
+                  value={aiInstruction}
+                  onChange={(e) => setAiInstruction(e.target.value)}
+                  placeholder="Ej: quita la pintura, añade aire acondicionado, sube precios un 10%..."
+                  disabled={isModifying}
+                  className="flex-1"
+                />
+                <Button
+                  type="submit"
+                  disabled={isModifying || !aiInstruction.trim()}
+                  size="icon"
+                  className="shrink-0"
+                >
+                  {isModifying ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              </form>
+            </div>
 
             <div className="mt-6 flex gap-3">
               <Button

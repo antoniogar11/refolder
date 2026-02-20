@@ -121,7 +121,82 @@ export function EstimatePreviewEditor({
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border">
+      {/* Vista móvil: tarjetas */}
+      <div className="space-y-3 sm:hidden">
+        {partidas.map((p, i) => (
+          <div key={i} className="rounded-lg border p-3 space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <Input
+                  defaultValue={p.categoria}
+                  onBlur={(e) => handleUpdateItem(i, "categoria", e.target.value)}
+                  className="h-7 text-xs font-medium text-amber-700 bg-amber-50 border-amber-200 mb-1"
+                />
+                <Input
+                  defaultValue={p.descripcion}
+                  onBlur={(e) => handleUpdateItem(i, "descripcion", e.target.value)}
+                  className="h-8 text-sm"
+                />
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDeleteItem(i)}
+                className="h-8 w-8 p-0 text-rose-500 hover:text-rose-700 shrink-0"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              <div>
+                <span className="text-[10px] text-slate-500 block">Ud.</span>
+                <Input
+                  defaultValue={p.unidad}
+                  onBlur={(e) => handleUpdateItem(i, "unidad", e.target.value)}
+                  className="h-7 text-xs text-center"
+                />
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-500 block">Cant.</span>
+                <Input
+                  type="number"
+                  step="0.01"
+                  defaultValue={p.cantidad}
+                  onBlur={(e) => handleUpdateItem(i, "cantidad", e.target.value)}
+                  className="h-7 text-xs text-right"
+                />
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-500 block">P. Coste</span>
+                <Input
+                  type="number"
+                  step="0.01"
+                  defaultValue={p.precio_coste}
+                  onBlur={(e) => handleUpdateItem(i, "precio_coste", e.target.value)}
+                  className="h-7 text-xs text-right"
+                />
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-500 block">Margen %</span>
+                <Input
+                  type="number"
+                  step="1"
+                  defaultValue={p.margen}
+                  onBlur={(e) => handleUpdateItem(i, "margen", e.target.value)}
+                  className="h-7 text-xs text-right"
+                />
+              </div>
+            </div>
+            <div className="flex justify-between text-sm pt-1 border-t">
+              <span className="text-slate-500">P. Venta: <span className="font-medium text-slate-700">{formatCurrency(p.precio_unitario)}</span></span>
+              <span className="font-semibold">{formatCurrency(p.subtotal)}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Vista desktop: tabla */}
+      <div className="overflow-x-auto rounded-lg border hidden sm:block">
         <Table>
           <TableHeader>
             <TableRow>
