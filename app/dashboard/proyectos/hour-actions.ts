@@ -47,6 +47,7 @@ export async function createHourAction(
   }
 
   revalidatePath(`/dashboard/proyectos/${projectId}`);
+  revalidatePath("/dashboard");
   return { success: true, message: "Horas registradas correctamente." };
 }
 

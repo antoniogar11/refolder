@@ -5,7 +5,11 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { navItems, settingsItem } from "@/lib/nav-items";
 
-export function Sidebar() {
+type SidebarProps = {
+  quickAddButton?: React.ReactNode;
+};
+
+export function Sidebar({ quickAddButton }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -41,7 +45,8 @@ export function Sidebar() {
           );
         })}
       </nav>
-      <div className="px-3 pb-4 mt-auto border-t border-slate-800 pt-4">
+      <div className="px-3 pb-4 mt-auto border-t border-slate-800 pt-4 space-y-2">
+        {quickAddButton}
         <Link
           href={settingsItem.href}
           className={cn(

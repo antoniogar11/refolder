@@ -36,6 +36,7 @@ export async function createCostAction(
   }
 
   revalidatePath(`/dashboard/proyectos/${projectId}`);
+  revalidatePath("/dashboard");
   const label = tipo === "ingreso" ? "Ingreso" : "Gasto";
   return { success: true, message: `${label} registrado correctamente.` };
 }
