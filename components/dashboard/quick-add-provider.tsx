@@ -5,7 +5,7 @@ import { DialogTrigger } from "@/components/ui/dialog";
 import { Plus } from "lucide-react";
 
 type QuickAddProviderProps = {
-  variant: "sidebar" | "mobile-header";
+  variant: "sidebar" | "fab";
 };
 
 export async function QuickAddProvider({ variant }: QuickAddProviderProps) {
@@ -14,16 +14,16 @@ export async function QuickAddProvider({ variant }: QuickAddProviderProps) {
     getWorkerRates(),
   ]);
 
-  if (variant === "mobile-header") {
+  if (variant === "fab") {
     return (
       <QuickAddDialog projects={projects} workerRates={workerRates}>
         <DialogTrigger asChild>
           <button
             type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500 text-white shadow-md hover:bg-amber-600 active:scale-95 transition-all"
+            className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-500 text-white shadow-lg shadow-amber-500/30 hover:bg-amber-600 active:scale-90 transition-all"
             aria-label="Registro r\u00e1pido"
           >
-            <Plus className="h-5 w-5" />
+            <Plus className="h-7 w-7" strokeWidth={2.5} />
           </button>
         </DialogTrigger>
       </QuickAddDialog>
