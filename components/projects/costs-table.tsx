@@ -95,6 +95,7 @@ export function CostsTable({ costs, projectId }: CostsTableProps) {
                   onClick={() => handleDelete(cost.id)}
                   disabled={deletingId === cost.id}
                   className="h-8 w-8 p-0 text-slate-400 hover:text-rose-500"
+                  aria-label={`Eliminar gasto: ${cost.descripcion}`}
                 >
                   {deletingId === cost.id ? (
                     <Loader2 className="h-3 w-3 animate-spin" />

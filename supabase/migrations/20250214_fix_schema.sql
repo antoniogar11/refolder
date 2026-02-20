@@ -1,0 +1,2 @@
+-- Placeholder migration (schema was fixed manually)
+-- This file is intentionally empty to preserve migration ordering.

@@ -232,6 +232,7 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin markdow
           responseMimeType: "application/json",
         },
       }),
+      signal: AbortSignal.timeout(60000),
     });
 
     if (!response.ok) {
@@ -317,6 +318,12 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin markdow
     });
   } catch (error) {
     console.error("Generate estimate error:", error);
+    if (error instanceof DOMException && error.name === "TimeoutError") {
+      return NextResponse.json(
+        { error: "La generaci\u00f3n ha tardado demasiado. Int\u00e9ntalo de nuevo." },
+        { status: 504 }
+      );
+    }
     return NextResponse.json(
       { error: "Error interno del servidor." },
       { status: 500 }

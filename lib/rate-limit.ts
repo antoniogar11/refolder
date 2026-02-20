@@ -14,8 +14,16 @@ const upstashRatelimit = redis
     })
   : null;
 
-/** Rate-limit a key. Passes through when Redis is not configured. */
+const isProduction = process.env.NODE_ENV === "production";
+
+/** Rate-limit a key. In production, blocks if Redis is not configured. In dev, passes through. */
 export async function ratelimit(key: string): Promise<{ success: boolean }> {
-  if (!upstashRatelimit) return { success: true };
+  if (!upstashRatelimit) {
+    if (isProduction) {
+      console.error("Rate limiting not configured in production — blocking request.");
+      return { success: false };
+    }
+    return { success: true };
+  }
   return upstashRatelimit.limit(key);
 }

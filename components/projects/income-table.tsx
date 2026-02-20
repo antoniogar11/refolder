@@ -90,6 +90,7 @@ export function IncomeTable({ incomes, projectId }: IncomeTableProps) {
                     onClick={() => handleDelete(income.id)}
                     disabled={deletingId === income.id}
                     className="h-8 w-8 p-0 text-slate-400 hover:text-rose-500"
+                    aria-label={`Eliminar ingreso: ${income.descripcion}`}
                   >
                     {deletingId === income.id ? (
                       <Loader2 className="h-3 w-3 animate-spin" />

@@ -39,8 +39,20 @@ type ZoneCardProps = {
 };
 
 const MAX_PHOTOS = 3;
-const MAX_DIMENSION = 1600; // px máximo por lado
+const MAX_DIMENSION = 1600; // px m\u00e1ximo por lado
 const JPEG_QUALITY = 0.7;
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB antes de compresi\u00f3n
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+
+function validateImage(file: File): string | null {
+  if (!ALLOWED_TYPES.includes(file.type) && !file.type.startsWith("image/")) {
+    return `"${file.name}" no es una imagen v\u00e1lida.`;
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    return `"${file.name}" supera los 20MB.`;
+  }
+  return null;
+}
 
 function compressImage(file: File): Promise<{ base64: string; mimeType: string }> {
   return new Promise((resolve, reject) => {
@@ -131,6 +143,11 @@ export function ZoneCard({ zone, index, workTypes, onChange, onRemove }: ZoneCar
     const filesToProcess = Array.from(files).slice(0, remaining);
 
     for (const file of filesToProcess) {
+      const validationError = validateImage(file);
+      if (validationError) {
+        toast.error(validationError);
+        continue;
+      }
       try {
         const photo = await compressImage(file);
         onChange({

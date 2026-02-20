@@ -97,6 +97,7 @@ export function HoursTable({ hours, projectId }: HoursTableProps) {
                     onClick={() => handleDelete(hour.id)}
                     disabled={deletingId === hour.id}
                     className="h-8 w-8 p-0 text-slate-400 hover:text-rose-500"
+                    aria-label={`Eliminar horas: ${hour.descripcion}`}
                   >
                     {deletingId === hour.id ? (
                       <Loader2 className="h-3 w-3 animate-spin" />
