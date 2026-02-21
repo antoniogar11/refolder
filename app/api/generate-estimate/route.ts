@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { ratelimit } from "@/lib/rate-limit";
 import { roundCurrency, computeSellingPrice } from "@/lib/utils";
-import { matchPreciosForDescription } from "@/lib/data/precios-referencia";
-import type { PrecioReferencia } from "@/types";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
@@ -35,32 +33,6 @@ type AIResponse = {
   iva: number;
   total: number;
 };
-
-/**
- * Construye la sección de precios de referencia para el prompt de IA.
- */
-function buildReferenceSection(precios: PrecioReferencia[]): string {
-  if (precios.length === 0) return "";
-
-  const grouped = new Map<string, PrecioReferencia[]>();
-  for (const p of precios) {
-    const existing = grouped.get(p.categoria) ?? [];
-    existing.push(p);
-    grouped.set(p.categoria, existing);
-  }
-
-  let section = "\n\nPRECIOS DE REFERENCIA BCCA (Base de Costes de la Construcción de Andalucía):\nUsa estos precios como guía orientativa para el coste base de cada partida.\n\n";
-
-  for (const [categoria, items] of grouped) {
-    section += `${categoria}:\n`;
-    for (const item of items) {
-      section += `  - ${item.codigo}: ${item.descripcion} (${item.unidad}): ${item.precio.toFixed(2)} EUR\n`;
-    }
-    section += "\n";
-  }
-
-  return section;
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -120,19 +92,6 @@ export async function POST(request: NextRequest) {
       project = projectData;
     }
 
-    // Buscar precios de referencia BCCA relevantes para la descripción
-    const fullDescription = [tipo_obra, descripcion, project?.name].filter(Boolean).join(" ");
-
-    let referencePrices: PrecioReferencia[] = [];
-    try {
-      referencePrices = await matchPreciosForDescription(fullDescription);
-    } catch (err) {
-      // Si falla la búsqueda de precios, continuamos sin ellos
-      console.error("Error fetching reference prices:", err);
-    }
-
-    const referenceSection = buildReferenceSection(referencePrices);
-
     const systemInstruction = `Eres un experto presupuestador de obras y reformas en España. Tu trabajo es generar presupuestos con precios de COSTE realistas del mercado español actual (2025-2026).
 
 REGLA FUNDAMENTAL:
@@ -150,7 +109,7 @@ REGLAS DE FORMATO:
 - Calcula el subtotal general, IVA al 21%, y total (basado en precio_coste, sin margen)
 - Los precios deben incluir materiales y mano de obra en cada partida
 - Si se incluyen fotos de las zonas, analízalas para ajustar cantidades y precios, pero NO añadas trabajos extra que el usuario no haya pedido
-${referenceSection}
+
 Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin markdown, sin texto adicional):
 {
   "partidas": [
