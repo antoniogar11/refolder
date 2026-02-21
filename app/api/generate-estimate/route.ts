@@ -133,18 +133,23 @@ export async function POST(request: NextRequest) {
 
     const referenceSection = buildReferenceSection(referencePrices);
 
-    const systemInstruction = `Eres un experto presupuestador de obras y reformas en España. Tu trabajo es generar presupuestos detallados y profesionales con precios de COSTE realistas del mercado español actual (2025-2026).
+    const systemInstruction = `Eres un experto presupuestador de obras y reformas en España. Tu trabajo es generar presupuestos con precios de COSTE realistas del mercado español actual (2025-2026).
 
-REGLAS:
+REGLA FUNDAMENTAL:
+- Genera partidas SOLO para los trabajos que el usuario describe explícitamente. NO inventes ni añadas trabajos que no se hayan mencionado.
+- Si el usuario dice "cambiar grifería", genera SOLO la partida de grifería, no inventes fontanería completa, tuberías, ni llaves de paso.
+- Si el usuario dice "alicatar paredes", genera SOLO alicatado de paredes, no añadas suelo, techo ni pintura por tu cuenta.
+- Cada partida debe corresponder directamente a algo que el usuario ha descrito.
+
+REGLAS DE FORMATO:
 - Devuelve el "precio_coste" de cada partida (coste real sin margen de beneficio)
 - Los precios de coste deben ser realistas para el mercado español
-- Incluye todas las partidas necesarias para el trabajo descrito
 - Agrupa las partidas por categorías lógicas (Demolición, Albañilería, Fontanería, Electricidad, Carpintería, Pintura, etc.)
 - Usa unidades estándar: m² (metro cuadrado), ml (metro lineal), ud (unidad), pa (partida alzada), h (hora)
 - El subtotal de cada partida = cantidad × precio_coste
 - Calcula el subtotal general, IVA al 21%, y total (basado en precio_coste, sin margen)
-- Sé exhaustivo: incluye preparación, materiales, mano de obra, limpieza final
-- Si se incluyen fotos de las zonas, analízalas para identificar el estado actual, materiales existentes, trabajos necesarios y posibles complicaciones. Usa esta información visual para ajustar cantidades y partidas de forma más precisa
+- Los precios deben incluir materiales y mano de obra en cada partida
+- Si se incluyen fotos de las zonas, analízalas para ajustar cantidades y precios, pero NO añadas trabajos extra que el usuario no haya pedido
 ${referenceSection}
 Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin markdown, sin texto adicional):
 {
@@ -180,7 +185,7 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin markdow
       userMessage += `Tipo de obra: ${tipo_obra}\n`;
     }
 
-    userMessage += `\nDescripción del trabajo:\n${descripcion}\n\nGenera todas las partidas necesarias con precios de COSTE realistas del mercado español. Responde SOLO con el JSON, sin texto adicional.`;
+    userMessage += `\nDescripción del trabajo:\n${descripcion}\n\nIMPORTANTE: Genera partidas ÚNICAMENTE para lo que se describe arriba. No añadas trabajos extra que no estén mencionados. Precios de COSTE realistas del mercado español. Responde SOLO con el JSON.`;
 
     // Build user message parts: text + optional photos
     const userParts: Record<string, unknown>[] = [{ text: userMessage }];
