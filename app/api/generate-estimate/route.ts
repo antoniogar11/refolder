@@ -267,18 +267,35 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin markdow
       );
     }
 
-    // Extract JSON from response (handle potential markdown code blocks)
-    let jsonStr = textContent;
-    const jsonMatch = textContent.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (jsonMatch) {
-      jsonStr = jsonMatch[1];
+    // Extract JSON from response with multiple strategies
+    let parsed: AIResponse | null = null;
+
+    // Strategy 1: direct parse
+    try {
+      parsed = JSON.parse(textContent.trim());
+    } catch {
+      // Strategy 2: extract from markdown code blocks
+      const jsonMatch = textContent.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (jsonMatch) {
+        try {
+          parsed = JSON.parse(jsonMatch[1].trim());
+        } catch { /* continue */ }
+      }
+
+      // Strategy 3: find first { and last }
+      if (!parsed) {
+        const start = textContent.indexOf("{");
+        const end = textContent.lastIndexOf("}");
+        if (start !== -1 && end > start) {
+          try {
+            parsed = JSON.parse(textContent.slice(start, end + 1));
+          } catch { /* continue */ }
+        }
+      }
     }
 
-    let parsed: AIResponse;
-    try {
-      parsed = JSON.parse(jsonStr.trim());
-    } catch {
-      console.error("Failed to parse AI response:", textContent);
+    if (!parsed || !Array.isArray(parsed.partidas)) {
+      console.error("Failed to parse AI response:", textContent.slice(0, 500));
       return NextResponse.json(
         { error: "No se pudo interpretar la respuesta de la IA. Inténtalo de nuevo." },
         { status: 502 }

@@ -145,16 +145,33 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura:
       );
     }
 
-    let jsonStr = textContent;
-    const jsonMatch = textContent.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (jsonMatch) jsonStr = jsonMatch[1];
+    let parsed: { partidas: AIPartida[] } | null = null;
 
-    let parsed: { partidas: AIPartida[] };
     try {
-      parsed = JSON.parse(jsonStr.trim());
+      parsed = JSON.parse(textContent.trim());
     } catch {
+      const jsonMatch = textContent.match(/```(?:json)?\s*([\s\S]*?)```/);
+      if (jsonMatch) {
+        try {
+          parsed = JSON.parse(jsonMatch[1].trim());
+        } catch { /* continue */ }
+      }
+
+      if (!parsed) {
+        const start = textContent.indexOf("{");
+        const end = textContent.lastIndexOf("}");
+        if (start !== -1 && end > start) {
+          try {
+            parsed = JSON.parse(textContent.slice(start, end + 1));
+          } catch { /* continue */ }
+        }
+      }
+    }
+
+    if (!parsed || !Array.isArray(parsed.partidas)) {
+      console.error("Failed to parse AI response:", textContent.slice(0, 500));
       return NextResponse.json(
-        { error: "No se pudo interpretar la respuesta de la IA." },
+        { error: "No se pudo interpretar la respuesta de la IA. Inténtalo de nuevo." },
         { status: 502 }
       );
     }
