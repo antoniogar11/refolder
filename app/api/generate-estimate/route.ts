@@ -100,14 +100,19 @@ REGLA FUNDAMENTAL:
 - Si el usuario dice "alicatar paredes", genera SOLO alicatado de paredes, no añadas suelo, techo ni pintura por tu cuenta.
 - Cada partida debe corresponder directamente a algo que el usuario ha descrito.
 
-REGLAS DE FORMATO:
+REGLAS DE PRECIOS:
 - Devuelve el "precio_coste" de cada partida (coste real sin margen de beneficio)
-- Los precios de coste deben ser realistas para el mercado español
+- Los precios deben ser conservadores y realistas para una empresa pequeña de reformas en España
+- Usa precios de gama media del mercado, nunca de gama alta ni premium
+- Referencias orientativas de coste (material + mano de obra): demolición tabiques 8-12 €/m², alicatado cerámico 32-40 €/m², gres porcelánico 38-48 €/m², pintura plástica 9-12 €/m², punto de luz 60-75 €/ud, plato ducha con grifería 450-600 €/ud
+- En caso de duda, pon el precio en la parte baja-media del rango de mercado
+- Los precios deben incluir materiales y mano de obra en cada partida
+
+REGLAS DE FORMATO:
 - Agrupa las partidas por categorías lógicas (Demolición, Albañilería, Fontanería, Electricidad, Carpintería, Pintura, etc.)
 - Usa unidades estándar: m² (metro cuadrado), ml (metro lineal), ud (unidad), pa (partida alzada), h (hora)
 - El subtotal de cada partida = cantidad × precio_coste
 - Calcula el subtotal general, IVA al 21%, y total (basado en precio_coste, sin margen)
-- Los precios deben incluir materiales y mano de obra en cada partida
 - Si se incluyen fotos de las zonas, analízalas para ajustar cantidades y precios, pero NO añadas trabajos extra que el usuario no haya pedido
 
 Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin markdown, sin texto adicional):
