@@ -10,27 +10,46 @@ export async function GET(request: Request) {
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    
+
     if (!error) {
-      // Si hay un parámetro redirectTo en la URL (de invitaciones de Supabase)
-      const redirectTo = requestUrl.searchParams.get("redirectTo");
-      
-      if (redirectTo) {
-        // Si viene de una invitación, redirigir al registro con el email pre-rellenado
-        const email = requestUrl.searchParams.get("email");
-        if (email) {
-          redirect(`/auth/register?email=${encodeURIComponent(email)}`);
-        }
-        redirect(redirectTo);
-      }
-      
-      // Verificar si el usuario tiene un email pendiente (invitación)
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      
-      if (user?.email) {
-        // Si el usuario ya está autenticado, ir al dashboard
+
+      if (user) {
+        // Auto-crear empresa si es un usuario nuevo (OAuth o invitación)
+        const { data: existingCompany } = await supabase
+          .from("companies")
+          .select("id")
+          .eq("owner_id", user.id)
+          .maybeSingle();
+
+        if (!existingCompany) {
+          const displayName =
+            user.user_metadata?.full_name ||
+            user.user_metadata?.name ||
+            "Mi Empresa";
+
+          await supabase
+            .from("companies")
+            .insert({
+              owner_id: user.id,
+              name: displayName,
+            })
+            .single();
+        }
+
+        // Si hay un parámetro redirectTo en la URL (de invitaciones de Supabase)
+        const redirectTo = requestUrl.searchParams.get("redirectTo");
+
+        if (redirectTo) {
+          const email = requestUrl.searchParams.get("email");
+          if (email) {
+            redirect(`/auth/register?email=${encodeURIComponent(email)}`);
+          }
+          redirect(redirectTo);
+        }
+
         redirect(next);
       }
     }

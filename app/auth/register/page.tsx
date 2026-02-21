@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RegisterForm } from "@/components/auth/register-form";
+import { GoogleButton } from "@/components/auth/google-button";
 
 export default function RegisterPage() {
   return (
@@ -14,6 +15,15 @@ export default function RegisterPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <GoogleButton label="Registrarse con Google" />
+          <div className="relative my-2">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">o</span>
+            </div>
+          </div>
           <RegisterForm />
           <div className="text-center text-sm text-slate-600 dark:text-slate-400">
             ¿Ya tienes cuenta?{" "}
