@@ -283,119 +283,216 @@ export function EstimateItemsEditor({ estimateId, initialItems, estimateTotal, m
             No hay partidas. Añade una manualmente o genera con IA desde la obra.
           </p>
         ) : (
-          <div className="overflow-x-auto rounded-lg border">
-            <TooltipProvider>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="min-w-[150px]">Categoría</TableHead>
-                    <TableHead>Descripción</TableHead>
-                    <TableHead className="w-[60px] text-right">Ud.</TableHead>
-                    <TableHead className="w-[80px] text-right">Cant.</TableHead>
-                    <TableHead className="w-[100px] text-right">P. Coste</TableHead>
-                    <TableHead className="w-[80px] text-right">Margen %</TableHead>
-                    <TableHead className="w-[100px] text-right">P. Venta</TableHead>
-                    <TableHead className="w-[100px] text-right">Subtotal</TableHead>
-                    <TableHead className="w-[40px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {items.map((item) => {
-                    const isSaving = savingItems.has(item.id);
-                    return (
-                      <TableRow key={item.id} className={isSaving ? "opacity-70" : ""}>
-                        <TableCell>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Input
-                                defaultValue={item.categoria}
-                                onBlur={(e) => handleUpdateItem(item.id, "categoria", e.target.value)}
-                                className="h-8 text-xs"
-                                disabled={isSaving}
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{item.categoria}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            defaultValue={item.descripcion}
-                            onBlur={(e) => handleUpdateItem(item.id, "descripcion", e.target.value)}
-                            className="h-8 text-sm"
-                            disabled={isSaving}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            defaultValue={item.unidad}
-                            onBlur={(e) => handleUpdateItem(item.id, "unidad", e.target.value)}
-                            className="h-8 text-xs text-right w-14"
-                            disabled={isSaving}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            defaultValue={item.cantidad}
-                            onBlur={(e) => handleUpdateItem(item.id, "cantidad", e.target.value)}
-                            className="h-8 text-right w-20"
-                            disabled={isSaving}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            defaultValue={item.precio_coste ?? 0}
-                            onBlur={(e) => handleUpdateItem(item.id, "precio_coste", e.target.value)}
-                            className="h-8 text-right w-24"
-                            disabled={isSaving}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Input
-                            type="number"
-                            step="1"
-                            defaultValue={item.margen}
-                            onBlur={(e) => handleUpdateItem(item.id, "margen", e.target.value)}
-                            className="h-8 text-right w-20"
-                            disabled={isSaving}
-                          />
-                        </TableCell>
-                        <TableCell className="text-right text-sm font-medium text-slate-600 dark:text-slate-300">
-                          <div className="flex items-center justify-end gap-1">
-                            {isSaving && <Loader2 className="h-3 w-3 animate-spin text-amber-500" />}
-                            {formatCurrency(item.precio_unitario)}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          {formatCurrency(roundCurrency(item.cantidad * item.precio_unitario))}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteItem(item.id)}
-                            disabled={!!deletingItem || isSaving}
-                            className="h-8 w-8 p-0 text-rose-500 hover:text-rose-700"
-                          >
-                            {deletingItem === item.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Trash2 className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TooltipProvider>
-          </div>
+          <>
+            {/* Vista móvil: tarjetas */}
+            <div className="space-y-3 sm:hidden">
+              {items.map((item) => {
+                const isSaving = savingItems.has(item.id);
+                return (
+                  <div key={item.id} className={`rounded-lg border p-3 space-y-2 ${isSaving ? "opacity-70" : ""}`}>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <Input
+                          defaultValue={item.categoria}
+                          onBlur={(e) => handleUpdateItem(item.id, "categoria", e.target.value)}
+                          className="h-7 text-xs font-medium text-amber-700 bg-amber-50 border-amber-200 mb-1"
+                          disabled={isSaving}
+                        />
+                        <Input
+                          defaultValue={item.descripcion}
+                          onBlur={(e) => handleUpdateItem(item.id, "descripcion", e.target.value)}
+                          className="h-8 text-sm"
+                          disabled={isSaving}
+                        />
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteItem(item.id)}
+                        disabled={!!deletingItem || isSaving}
+                        className="h-8 w-8 p-0 text-rose-500 hover:text-rose-700 shrink-0"
+                      >
+                        {deletingItem === item.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <span className="text-[10px] text-slate-500 block">Ud.</span>
+                        <Input
+                          defaultValue={item.unidad}
+                          onBlur={(e) => handleUpdateItem(item.id, "unidad", e.target.value)}
+                          className="h-7 text-xs text-center"
+                          disabled={isSaving}
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500 block">Cant.</span>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          defaultValue={item.cantidad}
+                          onBlur={(e) => handleUpdateItem(item.id, "cantidad", e.target.value)}
+                          className="h-7 text-xs text-right"
+                          disabled={isSaving}
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500 block">P. Coste</span>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          defaultValue={item.precio_coste ?? 0}
+                          onBlur={(e) => handleUpdateItem(item.id, "precio_coste", e.target.value)}
+                          className="h-7 text-xs text-right"
+                          disabled={isSaving}
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500 block">Margen %</span>
+                        <Input
+                          type="number"
+                          step="1"
+                          defaultValue={item.margen}
+                          onBlur={(e) => handleUpdateItem(item.id, "margen", e.target.value)}
+                          className="h-7 text-xs text-right"
+                          disabled={isSaving}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-between text-sm pt-1 border-t">
+                      <span className="text-slate-500">
+                        P. Venta:{" "}
+                        <span className="font-medium text-slate-700 dark:text-slate-300">
+                          {isSaving && <Loader2 className="inline h-3 w-3 animate-spin text-amber-500 mr-1" />}
+                          {formatCurrency(item.precio_unitario)}
+                        </span>
+                      </span>
+                      <span className="font-semibold">{formatCurrency(roundCurrency(item.cantidad * item.precio_unitario))}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Vista desktop: tabla */}
+            <div className="overflow-x-auto rounded-lg border hidden sm:block">
+              <TooltipProvider>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[150px]">Categoría</TableHead>
+                      <TableHead>Descripción</TableHead>
+                      <TableHead className="w-[60px] text-right">Ud.</TableHead>
+                      <TableHead className="w-[80px] text-right">Cant.</TableHead>
+                      <TableHead className="w-[100px] text-right">P. Coste</TableHead>
+                      <TableHead className="w-[80px] text-right">Margen %</TableHead>
+                      <TableHead className="w-[100px] text-right">P. Venta</TableHead>
+                      <TableHead className="w-[100px] text-right">Subtotal</TableHead>
+                      <TableHead className="w-[40px]"></TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {items.map((item) => {
+                      const isSaving = savingItems.has(item.id);
+                      return (
+                        <TableRow key={item.id} className={isSaving ? "opacity-70" : ""}>
+                          <TableCell>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Input
+                                  defaultValue={item.categoria}
+                                  onBlur={(e) => handleUpdateItem(item.id, "categoria", e.target.value)}
+                                  className="h-8 text-xs"
+                                  disabled={isSaving}
+                                />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{item.categoria}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              defaultValue={item.descripcion}
+                              onBlur={(e) => handleUpdateItem(item.id, "descripcion", e.target.value)}
+                              className="h-8 text-sm"
+                              disabled={isSaving}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              defaultValue={item.unidad}
+                              onBlur={(e) => handleUpdateItem(item.id, "unidad", e.target.value)}
+                              className="h-8 text-xs text-right w-14"
+                              disabled={isSaving}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              defaultValue={item.cantidad}
+                              onBlur={(e) => handleUpdateItem(item.id, "cantidad", e.target.value)}
+                              className="h-8 text-right w-20"
+                              disabled={isSaving}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              defaultValue={item.precio_coste ?? 0}
+                              onBlur={(e) => handleUpdateItem(item.id, "precio_coste", e.target.value)}
+                              className="h-8 text-right w-24"
+                              disabled={isSaving}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Input
+                              type="number"
+                              step="1"
+                              defaultValue={item.margen}
+                              onBlur={(e) => handleUpdateItem(item.id, "margen", e.target.value)}
+                              className="h-8 text-right w-20"
+                              disabled={isSaving}
+                            />
+                          </TableCell>
+                          <TableCell className="text-right text-sm font-medium text-slate-600 dark:text-slate-300">
+                            <div className="flex items-center justify-end gap-1">
+                              {isSaving && <Loader2 className="h-3 w-3 animate-spin text-amber-500" />}
+                              {formatCurrency(item.precio_unitario)}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-right font-medium">
+                            {formatCurrency(roundCurrency(item.cantidad * item.precio_unitario))}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteItem(item.id)}
+                              disabled={!!deletingItem || isSaving}
+                              className="h-8 w-8 p-0 text-rose-500 hover:text-rose-700"
+                            >
+                              {deletingItem === item.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </TooltipProvider>
+            </div>
+          </>
         )}
 
         <div className="mt-4 space-y-2 text-right">
