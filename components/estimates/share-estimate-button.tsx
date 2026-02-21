@@ -99,11 +99,14 @@ export function ShareEstimateButton({
     }
   }
 
-  async function handleWhatsApp() {
-    const url = await getOrCreateShareUrl();
-    if (!url) return;
+  function handleWhatsApp() {
+    if (!shareUrl) {
+      toast.info("Generando enlace, pulsa de nuevo en un momento.");
+      getOrCreateShareUrl();
+      return;
+    }
 
-    const text = `Hola${clientName ? ` ${clientName}` : ""}, te envío el presupuesto "${estimateName}". Puedes verlo aquí: ${url}`;
+    const text = `Hola${clientName ? ` ${clientName}` : ""}, te envío el presupuesto "${estimateName}". Puedes verlo aquí: ${shareUrl}`;
     const whatsappUrl = clientPhone
       ? `https://wa.me/${clientPhone.replace(/[\s\-\+\(\)]/g, "")}?text=${encodeURIComponent(text)}`
       : `https://wa.me/?text=${encodeURIComponent(text)}`;
@@ -147,7 +150,7 @@ export function ShareEstimateButton({
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu onOpenChange={(open) => { if (open) getOrCreateShareUrl(); }}>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" disabled={loading}>
             {loading ? (

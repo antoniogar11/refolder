@@ -2,6 +2,8 @@
 
 SaaS de gestión de proyectos de construcción/reformas.
 
+**Directorio del proyecto:** `/Users/macdeantonio/Documents/GitHub/refolder` (es el único, no usar otros paths)
+
 ## Stack
 
 - **Framework:** Next.js 15 (App Router) + React 19 + TypeScript 5
