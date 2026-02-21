@@ -7,7 +7,7 @@ export default async function ConfiguracionPage() {
   return (
     <div className="max-w-4xl">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
+        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
           Configuración
         </h2>
         <p className="mt-1 text-slate-500 dark:text-slate-400">

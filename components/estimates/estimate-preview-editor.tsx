@@ -147,7 +147,7 @@ export function EstimatePreviewEditor({
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <div>
                 <span className="text-[10px] text-slate-500 block">Ud.</span>
                 <Input

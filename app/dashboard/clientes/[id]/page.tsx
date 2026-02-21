@@ -37,7 +37,7 @@ export default async function ClientEditPage({ params }: ClientEditPageProps) {
   return (
     <div className="max-w-5xl">
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
+        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
           Editar Cliente
         </h2>
         <p className="mt-1 text-slate-500 dark:text-slate-400">
@@ -81,13 +81,14 @@ export default async function ClientEditPage({ params }: ClientEditPageProps) {
               Este cliente no tiene proyectos registrados.
             </p>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nombre</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead>Presupuesto</TableHead>
-                  <TableHead>Inicio</TableHead>
+                  <TableHead className="hidden sm:table-cell">Presupuesto</TableHead>
+                  <TableHead className="hidden sm:table-cell">Inicio</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -104,16 +105,17 @@ export default async function ClientEditPage({ params }: ClientEditPageProps) {
                     <TableCell>
                       <StatusBadge type="project" status={project.status} />
                     </TableCell>
-                    <TableCell className="text-slate-500 dark:text-slate-400">
+                    <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
                       {formatCurrency(project.total_budget)}
                     </TableCell>
-                    <TableCell className="text-slate-500 dark:text-slate-400">
+                    <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
                       {project.start_date || "-"}
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

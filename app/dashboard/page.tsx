@@ -25,7 +25,7 @@ export default async function DashboardPage() {
     return (
       <div>
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
             Panel de Control
           </h2>
         </div>
@@ -73,7 +73,7 @@ export default async function DashboardPage() {
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
+        <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
           Panel de Control
         </h2>
         <p className="mt-2 text-slate-500 dark:text-slate-400">
@@ -162,35 +162,37 @@ export default async function DashboardPage() {
                 No hay proyectos todavia.
               </p>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Proyecto</TableHead>
-                    <TableHead>Cliente</TableHead>
-                    <TableHead>Estado</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {stats.recentProjects.map((p) => (
-                    <TableRow key={p.id}>
-                      <TableCell>
-                        <Link
-                          href={`/dashboard/proyectos/${p.id}`}
-                          className="font-medium hover:text-amber-600"
-                        >
-                          {p.name}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-sm text-slate-500 dark:text-slate-400">
-                        {p.client?.name ?? "-"}
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge type="project" status={p.status} />
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Proyecto</TableHead>
+                      <TableHead>Cliente</TableHead>
+                      <TableHead>Estado</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {stats.recentProjects.map((p) => (
+                      <TableRow key={p.id}>
+                        <TableCell>
+                          <Link
+                            href={`/dashboard/proyectos/${p.id}`}
+                            className="font-medium hover:text-amber-600"
+                          >
+                            {p.name}
+                          </Link>
+                        </TableCell>
+                        <TableCell className="text-sm text-slate-500 dark:text-slate-400">
+                          {p.client?.name ?? "-"}
+                        </TableCell>
+                        <TableCell>
+                          <StatusBadge type="project" status={p.status} />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -215,35 +217,37 @@ export default async function DashboardPage() {
                 No hay presupuestos todavia.
               </p>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Presupuesto</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                    <TableHead>Estado</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {stats.recentEstimates.map((e) => (
-                    <TableRow key={e.id}>
-                      <TableCell>
-                        <Link
-                          href={`/dashboard/presupuestos/${e.id}`}
-                          className="font-medium hover:text-amber-600"
-                        >
-                          {e.name}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatCurrency(e.total_amount)}
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge type="estimate" status={e.status} />
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Presupuesto</TableHead>
+                      <TableHead className="text-right">Total</TableHead>
+                      <TableHead>Estado</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {stats.recentEstimates.map((e) => (
+                      <TableRow key={e.id}>
+                        <TableCell>
+                          <Link
+                            href={`/dashboard/presupuestos/${e.id}`}
+                            className="font-medium hover:text-amber-600"
+                          >
+                            {e.name}
+                          </Link>
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          {formatCurrency(e.total_amount)}
+                        </TableCell>
+                        <TableCell>
+                          <StatusBadge type="estimate" status={e.status} />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>

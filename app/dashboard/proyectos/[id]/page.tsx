@@ -151,13 +151,14 @@ export default async function ProjectEditPage({ params }: ProjectEditPageProps) 
                     Este proyecto no tiene presupuestos. Genera uno con IA a continuacion.
                   </p>
                 ) : (
+                  <div className="overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>Nombre</TableHead>
                         <TableHead className="text-right">Total</TableHead>
                         <TableHead>Estado</TableHead>
-                        <TableHead>Fecha</TableHead>
+                        <TableHead className="hidden sm:table-cell">Fecha</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -177,13 +178,14 @@ export default async function ProjectEditPage({ params }: ProjectEditPageProps) 
                           <TableCell>
                             <StatusBadge type="estimate" status={estimate.status} />
                           </TableCell>
-                          <TableCell className="text-slate-500 dark:text-slate-400">
+                          <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
                             {formatDate(estimate.created_at)}
                           </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
                   </Table>
+                  </div>
                 )}
               </CardContent>
             </Card>
