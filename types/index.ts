@@ -71,12 +71,14 @@ export type Estimate = {
   valid_until: string | null;
   notes: string | null;
   margen_global: number | null;
+  share_token: string | null;
+  shared_at: string | null;
   created_at: string;
   updated_at: string;
   project?: Pick<Project, "id" | "name" | "address"> & {
-    client?: Pick<Client, "id" | "name" | "address" | "city" | "province" | "postal_code" | "tax_id">;
+    client?: Pick<Client, "id" | "name" | "email" | "phone" | "address" | "city" | "province" | "postal_code" | "tax_id">;
   };
-  client?: Pick<Client, "id" | "name" | "address" | "city" | "province" | "postal_code" | "tax_id">;
+  client?: Pick<Client, "id" | "name" | "email" | "phone" | "address" | "city" | "province" | "postal_code" | "tax_id">;
   items?: EstimateItem[];
 };
 

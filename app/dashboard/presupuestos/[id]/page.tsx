@@ -12,6 +12,7 @@ import { deleteEstimateAction } from "@/app/dashboard/presupuestos/actions";
 import { EstimateItemsEditor } from "@/components/estimates/estimate-items-editor";
 import { EstimateStatusSelect } from "@/components/estimates/estimate-status-select";
 import { ExportPDFButton } from "@/components/estimates/export-pdf-button";
+import { ShareEstimateButton } from "@/components/estimates/share-estimate-button";
 import { CreateProjectFromEstimateButton } from "@/components/estimates/create-project-from-estimate-button";
 import { formatCurrency } from "@/lib/utils/format";
 import { roundCurrency } from "@/lib/utils";
@@ -86,6 +87,14 @@ export default async function EstimateDetailPage({ params }: EstimateDetailPageP
             <CreateProjectFromEstimateButton estimateId={estimate.id} />
           )}
           <ExportPDFButton estimate={estimate} items={items} company={company} />
+          <ShareEstimateButton
+            estimateId={estimate.id}
+            estimateName={estimate.name}
+            clientName={(estimate.client || estimate.project?.client)?.name}
+            clientEmail={(estimate.client || estimate.project?.client)?.email ?? undefined}
+            clientPhone={(estimate.client || estimate.project?.client)?.phone ?? undefined}
+            shareToken={estimate.share_token}
+          />
           <EstimateStatusSelect estimateId={estimate.id} currentStatus={estimate.status} />
           <DeleteEntityButton
             entityId={estimate.id}

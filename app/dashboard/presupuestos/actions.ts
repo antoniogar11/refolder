@@ -428,6 +428,171 @@ export async function updateEstimateTotalAction(
   return { success: true, message: "Total actualizado." };
 }
 
+export async function generateShareTokenAction(
+  estimateId: string,
+): Promise<{ success: boolean; message: string; shareToken?: string; shareUrl?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No estás autenticado." };
+
+  // Check if already has a share token
+  const { data: existing } = await supabase
+    .from("estimates")
+    .select("share_token")
+    .eq("id", estimateId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!existing) {
+    return { success: false, message: "Presupuesto no encontrado." };
+  }
+
+  if (existing.share_token) {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    return {
+      success: true,
+      message: "El presupuesto ya tiene un enlace de compartir.",
+      shareToken: existing.share_token,
+      shareUrl: `${appUrl}/presupuesto/${existing.share_token}`,
+    };
+  }
+
+  // Generate a new share token
+  const shareToken = crypto.randomUUID();
+  const { error } = await supabase
+    .from("estimates")
+    .update({
+      share_token: shareToken,
+      shared_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", estimateId)
+    .eq("user_id", user.id);
+
+  if (error) {
+    console.error("Error generating share token", error);
+    return { success: false, message: error.message };
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const shareUrl = `${appUrl}/presupuesto/${shareToken}`;
+
+  revalidatePath(`/dashboard/presupuestos/${estimateId}`);
+  return { success: true, message: "Enlace generado correctamente.", shareToken, shareUrl };
+}
+
+export async function sendEstimateEmailAction(
+  estimateId: string,
+  recipientEmail: string,
+  recipientName: string,
+  message?: string,
+): Promise<{ success: boolean; message: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, message: "No estás autenticado." };
+
+  // Fetch estimate
+  const { data: estimate } = await supabase
+    .from("estimates")
+    .select("id, name, share_token, total_amount")
+    .eq("id", estimateId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (!estimate) {
+    return { success: false, message: "Presupuesto no encontrado." };
+  }
+
+  // Generate share token if it doesn't exist
+  let shareToken = estimate.share_token;
+  if (!shareToken) {
+    shareToken = crypto.randomUUID();
+    await supabase
+      .from("estimates")
+      .update({
+        share_token: shareToken,
+        shared_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", estimateId)
+      .eq("user_id", user.id);
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const shareUrl = `${appUrl}/presupuesto/${shareToken}`;
+
+  // Fetch company for sender name
+  const { data: company } = await supabase
+    .from("companies")
+    .select("name, email")
+    .eq("owner_id", user.id)
+    .single();
+
+  const senderName = company?.name || "Refolder";
+
+  // Send email via Resend
+  const resendApiKey = process.env.RESEND_API_KEY;
+  if (!resendApiKey) {
+    return { success: false, message: "El servicio de email no está configurado. Configura RESEND_API_KEY en las variables de entorno." };
+  }
+
+  const emailHtml = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%); padding: 30px; border-radius: 12px 12px 0 0;">
+        <h1 style="color: white; margin: 0; font-size: 22px;">Presupuesto de ${senderName}</h1>
+      </div>
+      <div style="background: #f8fafc; padding: 30px; border: 1px solid #e2e8f0; border-top: none;">
+        <p style="color: #334155; font-size: 16px; margin-top: 0;">Hola ${recipientName},</p>
+        ${message ? `<p style="color: #475569; font-size: 14px;">${message}</p>` : ""}
+        <p style="color: #475569; font-size: 14px;">Te enviamos el presupuesto <strong>&ldquo;${estimate.name}&rdquo;</strong> para tu revisión.</p>
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${shareUrl}" style="background: #d97706; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block;">Ver presupuesto</a>
+        </div>
+        <p style="color: #94a3b8; font-size: 12px; text-align: center;">Si el botón no funciona, copia y pega este enlace:<br/><a href="${shareUrl}" style="color: #2563eb;">${shareUrl}</a></p>
+      </div>
+      <div style="padding: 15px; text-align: center; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 12px 12px; background: white;">
+        <p style="color: #94a3b8; font-size: 11px; margin: 0;">Enviado con Refolder</p>
+      </div>
+    </div>
+  `;
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${resendApiKey}`,
+      },
+      body: JSON.stringify({
+        from: `${senderName} <presupuestos@${process.env.RESEND_DOMAIN || "refolder.es"}>`,
+        to: [recipientEmail],
+        subject: `Presupuesto: ${estimate.name}`,
+        html: emailHtml,
+      }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.text();
+      console.error("Resend API error:", errorData);
+      return { success: false, message: "Error al enviar el email. Inténtalo de nuevo." };
+    }
+
+    // Update status to sent
+    await supabase
+      .from("estimates")
+      .update({ status: "sent", updated_at: new Date().toISOString() })
+      .eq("id", estimateId)
+      .eq("user_id", user.id);
+
+    revalidatePath(`/dashboard/presupuestos/${estimateId}`);
+    revalidatePath("/dashboard/presupuestos");
+    return { success: true, message: `Email enviado a ${recipientEmail}.` };
+  } catch (error) {
+    console.error("Error sending email:", error);
+    return { success: false, message: "Error de conexión al enviar el email." };
+  }
+}
+
 export async function updateGlobalMarginAction(
   estimateId: string,
   margenGlobal: number,
