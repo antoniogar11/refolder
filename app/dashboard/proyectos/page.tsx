@@ -90,7 +90,7 @@ export default async function ProyectosPage({ searchParams }: ProyectosPageProps
         </Card>
       ) : (
         <>
-          <div className="mt-6 rounded-lg border bg-white dark:bg-slate-900">
+          <div className="mt-6 overflow-x-auto rounded-lg border bg-white dark:bg-slate-900">
             <Table>
               <TableHeader>
                 <TableRow>

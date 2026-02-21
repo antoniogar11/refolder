@@ -25,7 +25,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <div className="flex">
         <Sidebar quickAddButton={<QuickAddProvider variant="sidebar" />} />
-        <div className="flex-1 flex flex-col min-h-screen">
+        <div className="flex-1 flex flex-col min-h-screen min-w-0">
           <header className="border-b border-slate-200 bg-white dark:bg-slate-800 h-16 flex items-center px-4 lg:px-8">
             <MobileNav />
             <Breadcrumbs />
@@ -36,7 +36,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
               <LogoutButton variant="outline" />
             </div>
           </header>
-          <main className="flex-1 p-4 lg:p-8 max-w-7xl mx-auto w-full pb-24 lg:pb-8">
+          <main className="flex-1 p-4 lg:p-8 max-w-7xl mx-auto w-full pb-24 lg:pb-8 overflow-x-hidden">
             {children}
           </main>
           {/* FAB - Botón flotante móvil */}

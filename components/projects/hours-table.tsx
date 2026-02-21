@@ -46,7 +46,7 @@ export function HoursTable({ hours, projectId }: HoursTableProps) {
 
   return (
     <div className="space-y-2">
-      <div className="overflow-hidden rounded-lg border">
+      <div className="overflow-x-auto rounded-lg border">
         <Table>
           <TableHeader>
             <TableRow>

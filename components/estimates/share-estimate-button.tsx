@@ -68,9 +68,11 @@ export function ShareEstimateButton({
     setLoading(true);
     try {
       const result = await generateShareTokenAction(estimateId);
-      if (result.success && result.shareUrl) {
-        setShareUrl(result.shareUrl);
-        return result.shareUrl;
+      if (result.success && result.shareToken) {
+        // Build URL client-side to avoid NEXT_PUBLIC_APP_URL mismatches
+        const url = `${window.location.origin}/presupuesto/${result.shareToken}`;
+        setShareUrl(url);
+        return url;
       } else {
         toast.error(result.message);
         return null;

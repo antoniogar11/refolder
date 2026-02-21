@@ -54,7 +54,7 @@ export default async function EstimateDetailPage({ params }: EstimateDetailPageP
       )}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white truncate">
             {estimate.name}
           </h2>
           <p className="mt-1 text-slate-500 dark:text-slate-400">
@@ -82,7 +82,7 @@ export default async function EstimateDetailPage({ params }: EstimateDetailPageP
             )}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {!estimate.project_id && (
             <CreateProjectFromEstimateButton estimateId={estimate.id} />
           )}
