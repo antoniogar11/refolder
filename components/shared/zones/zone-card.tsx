@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, Trash2, Camera, X } from "lucide-react";
 import { WorkTypeCheckbox } from "./work-type-checkbox";
 import { toast } from "sonner";
+import { compressImage, validateImage } from "@/lib/utils/compress-image";
 
 export type ZonePhoto = {
   base64: string;
@@ -39,57 +40,6 @@ type ZoneCardProps = {
 };
 
 const MAX_PHOTOS = 3;
-const MAX_DIMENSION = 1600; // px m\u00e1ximo por lado
-const JPEG_QUALITY = 0.7;
-const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB antes de compresi\u00f3n
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
-
-function validateImage(file: File): string | null {
-  if (!ALLOWED_TYPES.includes(file.type) && !file.type.startsWith("image/")) {
-    return `"${file.name}" no es una imagen v\u00e1lida.`;
-  }
-  if (file.size > MAX_FILE_SIZE) {
-    return `"${file.name}" supera los 20MB.`;
-  }
-  return null;
-}
-
-function compressImage(file: File): Promise<{ base64: string; mimeType: string }> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      URL.revokeObjectURL(url);
-      let { width, height } = img;
-
-      // Redimensionar si supera el máximo
-      if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
-        if (width > height) {
-          height = Math.round((height * MAX_DIMENSION) / width);
-          width = MAX_DIMENSION;
-        } else {
-          width = Math.round((width * MAX_DIMENSION) / height);
-          height = MAX_DIMENSION;
-        }
-      }
-
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(img, 0, 0, width, height);
-
-      const dataUrl = canvas.toDataURL("image/jpeg", JPEG_QUALITY);
-      const base64 = dataUrl.split(",")[1];
-      resolve({ base64, mimeType: "image/jpeg" });
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("No se pudo leer la imagen."));
-    };
-    img.src = url;
-  });
-}
 
 export function ZoneCard({ zone, index, workTypes, onChange, onRemove }: ZoneCardProps) {
   const [collapsed, setCollapsed] = useState(false);

@@ -10,13 +10,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { NativeSelect } from "@/components/ui/native-select";
 import { toast } from "sonner";
 import { createEstimateWithItemsAction } from "@/app/dashboard/presupuestos/actions";
-import { Loader2, Sparkles, Save, UserPlus, ChevronDown, Send } from "lucide-react";
+import { Loader2, Sparkles, Save, UserPlus, ChevronDown, Send, Zap, List } from "lucide-react";
 import { QuickAddClientDialog } from "@/components/clients/quick-add-client-dialog";
 import { EstimatePreviewEditor, type Partida } from "@/components/estimates/estimate-preview-editor";
 import { ZoneCard, type ZoneData } from "@/components/shared/zones/zone-card";
 import { ZoneSuggestions } from "@/components/shared/zones/zone-suggestions";
 import { buildDescriptionFromZones } from "@/lib/utils/build-description";
-import { roundCurrency } from "@/lib/utils";
+import { roundCurrency, cn } from "@/lib/utils";
+import { QuickEstimateForm } from "@/components/estimates/quick-estimate-form";
+
+type EstimateMode = "quick" | "detailed";
 
 type NewEstimateFormProps = {
   clients: { id: string; name: string }[];
@@ -28,6 +31,50 @@ function emptyZone(name = ""): ZoneData {
 }
 
 export function NewEstimateForm({ clients: initialClients, workTypes }: NewEstimateFormProps) {
+  const [mode, setMode] = useState<EstimateMode>("quick");
+
+  return (
+    <div className="space-y-6">
+      {/* Toggle de modo */}
+      <div className="flex rounded-lg border bg-slate-100 p-1 dark:bg-slate-800">
+        <button
+          type="button"
+          onClick={() => setMode("quick")}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+            mode === "quick"
+              ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
+              : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300",
+          )}
+        >
+          <Zap className="h-4 w-4" />
+          Rápido
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("detailed")}
+          className={cn(
+            "flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+            mode === "detailed"
+              ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
+              : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300",
+          )}
+        >
+          <List className="h-4 w-4" />
+          Detallado
+        </button>
+      </div>
+
+      {mode === "quick" ? (
+        <QuickEstimateForm clients={initialClients} />
+      ) : (
+        <DetailedEstimateForm clients={initialClients} workTypes={workTypes} />
+      )}
+    </div>
+  );
+}
+
+function DetailedEstimateForm({ clients: initialClients, workTypes }: NewEstimateFormProps) {
   const router = useRouter();
   const [clients, setClients] = useState(initialClients);
   const [clientId, setClientId] = useState("");
