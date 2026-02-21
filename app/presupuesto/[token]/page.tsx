@@ -158,8 +158,6 @@ export default async function SharedEstimatePage({ params }: Props) {
               (sum, item) => sum + roundCurrency(item.cantidad * item.precio_unitario),
               0,
             );
-            let itemCounter = 0;
-
             return (
               <div key={category}>
                 {/* Category header */}
@@ -167,8 +165,43 @@ export default async function SharedEstimatePage({ params }: Props) {
                   {catIndex + 1}. {category.toUpperCase()}
                 </div>
 
-                {/* Category items */}
-                <div className="overflow-x-auto">
+                {/* Mobile: lista de partidas */}
+                <div className="sm:hidden divide-y divide-slate-100">
+                  {categoryItems.map((item, itemIdx) => {
+                    const itemSubtotal = roundCurrency(
+                      item.cantidad * item.precio_unitario,
+                    );
+                    return (
+                      <div key={item.id} className="px-4 py-3">
+                        <p className="text-sm text-slate-700">
+                          <span className="mr-1.5 text-xs text-slate-400">
+                            {catIndex + 1}.{itemIdx + 1}
+                          </span>
+                          {item.descripcion}
+                        </p>
+                        <div className="mt-1.5 flex items-center justify-between text-xs">
+                          <span className="text-slate-500">
+                            {item.cantidad} x {formatCurrency(item.precio_unitario)}
+                          </span>
+                          <span className="font-semibold text-slate-900">
+                            {formatCurrency(itemSubtotal)}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div className="flex items-center justify-between bg-slate-50 px-4 py-2">
+                    <span className="text-xs font-semibold text-slate-600">
+                      Total {category}
+                    </span>
+                    <span className="text-sm font-bold text-slate-900">
+                      {formatCurrency(categorySubtotal)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Desktop: tabla */}
+                <div className="hidden sm:block overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b bg-slate-50 text-xs text-slate-500">
@@ -181,7 +214,6 @@ export default async function SharedEstimatePage({ params }: Props) {
                     </thead>
                     <tbody>
                       {categoryItems.map((item) => {
-                        itemCounter++;
                         const itemSubtotal = roundCurrency(
                           item.cantidad * item.precio_unitario,
                         );
@@ -191,9 +223,6 @@ export default async function SharedEstimatePage({ params }: Props) {
                             className="border-b border-slate-100 last:border-b-0"
                           >
                             <td className="px-4 py-2.5 text-slate-700">
-                              <span className="mr-2 text-xs text-slate-400">
-                                {catIndex + 1}.{itemCounter}
-                              </span>
                               {item.descripcion}
                             </td>
                             <td className="whitespace-nowrap px-3 py-2.5 text-center text-slate-500">
