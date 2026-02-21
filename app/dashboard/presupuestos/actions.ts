@@ -281,6 +281,25 @@ export async function updateEstimateItemAction(
     return { success: false, message: error.message };
   }
 
+  // Si se editó el precio_coste, capturar en user_precios
+  if (data.precio_coste !== undefined && data.precio_coste > 0) {
+    // Obtener datos completos del item para guardar
+    const { data: fullItem } = await supabase
+      .from("estimate_items")
+      .select("categoria, descripcion, unidad, precio_coste")
+      .eq("id", itemId)
+      .single();
+
+    if (fullItem && fullItem.precio_coste) {
+      saveUserPricesFromPartidas(user.id, [{
+        categoria: fullItem.categoria,
+        descripcion: fullItem.descripcion,
+        unidad: fullItem.unidad,
+        precio_coste: Number(fullItem.precio_coste),
+      }]).catch((err) => console.error("Error saving user price on edit:", err));
+    }
+  }
+
   return { success: true, message: "Partida actualizada." };
 }
 
@@ -303,6 +322,16 @@ export async function addEstimateItemAction(
   if (error) {
     console.error("Error adding estimate item", error);
     return { success: false, message: error.message };
+  }
+
+  // Capturar precio de la nueva partida en user_precios
+  if (item.precio_coste > 0) {
+    saveUserPricesFromPartidas(user.id, [{
+      categoria: item.categoria,
+      descripcion: item.descripcion,
+      unidad: item.unidad,
+      precio_coste: item.precio_coste,
+    }]).catch((err) => console.error("Error saving user price on add:", err));
   }
 
   revalidatePath(`/dashboard/presupuestos/${estimateId}`);
