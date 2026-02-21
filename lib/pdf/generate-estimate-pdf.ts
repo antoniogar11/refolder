@@ -97,7 +97,9 @@ function groupItemsByChapter(items: EstimateData["items"]): Chapter[] {
   return chapters;
 }
 
-export function generateEstimatePDF(data: EstimateData) {
+export type { EstimateData };
+
+function buildEstimatePDF(data: EstimateData): jsPDF {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -409,7 +411,18 @@ export function generateEstimatePDF(data: EstimateData) {
     doc.text(`Página ${i} de ${pageCount}`, pageWidth - margin, footerYPos, { align: "right" });
   }
 
-  // Download
+  return doc;
+}
+
+/** Genera y descarga el PDF en el navegador (client-side) */
+export function generateEstimatePDF(data: EstimateData) {
+  const doc = buildEstimatePDF(data);
   const filename = `presupuesto-${data.estimateNumber.replace(/[^a-zA-Z0-9]/g, "-")}.pdf`;
   doc.save(filename);
+}
+
+/** Genera el PDF y devuelve el contenido como base64 (para adjuntar a emails, etc.) */
+export function generateEstimatePDFBase64(data: EstimateData): string {
+  const doc = buildEstimatePDF(data);
+  return doc.output("datauristring").split(",")[1];
 }

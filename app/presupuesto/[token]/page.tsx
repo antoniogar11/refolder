@@ -4,6 +4,7 @@ import { getSharedEstimate } from "@/lib/data/public-estimates";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import { roundCurrency } from "@/lib/utils";
 import { computeEstimateTotals } from "@/lib/utils/estimate-totals";
+import { DownloadPDFButton } from "@/components/estimates/download-pdf-button";
 
 type Props = {
   params: Promise<{ token: string }>;
@@ -86,12 +87,15 @@ export default async function SharedEstimatePage({ params }: Props) {
                 </p>
               )}
             </div>
-            <div className="text-right text-sm text-blue-200">
-              <p>Fecha: {formatDate(estimate.created_at, { style: "medium" })}</p>
-              <p>
-                Válido hasta:{" "}
-                {formatDate(validUntilDate.toISOString(), { style: "medium" })}
-              </p>
+            <div className="flex flex-col items-end gap-3">
+              <div className="text-right text-sm text-blue-200">
+                <p>Fecha: {formatDate(estimate.created_at, { style: "medium" })}</p>
+                <p>
+                  Válido hasta:{" "}
+                  {formatDate(validUntilDate.toISOString(), { style: "medium" })}
+                </p>
+              </div>
+              <DownloadPDFButton estimate={estimate} items={items} company={company} />
             </div>
           </div>
         </div>

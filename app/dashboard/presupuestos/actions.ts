@@ -498,10 +498,14 @@ export async function sendEstimateEmailAction(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { success: false, message: "No estás autenticado." };
 
-  // Fetch estimate
+  // Fetch estimate with client and project data
   const { data: estimate, error: fetchError } = await supabase
     .from("estimates")
-    .select("id, name, share_token, total_amount")
+    .select(`
+      *,
+      client:clients(*),
+      project:projects(*, client:clients(*))
+    `)
     .eq("id", estimateId)
     .eq("user_id", user.id)
     .maybeSingle();
@@ -514,6 +518,13 @@ export async function sendEstimateEmailAction(
   if (!estimate) {
     return { success: false, message: "Presupuesto no encontrado. Recarga la página e inténtalo de nuevo." };
   }
+
+  // Fetch items
+  const { data: items } = await supabase
+    .from("estimate_items")
+    .select("*")
+    .eq("estimate_id", estimateId)
+    .order("orden", { ascending: true });
 
   // Generate share token if it doesn't exist
   let shareToken = estimate.share_token;
@@ -533,10 +544,10 @@ export async function sendEstimateEmailAction(
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const shareUrl = `${appUrl}/presupuesto/${shareToken}`;
 
-  // Fetch company for sender name
+  // Fetch company
   const { data: company } = await supabase
     .from("companies")
-    .select("name, email")
+    .select("*")
     .eq("owner_id", user.id)
     .single();
 
@@ -548,6 +559,22 @@ export async function sendEstimateEmailAction(
     return { success: false, message: "El servicio de email no está configurado. Configura RESEND_API_KEY en las variables de entorno." };
   }
 
+  // Generate PDF attachment
+  let pdfBase64: string | null = null;
+  let pdfFilename = "presupuesto.pdf";
+  if (items && items.length > 0) {
+    try {
+      const { buildEstimatePDFData } = await import("@/lib/pdf/build-estimate-pdf-data");
+      const { generateEstimatePDFBase64 } = await import("@/lib/pdf/generate-estimate-pdf");
+      const pdfData = buildEstimatePDFData(estimate, items, company);
+      pdfBase64 = generateEstimatePDFBase64(pdfData);
+      pdfFilename = `presupuesto-${pdfData.estimateNumber.replace(/[^a-zA-Z0-9]/g, "-")}.pdf`;
+    } catch (pdfError) {
+      console.error("Error generating PDF for email:", pdfError);
+      // Continue without attachment
+    }
+  }
+
   const emailHtml = `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 100%); padding: 30px; border-radius: 12px 12px 0 0;">
@@ -556,9 +583,9 @@ export async function sendEstimateEmailAction(
       <div style="background: #f8fafc; padding: 30px; border: 1px solid #e2e8f0; border-top: none;">
         <p style="color: #334155; font-size: 16px; margin-top: 0;">Hola ${recipientName},</p>
         ${message ? `<p style="color: #475569; font-size: 14px;">${message}</p>` : ""}
-        <p style="color: #475569; font-size: 14px;">Te enviamos el presupuesto <strong>&ldquo;${estimate.name}&rdquo;</strong> para tu revisión.</p>
+        <p style="color: #475569; font-size: 14px;">Te enviamos el presupuesto <strong>&ldquo;${estimate.name}&rdquo;</strong> para tu revisión.${pdfBase64 ? " Encontrarás el PDF adjunto a este correo." : ""}</p>
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${shareUrl}" style="background: #d97706; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block;">Ver presupuesto</a>
+          <a href="${shareUrl}" style="background: #d97706; color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block;">Ver presupuesto online</a>
         </div>
         <p style="color: #94a3b8; font-size: 12px; text-align: center;">Si el botón no funciona, copia y pega este enlace:<br/><a href="${shareUrl}" style="color: #2563eb;">${shareUrl}</a></p>
       </div>
@@ -569,18 +596,26 @@ export async function sendEstimateEmailAction(
   `;
 
   try {
+    const emailPayload: Record<string, unknown> = {
+      from: `${senderName} <presupuestos@${process.env.RESEND_DOMAIN || "refolder.es"}>`,
+      to: [recipientEmail],
+      subject: `Presupuesto: ${estimate.name}`,
+      html: emailHtml,
+    };
+
+    if (pdfBase64) {
+      emailPayload.attachments = [
+        { filename: pdfFilename, content: pdfBase64 },
+      ];
+    }
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${resendApiKey}`,
       },
-      body: JSON.stringify({
-        from: `${senderName} <presupuestos@${process.env.RESEND_DOMAIN || "refolder.es"}>`,
-        to: [recipientEmail],
-        subject: `Presupuesto: ${estimate.name}`,
-        html: emailHtml,
-      }),
+      body: JSON.stringify(emailPayload),
     });
 
     if (!res.ok) {
@@ -598,7 +633,7 @@ export async function sendEstimateEmailAction(
 
     revalidatePath(`/dashboard/presupuestos/${estimateId}`);
     revalidatePath("/dashboard/presupuestos");
-    return { success: true, message: `Email enviado a ${recipientEmail}.` };
+    return { success: true, message: `Email enviado a ${recipientEmail}${pdfBase64 ? " con PDF adjunto" : ""}.` };
   } catch (error) {
     console.error("Error sending email:", error);
     return { success: false, message: "Error de conexión al enviar el email." };
