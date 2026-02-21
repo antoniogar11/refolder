@@ -436,15 +436,21 @@ export async function generateShareTokenAction(
   if (!user) return { success: false, message: "No estás autenticado." };
 
   // Check if already has a share token
-  const { data: existing } = await supabase
+  const { data: existing, error: fetchError } = await supabase
     .from("estimates")
     .select("share_token")
     .eq("id", estimateId)
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
+
+  if (fetchError) {
+    console.error("Error fetching estimate for share:", fetchError, { estimateId, userId: user.id });
+    return { success: false, message: `Error al buscar el presupuesto: ${fetchError.message}` };
+  }
 
   if (!existing) {
-    return { success: false, message: "Presupuesto no encontrado." };
+    console.error("Estimate not found for share:", { estimateId, userId: user.id });
+    return { success: false, message: "Presupuesto no encontrado. Recarga la página e inténtalo de nuevo." };
   }
 
   if (existing.share_token) {
@@ -492,15 +498,20 @@ export async function sendEstimateEmailAction(
   if (!user) return { success: false, message: "No estás autenticado." };
 
   // Fetch estimate
-  const { data: estimate } = await supabase
+  const { data: estimate, error: fetchError } = await supabase
     .from("estimates")
     .select("id, name, share_token, total_amount")
     .eq("id", estimateId)
     .eq("user_id", user.id)
-    .single();
+    .maybeSingle();
+
+  if (fetchError) {
+    console.error("Error fetching estimate for email:", fetchError);
+    return { success: false, message: `Error al buscar el presupuesto: ${fetchError.message}` };
+  }
 
   if (!estimate) {
-    return { success: false, message: "Presupuesto no encontrado." };
+    return { success: false, message: "Presupuesto no encontrado. Recarga la página e inténtalo de nuevo." };
   }
 
   // Generate share token if it doesn't exist
