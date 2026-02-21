@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { ratelimit } from "@/lib/rate-limit";
 import { roundCurrency, computeSellingPrice } from "@/lib/utils";
+import { matchUserPricesForDescription, buildUserPricesSection } from "@/lib/data/user-precios";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
@@ -92,6 +93,16 @@ export async function POST(request: NextRequest) {
       project = projectData;
     }
 
+    // Buscar precios personalizados del usuario
+    const fullDescription = [tipo_obra, descripcion, project?.name].filter(Boolean).join(" ");
+    let userPricesSection = "";
+    try {
+      const userPrices = await matchUserPricesForDescription(user.id, fullDescription);
+      userPricesSection = buildUserPricesSection(userPrices);
+    } catch (err) {
+      console.error("Error fetching user prices:", err);
+    }
+
     const systemInstruction = `Eres un experto presupuestador de obras y reformas en España. Tu trabajo es generar presupuestos con precios de COSTE realistas del mercado español actual (2025-2026).
 
 REGLA FUNDAMENTAL:
@@ -107,7 +118,7 @@ REGLAS DE PRECIOS:
 - Referencias orientativas de coste (material + mano de obra): demolición tabiques 8-12 €/m², alicatado cerámico 32-40 €/m², gres porcelánico 38-48 €/m², pintura plástica 9-12 €/m², punto de luz 60-75 €/ud, plato ducha con grifería 450-600 €/ud
 - En caso de duda, pon el precio en la parte baja-media del rango de mercado
 - Los precios deben incluir materiales y mano de obra en cada partida
-
+${userPricesSection}
 REGLAS DE FORMATO:
 - Agrupa las partidas por categorías lógicas (Demolición, Albañilería, Fontanería, Electricidad, Carpintería, Pintura, etc.)
 - Usa unidades estándar: m² (metro cuadrado), ml (metro lineal), ud (unidad), pa (partida alzada), h (hora)

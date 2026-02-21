@@ -8,6 +8,7 @@ import { parseFormData } from "@/lib/forms/parse";
 import { createClient } from "@/lib/supabase/server";
 import { roundCurrency, computeSellingPrice } from "@/lib/utils";
 import { estimateSchema } from "@/lib/validations/estimate";
+import { saveUserPricesFromPartidas } from "@/lib/data/user-precios";
 
 export async function createEstimateAction(
   _: FormState,
@@ -151,6 +152,13 @@ export async function createEstimateWithItemsAction(
 
   const result = rpcResult as { success: boolean; message: string; estimateId: string };
 
+  // Capturar precios del usuario en background (no bloquea el guardado)
+  if (result.success && items.length > 0) {
+    saveUserPricesFromPartidas(user.id, items).catch((err) =>
+      console.error("Error saving user prices:", err),
+    );
+  }
+
   revalidatePath("/dashboard/presupuestos");
   if (projectId) {
     revalidatePath(`/dashboard/proyectos/${projectId}`);
@@ -213,6 +221,13 @@ async function createEstimateWithItemsFallback(
       await supabase.from("estimates").delete().eq("id", estimate.id);
       return { success: false, message: "Error al guardar las partidas del presupuesto." };
     }
+  }
+
+  // Capturar precios del usuario en background
+  if (items.length > 0) {
+    saveUserPricesFromPartidas(userId, items).catch((err) =>
+      console.error("Error saving user prices (fallback):", err),
+    );
   }
 
   revalidatePath("/dashboard/presupuestos");

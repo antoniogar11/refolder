@@ -180,3 +180,17 @@ export type PrecioReferencia = {
   created_at: string;
 };
 
+// Precios personalizados del usuario (aprendizaje)
+
+export type UserPrecio = {
+  id: string;
+  user_id: string;
+  categoria: string;
+  descripcion: string;
+  unidad: string;
+  precio_coste: number;
+  veces_usado: number;
+  created_at: string;
+  updated_at: string;
+};
+
