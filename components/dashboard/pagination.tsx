@@ -34,7 +34,7 @@ export function Pagination({ currentPage, totalPages }: PaginationProps) {
           disabled={currentPage <= 1}
         >
           <ChevronLeft className="h-4 w-4" />
-          Anterior
+          <span className="hidden sm:inline">Anterior</span>
         </Button>
         <Button
           variant="outline"
@@ -42,7 +42,7 @@ export function Pagination({ currentPage, totalPages }: PaginationProps) {
           onClick={() => goToPage(currentPage + 1)}
           disabled={currentPage >= totalPages}
         >
-          Siguiente
+          <span className="hidden sm:inline">Siguiente</span>
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>

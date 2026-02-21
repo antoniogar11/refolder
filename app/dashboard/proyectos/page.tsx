@@ -90,15 +90,15 @@ export default async function ProyectosPage({ searchParams }: ProyectosPageProps
         </Card>
       ) : (
         <>
-          <div className="mt-6 overflow-hidden rounded-lg border bg-white dark:bg-slate-900">
+          <div className="mt-6 rounded-lg border bg-white dark:bg-slate-900">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nombre</TableHead>
-                  <TableHead>Cliente</TableHead>
+                  <TableHead className="hidden sm:table-cell">Cliente</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead>Presupuesto</TableHead>
-                  <TableHead>Inicio</TableHead>
+                  <TableHead className="hidden sm:table-cell">Presupuesto</TableHead>
+                  <TableHead className="hidden md:table-cell">Inicio</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -111,17 +111,20 @@ export default async function ProyectosPage({ searchParams }: ProyectosPageProps
                       >
                         {project.name}
                       </Link>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 sm:hidden">
+                        {project.client?.name || "Sin cliente"}
+                      </p>
                     </TableCell>
-                    <TableCell className="text-slate-500 dark:text-slate-400">
+                    <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
                       {project.client?.name || "-"}
                     </TableCell>
                     <TableCell>
                       <StatusBadge type="project" status={project.status} />
                     </TableCell>
-                    <TableCell className="text-slate-500 dark:text-slate-400">
+                    <TableCell className="hidden sm:table-cell text-slate-500 dark:text-slate-400">
                       {formatCurrency(project.total_budget)}
                     </TableCell>
-                    <TableCell className="text-slate-500 dark:text-slate-400">
+                    <TableCell className="hidden md:table-cell text-slate-500 dark:text-slate-400">
                       {project.start_date || "-"}
                     </TableCell>
                   </TableRow>
