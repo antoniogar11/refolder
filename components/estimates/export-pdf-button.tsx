@@ -3,8 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import { generateEstimatePDF } from "@/lib/pdf/generate-estimate-pdf";
-import { roundCurrency } from "@/lib/utils";
 import { formatDate } from "@/lib/utils/format";
+import { computeEstimateTotals } from "@/lib/utils/estimate-totals";
+import { roundCurrency } from "@/lib/utils";
 import type { Estimate, EstimateItem, Company } from "@/types";
 
 type ExportPDFButtonProps = {
@@ -15,11 +16,9 @@ type ExportPDFButtonProps = {
 
 export function ExportPDFButton({ estimate, items, company }: ExportPDFButtonProps) {
   function handleExport() {
-    // Recalculate from cantidad * precio_unitario to avoid stale subtotal values
-    const subtotal = items.reduce((sum, item) => sum + roundCurrency(item.cantidad * item.precio_unitario), 0);
-    const ivaPorcentaje = estimate.iva_porcentaje ?? 21;
-    const iva = roundCurrency(subtotal * (ivaPorcentaje / 100));
-    const total = roundCurrency(subtotal + iva);
+    // Recalculate totals with per-item IVA
+    const totals = computeEstimateTotals(items);
+    const { subtotal, ivaGroups, total } = totals;
 
     const estimateDate = new Date(estimate.created_at);
     const validUntilDate = estimate.valid_until
@@ -59,11 +58,11 @@ export function ExportPDFButton({ estimate, items, company }: ExportPDFButtonPro
         unidad: item.unidad,
         cantidad: item.cantidad,
         precio_unitario: item.precio_unitario,
-        subtotal: Math.round(item.cantidad * item.precio_unitario * 100) / 100,
+        subtotal: roundCurrency(item.cantidad * item.precio_unitario),
+        iva_porcentaje: item.iva_porcentaje ?? 21,
       })),
       subtotal,
-      ivaPorcentaje,
-      iva,
+      ivaGroups,
       total,
       notes: estimate.notes || null,
     });

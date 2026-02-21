@@ -16,7 +16,8 @@ import { EstimatePreviewEditor, type Partida } from "@/components/estimates/esti
 import { ZoneCard, type ZoneData } from "@/components/shared/zones/zone-card";
 import { ZoneSuggestions } from "@/components/shared/zones/zone-suggestions";
 import { buildDescriptionFromZones } from "@/lib/utils/build-description";
-import { roundCurrency, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { computeEstimateTotals } from "@/lib/utils/estimate-totals";
 import { QuickEstimateForm } from "@/components/estimates/quick-estimate-form";
 
 type EstimateMode = "quick" | "detailed";
@@ -205,8 +206,7 @@ function DetailedEstimateForm({ clients: initialClients, workTypes }: NewEstimat
     setIsSaving(true);
 
     try {
-      const sub = roundCurrency(partidas.reduce((sum, p) => sum + p.subtotal, 0));
-      const totalAmount = roundCurrency(sub + roundCurrency(sub * 0.21));
+      const { total: totalAmount } = computeEstimateTotals(partidas);
       const result = await createEstimateWithItemsAction(
         null,
         clientId || null,

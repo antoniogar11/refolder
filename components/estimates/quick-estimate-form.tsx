@@ -14,7 +14,7 @@ import { Loader2, Sparkles, Save, UserPlus, Camera, X, Send } from "lucide-react
 import { QuickAddClientDialog } from "@/components/clients/quick-add-client-dialog";
 import { EstimatePreviewEditor, type Partida } from "@/components/estimates/estimate-preview-editor";
 import { compressImage, validateImage } from "@/lib/utils/compress-image";
-import { roundCurrency } from "@/lib/utils";
+import { computeEstimateTotals } from "@/lib/utils/estimate-totals";
 
 type QuickEstimateFormProps = {
   clients: { id: string; name: string }[];
@@ -166,8 +166,7 @@ export function QuickEstimateForm({ clients: initialClients }: QuickEstimateForm
     setIsSaving(true);
 
     try {
-      const sub = roundCurrency(partidas.reduce((sum, p) => sum + p.subtotal, 0));
-      const totalAmount = roundCurrency(sub + roundCurrency(sub * 0.21));
+      const { total: totalAmount } = computeEstimateTotals(partidas);
       const result = await createEstimateWithItemsAction(
         null,
         clientId || null,

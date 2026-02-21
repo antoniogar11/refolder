@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import type { IvaGroup } from "@/lib/utils/estimate-totals";
 
 type EstimateData = {
   estimateName: string;
@@ -34,10 +35,10 @@ type EstimateData = {
     cantidad: number;
     precio_unitario: number;
     subtotal: number;
+    iva_porcentaje: number;
   }[];
   subtotal: number;
-  ivaPorcentaje: number;
-  iva: number;
+  ivaGroups: IvaGroup[];
   total: number;
   notes: string | null;
 };
@@ -318,15 +319,17 @@ export function generateEstimatePDF(data: EstimateData) {
   doc.setTextColor(...DARK_TEXT);
   doc.text(formatCurrency(data.subtotal), totalsBoxX + totalsBoxWidth, finalY, { align: "right" });
 
-  // IVA
-  finalY += 7;
-  const ivaLabel = data.ivaPorcentaje === 10 ? "IVA 10% (Reducido)" : `IVA ${data.ivaPorcentaje}%`;
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(...MEDIUM_TEXT);
-  doc.text(ivaLabel, totalsBoxX, finalY);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(...DARK_TEXT);
-  doc.text(formatCurrency(data.iva), totalsBoxX + totalsBoxWidth, finalY, { align: "right" });
+  // IVA groups
+  for (const group of data.ivaGroups) {
+    finalY += 7;
+    const ivaLabel = group.ivaPorcentaje === 10 ? "IVA 10% (Reducido)" : `IVA ${group.ivaPorcentaje}%`;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...MEDIUM_TEXT);
+    doc.text(ivaLabel, totalsBoxX, finalY);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...DARK_TEXT);
+    doc.text(formatCurrency(group.cuota), totalsBoxX + totalsBoxWidth, finalY, { align: "right" });
+  }
 
   // Total line
   finalY += 4;
@@ -369,7 +372,7 @@ export function generateEstimatePDF(data: EstimateData) {
   notes.push("• No incluye trabajos no especificados en las partidas anteriores.");
   notes.push("• Plazo de ejecución a convenir tras la aceptación del presupuesto.");
 
-  if (data.ivaPorcentaje === 10) {
+  if (data.ivaGroups.some((g) => g.ivaPorcentaje === 10)) {
     notes.push("• IVA reducido del 10% aplicado según Art. 91.Uno.2.10.º Ley 37/1992 (reformas de vivienda habitual > 2 años, materiales < 40% del total).");
   }
 

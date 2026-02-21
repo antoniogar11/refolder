@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getSharedEstimate } from "@/lib/data/public-estimates";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import { roundCurrency } from "@/lib/utils";
+import { computeEstimateTotals } from "@/lib/utils/estimate-totals";
 
 type Props = {
   params: Promise<{ token: string }>;
@@ -53,14 +54,8 @@ export default async function SharedEstimatePage({ params }: Props) {
   const { estimate, items, company } = data;
   const client = estimate.client || estimate.project?.client;
 
-  // Calculate totals from items
-  const subtotal = items.reduce(
-    (sum, item) => sum + roundCurrency(item.cantidad * item.precio_unitario),
-    0,
-  );
-  const ivaPorcentaje = estimate.iva_porcentaje ?? 21;
-  const iva = roundCurrency(subtotal * (ivaPorcentaje / 100));
-  const total = roundCurrency(subtotal + iva);
+  // Calculate totals from items (per-item IVA)
+  const { subtotal, ivaGroups, totalIva, total } = computeEstimateTotals(items);
 
   // Group items by category
   const categories = new Map<string, typeof items>();
@@ -270,15 +265,30 @@ export default async function SharedEstimatePage({ params }: Props) {
                 {formatCurrency(subtotal)}
               </span>
             </div>
-            <div className="flex justify-between text-sm text-slate-600">
-              <span>
-                IVA {ivaPorcentaje}%
-                {ivaPorcentaje === 10 && " (Reducido)"}
-              </span>
-              <span className="font-medium text-slate-900">
-                {formatCurrency(iva)}
-              </span>
-            </div>
+            {ivaGroups.length === 1 ? (
+              <div className="flex justify-between text-sm text-slate-600">
+                <span>
+                  IVA {ivaGroups[0].ivaPorcentaje}%
+                  {ivaGroups[0].ivaPorcentaje === 10 && " (Reducido)"}
+                </span>
+                <span className="font-medium text-slate-900">
+                  {formatCurrency(ivaGroups[0].cuota)}
+                </span>
+              </div>
+            ) : (
+              ivaGroups.map((g) => (
+                <div key={g.ivaPorcentaje} className="flex justify-between text-sm text-slate-600">
+                  <span>
+                    IVA {g.ivaPorcentaje}%
+                    {g.ivaPorcentaje === 10 && " (Reducido)"}
+                    {g.ivaPorcentaje === 4 && " (Super.)"}
+                  </span>
+                  <span className="font-medium text-slate-900">
+                    {formatCurrency(g.cuota)}
+                  </span>
+                </div>
+              ))
+            )}
             <div className="border-t border-slate-300 pt-2" />
             <div className="flex justify-between rounded-lg bg-[#1e3a5f] px-4 py-3 text-white">
               <span className="font-semibold">TOTAL PRESUPUESTO</span>
@@ -304,7 +314,7 @@ export default async function SharedEstimatePage({ params }: Props) {
             <li>
               Plazo de ejecución a convenir tras la aceptación del presupuesto.
             </li>
-            {ivaPorcentaje === 10 && (
+            {ivaGroups.some((g) => g.ivaPorcentaje === 10) && (
               <li>
                 IVA reducido del 10% aplicado según Art. 91.Uno.2.10.º Ley
                 37/1992.

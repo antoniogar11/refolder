@@ -15,6 +15,7 @@ type PartidaInput = {
   margen: number;
   precio_unitario: number;
   subtotal: number;
+  iva_porcentaje: number;
   orden: number;
 };
 
@@ -190,6 +191,7 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura:
         margen,
         precio_unitario: precioUnitario,
         subtotal,
+        iva_porcentaje: 21,
         orden: index,
       };
     });

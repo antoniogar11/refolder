@@ -93,6 +93,7 @@ export type EstimateItem = {
   margen: number;
   precio_unitario: number;
   subtotal: number;
+  iva_porcentaje: number;
   orden: number;
   created_at: string;
 };

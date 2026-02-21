@@ -32,6 +32,7 @@ export async function createEstimateItems(
     cantidad: item.cantidad,
     precio_unitario: item.precio_unitario,
     subtotal: item.subtotal,
+    iva_porcentaje: item.iva_porcentaje ?? 21,
     orden: item.orden ?? index,
   }));
 

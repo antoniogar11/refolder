@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { DeleteEntityButton } from "@/components/shared/delete-entity-button";
 import { getEstimateById } from "@/lib/data/estimates";
@@ -15,7 +14,7 @@ import { ExportPDFButton } from "@/components/estimates/export-pdf-button";
 import { ShareEstimateButton } from "@/components/estimates/share-estimate-button";
 import { CreateProjectFromEstimateButton } from "@/components/estimates/create-project-from-estimate-button";
 import { formatCurrency } from "@/lib/utils/format";
-import { roundCurrency } from "@/lib/utils";
+import { computeEstimateTotals } from "@/lib/utils/estimate-totals";
 
 type EstimateDetailPageProps = {
   params: Promise<{ id: string }>;
@@ -33,9 +32,7 @@ export default async function EstimateDetailPage({ params }: EstimateDetailPageP
     redirect("/dashboard/presupuestos");
   }
 
-  const subtotal = items.reduce((sum, item) => sum + item.subtotal, 0);
-  const iva = roundCurrency(subtotal * 0.21);
-  const total = roundCurrency(subtotal + iva);
+  const { total } = computeEstimateTotals(items);
 
   const companyNeedsSetup = !company?.tax_id && !company?.address;
 
@@ -110,7 +107,6 @@ export default async function EstimateDetailPage({ params }: EstimateDetailPageP
         initialItems={items}
         estimateTotal={estimate.total_amount}
         margenGlobal={estimate.margen_global}
-        ivaPorcentaje={estimate.iva_porcentaje ?? 21}
       />
     </div>
   );

@@ -7,6 +7,7 @@ import { zodErrorsToFormState } from "@/lib/forms/form-state";
 import { parseFormData } from "@/lib/forms/parse";
 import { createClient } from "@/lib/supabase/server";
 import { roundCurrency, computeSellingPrice } from "@/lib/utils";
+import { computeEstimateTotals } from "@/lib/utils/estimate-totals";
 import { estimateSchema } from "@/lib/validations/estimate";
 import { saveUserPricesFromPartidas } from "@/lib/data/user-precios";
 
@@ -239,7 +240,7 @@ async function createEstimateWithItemsFallback(
 
 export async function updateEstimateItemAction(
   itemId: string,
-  data: { cantidad?: number; precio_unitario?: number; precio_coste?: number; margen?: number; descripcion?: string; categoria?: string; unidad?: string },
+  data: { cantidad?: number; precio_unitario?: number; precio_coste?: number; margen?: number; descripcion?: string; categoria?: string; unidad?: string; iva_porcentaje?: number },
 ): Promise<{ success: boolean; message: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -305,7 +306,7 @@ export async function updateEstimateItemAction(
 
 export async function addEstimateItemAction(
   estimateId: string,
-  item: { categoria: string; descripcion: string; unidad: string; cantidad: number; precio_coste: number; margen: number; precio_unitario: number; orden: number },
+  item: { categoria: string; descripcion: string; unidad: string; cantidad: number; precio_coste: number; margen: number; precio_unitario: number; orden: number; iva_porcentaje?: number },
 ): Promise<{ success: boolean; message: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -627,7 +628,7 @@ export async function updateGlobalMarginAction(
   // 2. Obtener todos los items del presupuesto
   const { data: items, error: itemsError } = await supabase
     .from("estimate_items")
-    .select("id, precio_coste, cantidad")
+    .select("id, precio_coste, cantidad, iva_porcentaje")
     .eq("estimate_id", estimateId);
 
   if (itemsError) {
@@ -649,8 +650,17 @@ export async function updateGlobalMarginAction(
   });
   await Promise.all(updates);
 
-  // 4. Actualizar el total del presupuesto
-  const totalWithIva = roundCurrency(newTotal + roundCurrency(newTotal * 0.21));
+  // 4. Recalcular total con IVA por partida
+  const updatedItems = (items ?? []).map((item) => {
+    const coste = Number(item.precio_coste) || 0;
+    const precioUnitario = computeSellingPrice(coste, margenGlobal);
+    return {
+      cantidad: Number(item.cantidad),
+      precio_unitario: precioUnitario,
+      iva_porcentaje: Number(item.iva_porcentaje) || 21,
+    };
+  });
+  const { total: totalWithIva } = computeEstimateTotals(updatedItems);
   await supabase
     .from("estimates")
     .update({ total_amount: totalWithIva, updated_at: new Date().toISOString() })

@@ -17,6 +17,7 @@ type Partida = {
   margen: number;
   precio_unitario: number;
   subtotal: number;
+  iva_porcentaje: number;
 };
 
 type AIPartida = {
@@ -298,6 +299,7 @@ Responde ÚNICAMENTE con un JSON válido con esta estructura exacta (sin markdow
         margen,
         precio_unitario: precioUnitario,
         subtotal,
+        iva_porcentaje: 21,
         orden: index,
       };
     });
